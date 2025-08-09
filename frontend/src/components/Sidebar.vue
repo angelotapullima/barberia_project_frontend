@@ -1,37 +1,150 @@
 <template>
-  <aside :class="{'w-16': isCollapsed, 'w-64': !isCollapsed}" class="bg-barber-black text-barber-white flex flex-col shadow-lg transition-all duration-300 ease-in-out">
-    <div v-if="!isCollapsed" class="p-4 text-2xl font-bold border-b border-barber-gray text-center">Barberia</div>
-    <div v-else class="p-4 text-2xl font-bold border-b border-barber-gray text-center">B</div>
-    <nav class="flex-1 p-4">
-      <ul>
-        <li class="mb-2">
-          <router-link to="/dashboard" class="flex items-center p-2 rounded-lg hover:bg-barber-gray transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            <span v-if="!isCollapsed" class="ml-3">Dashboard</span>
-          </router-link>
-        </li>
-        <li class="mb-2">
-          <router-link to="/barbers" class="flex items-center p-2 rounded-lg hover:bg-barber-gray transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            <span v-if="!isCollapsed" class="ml-3">Barberos</span>
-          </router-link>
-        </li>
-        <li class="mb-2">
-          <router-link to="/sales" class="flex items-center p-2 rounded-lg hover:bg-barber-gray transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            <span v-if="!isCollapsed" class="ml-3">Ventas</span>
-          </router-link>
-        </li>
-        <li class="mb-2">
-          <router-link to="/services" class="flex items-center p-2 rounded-lg hover:bg-barber-gray transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4.227 4.227l-.707.707M3 12H2m10 18v-1m-6.364-1.636l.707-.707M21 12h-1M4.227 4.227l-.707.707M3 12H2m10 18v-1m-6.364-1.636l.707-.707M12 22V10"></path></svg>
-            <span v-if="!isCollapsed" class="ml-3">Servicios</span>
-          </router-link>
-        </li>
-        <li class="mb-2">
-          <router-link to="/stations" class="flex items-center p-2 rounded-lg hover:bg-barber-gray transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            <span v-if="!isCollapsed" class="ml-3">Estaciones</span>
+  <aside
+    :class="[
+      isCollapsed ? 'w-20' : 'w-64',
+      'bg-gradient-to-b from-white to-gray-50 text-gray-700 flex flex-col shadow-lg border-r border-gray-200 transition-all duration-300 ease-in-out',
+    ]"
+    aria-label="Sidebar"
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
+          <svg
+            class="w-6 h-6 text-white"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </div>
+        <h1 v-if="!isCollapsed" class="text-lg font-bold tracking-wide text-gray-800">
+          BARBERSHOP
+        </h1>
+      </div>
+
+      <!-- Botón colapsar -->
+      <button
+        @click="emitToggle"
+        :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors"
+      >
+        <svg
+          :class="[
+            'w-5 h-5 transform transition-transform duration-200',
+            isCollapsed ? 'rotate-180' : 'rotate-0',
+          ]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Menú label -->
+    <div
+      v-if="!isCollapsed"
+      class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+    >
+      Menú
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-2 py-4">
+      <ul class="space-y-1">
+        <li v-for="item in items" :key="item.to">
+          <router-link :to="item.to" v-slot="{ isActive }">
+            <div
+              :class="[
+                'group flex items-center px-3 py-2.5 rounded-md text-sm font-semibold tracking-wide transition-all duration-200',
+                isActive
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700 hover:shadow-sm',
+                isCollapsed ? 'justify-center' : '',
+              ]"
+              :title="isCollapsed ? item.label : null"
+            >
+              <span class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+                <svg
+                  v-if="item.icon === 'home'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 12l9-9 9 9M4.5 10.5v9a1.5 1.5 0 001.5 1.5h3m9-11v9a1.5 1.5 0 001.5 1.5h3"
+                  />
+                </svg>
+
+                <svg
+                  v-else-if="item.icon === 'users'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 20h5v-1a6 6 0 00-5-5.91M8 20h4M8 16a4 4 0 10-4-4 4 4 0 004 4z"
+                  />
+                </svg>
+
+                <svg
+                  v-else-if="item.icon === 'credit-card'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <path d="M2 10h20" />
+                </svg>
+
+                <svg
+                  v-else-if="item.icon === 'scissors'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="6" cy="6" r="3"></circle>
+                  <circle cx="6" cy="18" r="3"></circle>
+                  <path d="M20 4L8.12 15.88"></path>
+                  <path d="M14.47 14.48L20 20"></path>
+                </svg>
+
+                <svg
+                  v-else-if="item.icon === 'map-pin'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 21l-7-7a7 7 0 1114 0l-7 7z"
+                  />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+
+              <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
+            </div>
           </router-link>
         </li>
       </ul>
@@ -40,17 +153,24 @@
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router';
+import { defineProps, defineEmits } from 'vue';
 
 defineProps({
-  isCollapsed: Boolean
+  isCollapsed: { type: Boolean, default: false },
 });
+
+const emit = defineEmits(['toggle']);
+const emitToggle = () => emit('toggle');
+
+const items = [
+  { to: '/', label: 'Dashboard', icon: 'home' },
+  { to: '/barbers', label: 'Barberos', icon: 'users' },
+  { to: '/sales', label: 'Ventas', icon: 'credit-card' },
+  { to: '/services', label: 'Servicios', icon: 'scissors' },
+  { to: '/stations', label: 'Estaciones', icon: 'map-pin' },
+];
 </script>
 
 <style scoped>
-/* Estilos para el enlace activo de RouterLink */
-.router-link-active {
-  background-color: #A30000; /* barber-red */
-  font-weight: bold;
-}
+/* Nada extra porque todo se maneja con Tailwind */
 </style>

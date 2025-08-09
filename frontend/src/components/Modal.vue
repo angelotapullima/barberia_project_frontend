@@ -12,10 +12,7 @@
 
         <div class="modal-footer">
           <slot name="footer">
-            <button
-              class="modal-default-button"
-              @click="$emit('close')"
-            >OK</button>
+            <button class="modal-default-button" @click="$emit('close')">OK</button>
           </slot>
         </div>
       </div>
@@ -25,9 +22,9 @@
 
 <script setup>
 defineProps({
-  show: Boolean
-})
-defineEmits(['close'])
+  show: Boolean,
+});
+defineEmits(['close']);
 </script>
 
 <style>

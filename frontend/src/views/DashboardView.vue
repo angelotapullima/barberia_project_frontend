@@ -6,20 +6,32 @@
     <div class="flex items-center space-x-4 mb-6 bg-white p-4 rounded-lg shadow">
       <div>
         <label for="month" class="block text-sm font-medium text-gray-700">Mes</label>
-        <select v-model="selectedMonth" id="month" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-          <option v-for="(name, index) in months" :key="index" :value="index + 1">{{ name }}</option>
+        <select
+          v-model="selectedMonth"
+          id="month"
+          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option v-for="(name, index) in months" :key="index" :value="index + 1">
+            {{ name }}
+          </option>
         </select>
       </div>
       <div>
         <label for="year" class="block text-sm font-medium text-gray-700">Año</label>
-        <select v-model="selectedYear" id="year" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+        <select
+          v-model="selectedYear"
+          id="year"
+          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
           <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
         </select>
       </div>
     </div>
 
     <div v-if="store.isLoading" class="text-center text-gray-500">Generando reporte...</div>
-    <div v-if="store.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{{ store.error }}</div>
+    <div v-if="store.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+      {{ store.error }}
+    </div>
 
     <!-- Main Content -->
     <div v-if="!store.isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -34,8 +46,12 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Barbero</th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Generado</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                Barbero
+              </th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                Generado
+              </th>
               <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pago</th>
             </tr>
           </thead>
@@ -49,7 +65,6 @@
         </table>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -61,7 +76,20 @@ import { useReportStore } from '@/stores/reportStore';
 
 const store = useReportStore();
 
-const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const months = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
 const years = [new Date().getFullYear(), new Date().getFullYear() - 1];
 
 const selectedMonth = ref(new Date().getMonth() + 1);
@@ -73,13 +101,13 @@ const calendarOptions = reactive({
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
-    right: 'dayGridMonth'
+    right: 'dayGridMonth',
   },
   events: [], // This will be populated from the store
   locale: 'es',
   buttonText: {
-      today: 'Hoy'
-  }
+    today: 'Hoy',
+  },
 });
 
 function generateReport() {
@@ -91,5 +119,4 @@ function generateReport() {
 watch([selectedMonth, selectedYear], generateReport);
 
 onMounted(generateReport);
-
 </script>

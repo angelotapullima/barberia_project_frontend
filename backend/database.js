@@ -4,7 +4,7 @@ const { open } = require('sqlite');
 async function setup() {
   const db = await open({
     filename: './barberia.sqlite',
-    driver: sqlite3.Database
+    driver: sqlite3.Database,
   });
 
   await db.exec(`
@@ -51,19 +51,34 @@ async function setup() {
   // Pre-seed some data for testing if tables are empty
   const stations = await db.get('SELECT COUNT(*) as count FROM stations');
   if (stations.count === 0) {
-    await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', ['Estación 1', 'Estación 2', 'Estación 3']);
+    await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
+      'Estación 1',
+      'Estación 2',
+      'Estación 3',
+    ]);
   }
 
   const barbers = await db.get('SELECT COUNT(*) as count FROM barbers');
   if (barbers.count === 0) {
-    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', ['Juan Pérez', 1, 'Luis Gómez', 2]);
+    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
+      'Juan Pérez',
+      1,
+      'Luis Gómez',
+      2,
+    ]);
   }
 
   const services = await db.get('SELECT COUNT(*) as count FROM services');
   if (services.count === 0) {
-    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', ['Corte Básico', 25, 'Corte + Barba', 40, 'Refresco', 5]);
+    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
+      'Corte Básico',
+      25,
+      'Corte + Barba',
+      40,
+      'Refresco',
+      5,
+    ]);
   }
-
 
   return db;
 }
