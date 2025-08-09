@@ -1,0 +1,78 @@
+import { Request, Response } from 'express';
+import { serviceService } from '../services/service.service';
+
+class ServiceController {
+  async getAllServices(req: Request, res: Response): Promise<void> {
+    try {
+      const services = await serviceService.getAllServices();
+      res.json(services);
+    } catch (error) {
+      console.error('Error getting services:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async createService(req: Request, res: Response): Promise<void> {
+    const { name, price } = req.body;
+    if (!name || price === undefined) {
+      res.status(400).json({ error: 'Name and price are required' });
+      return;
+    }
+    if (typeof price !== 'number' || price < 0) {
+      res.status(400).json({ error: 'Price must be a non-negative number' });
+      return;
+    }
+    try {
+      const newService = await serviceService.createService({ name, price });
+      res.status(201).json(newService);
+    } catch (error) {
+      console.error('Error creating service:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async updateService(req: Request, res: Response): Promise<void> {
+    const { name, price } = req.body;
+    const { id } = req.params;
+    if (!name || price === undefined) {
+      res.status(400).json({ error: 'Name and price are required' });
+      return;
+    }
+    if (typeof price !== 'number' || price < 0) {
+      res.status(400).json({ error: 'Price must be a non-negative number' });
+      return;
+    }
+    try {
+      const updatedService = await serviceService.updateService(Number(id), { name, price });
+      if (!updatedService) {
+        res.status(404).json({ error: 'Service not found' });
+        return;
+      }
+      res.json(updatedService);
+    } catch (error) {
+      console.error('Error updating service:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async deleteService(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    try {
+      const result = await serviceService.deleteService(Number(id));
+      if (typeof result === 'object' && 'error' in result) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      if (result === false) {
+        res.status(404).json({ error: 'Service not found' });
+        return;
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}
+
+export const serviceController = new ServiceController();

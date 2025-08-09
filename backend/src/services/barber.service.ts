@@ -1,0 +1,55 @@
+import { setupDatabase } from '../database';
+import { Database } from 'sqlite';
+
+interface Barber {
+  id?: number;
+  name: string;
+  station_id?: number;
+  base_salary?: number;
+  station_name?: string;
+}
+
+class BarberService {
+  private db!: Database;
+
+  constructor() {
+    setupDatabase().then(db => {
+      this.db = db;
+    });
+  }
+
+  async getAllBarbers(): Promise<Barber[]> {
+    const barbers = await this.db.all(
+      'SELECT b.*, s.name as station_name FROM barbers b LEFT JOIN stations s ON b.station_id = s.id'
+    );
+    return barbers;
+  }
+
+  async createBarber(barber: Barber): Promise<Barber> {
+    const { name, station_id, base_salary } = barber;
+    const result = await this.db.run(
+      'INSERT INTO barbers (name, station_id, base_salary) VALUES (?, ?, ?)',
+      [name, station_id, base_salary || 1300]
+    );
+    return { id: result.lastID, name, station_id, base_salary: base_salary || 1300 };
+  }
+
+  async updateBarber(id: number, barber: Barber): Promise<Barber | null> {
+    const { name, station_id, base_salary } = barber;
+    const result = await this.db.run(
+      'UPDATE barbers SET name = ?, station_id = ?, base_salary = ? WHERE id = ?',
+      [name, station_id, base_salary, id]
+    );
+    if (result.changes === 0) {
+      return null;
+    }
+    return { id, name, station_id, base_salary };
+  }
+
+  async deleteBarber(id: number): Promise<boolean> {
+    const result = await this.db.run('DELETE FROM barbers WHERE id = ?', id);
+    return result.changes !== undefined && result.changes > 0;
+  }
+}
+
+export const barberService = new BarberService();

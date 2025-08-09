@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Backend for the barbershop management system.",
-  "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
@@ -20,11 +20,17 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.1",
+    "@types/sqlite3": "^3.1.11",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
