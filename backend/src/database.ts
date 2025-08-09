@@ -57,7 +57,7 @@ export async function setupDatabase(): Promise<Database> {
   // Pre-seed some data for testing if tables are empty
   const stationsCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM stations');
   if (stationsCount && stationsCount.count === 0) {
-    await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
+    await db.run('INSERT OR IGNORE INTO stations (name) VALUES (?), (?), (?)', [
       'Estación 1',
       'Estación 2',
       'Estación 3',
@@ -66,7 +66,7 @@ export async function setupDatabase(): Promise<Database> {
 
   const barbersCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM barbers');
   if (barbersCount && barbersCount.count === 0) {
-    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
+    await db.run('INSERT OR IGNORE INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
       'Juan Pérez',
       1,
       'Luis Gómez',
@@ -76,7 +76,7 @@ export async function setupDatabase(): Promise<Database> {
 
   const servicesCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM services');
   if (servicesCount && servicesCount.count === 0) {
-    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
+    await db.run('INSERT OR IGNORE INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
       'Corte Básico',
       25,
       'Corte + Barba',
