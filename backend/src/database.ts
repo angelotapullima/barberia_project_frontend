@@ -63,9 +63,25 @@ async function setup() {
     );
   `);
 
+  // Helper functions for data generation
+  function getRandomDate(start: Date, end: Date): Date {
+    const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return date;
+  }
+
+  function getRandomElement<T>(arr: T[]): T {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   // Pre-seed some data for testing if tables are empty
-  const stations = await db.get('SELECT COUNT(*) as count FROM stations');
-  if (stations.count === 0) {
+  const stationsCount = await db.get('SELECT COUNT(*) as count FROM stations');
+  if (stationsCount.count === 0) {
     await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
       'Estación 1',
       'Estación 2',
@@ -73,156 +89,121 @@ async function setup() {
     ]);
   }
 
-  const barbers = await db.get('SELECT COUNT(*) as count FROM barbers');
-  if (barbers.count === 0) {
-    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
-      'Juan Pérez',
-      1,
-      'Luis Gómez',
-      2,
+  const barbersCount = await db.get('SELECT COUNT(*) as count FROM barbers');
+  if (barbersCount.count === 0) {
+    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?), (?, ?)', [
+      'Juan Pérez', 1,
+      'Luis Gómez', 2,
+      'Carlos Ruiz', 3,
     ]);
   }
 
-  const services = await db.get('SELECT COUNT(*) as count FROM services');
-  if (services.count === 0) {
-    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
-      'Corte Básico',
-      25,
-      'Corte + Barba',
-      40,
-      'Refresco',
-      5,
+  const servicesCount = await db.get('SELECT COUNT(*) as count FROM services');
+  if (servicesCount.count === 0) {
+    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?), (?, ?), (?, ?)', [
+      'Corte Básico', 25,
+      'Corte + Barba', 40,
+      'Afeitado Clásico', 30,
+      'Lavado de Cabello', 15,
+      'Refresco', 5,
     ]);
+  }
 
-    // Insert dummy sales data
-    const juanPerez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Juan Pérez');
-    const luisGomez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Luis Gómez');
-    const corteBasico = await db.get(
-      'SELECT id, price FROM services WHERE name = ?',
-      'Corte Básico'
-    );
-    const corteBarba = await db.get(
-      'SELECT id, price FROM services WHERE name = ?',
-      'Corte + Barba'
-    );
-    const refresco = await db.get('SELECT id, price FROM services WHERE name = ?', 'Refresco');
+  // Fetch all necessary data for seeding
+  const allBarbers = await db.all('SELECT id, name, station_id FROM barbers');
+  const allStations = await db.all('SELECT id, name FROM stations');
+  const allServices = await db.all('SELECT id, name, price FROM services');
+  const paymentMethods = ['cash', 'card', 'yape', 'plin'];
+  const customerNames = ['Cliente A', 'Cliente B', 'Cliente C', 'Cliente D', 'Cliente E'];
 
+  // Generate Sales Data for the last 30 days
+  const salesCount = await db.get('SELECT COUNT(*) as count FROM sales');
+  if (salesCount.count === 0) {
     const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    // Sale 1: Today, Juan Pérez, Corte Básico + Refresco
-    let saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        today.toISOString().slice(0, 10),
-        juanPerez.id,
-        1,
-        corteBasico.price + refresco.price,
-        'Cliente A',
-        'cash',
-      ]
-    );
-    let saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
-      saleId,
-      corteBasico.id,
-      corteBasico.price,
-    ]);
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
-      saleId,
-      refresco.id,
-      refresco.price,
-    ]);
+    for (let i = 0; i < 30; i++) {
+      const currentDay = new Date(thirtyDaysAgo);
+      currentDay.setDate(thirtyDaysAgo.getDate() + i);
+      const salesPerDay = getRandomInt(3, 10); // 3 to 10 sales per day
 
-    // Sale 2: 3 days ago, Luis Gómez, Corte + Barba
-    const threeDaysAgo = new Date(today);
-    threeDaysAgo.setDate(today.getDate() - 3);
-    saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        threeDaysAgo.toISOString().slice(0, 10),
-        luisGomez.id,
-        2,
-        corteBarba.price,
-        'Cliente B',
-        'card',
-      ]
-    );
-    saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
-      saleId,
-      corteBarba.id,
-      corteBarba.price,
-    ]);
+      for (let j = 0; j < salesPerDay; j++) {
+        const randomBarber = getRandomElement(allBarbers);
+        const randomStation = getRandomElement(allStations);
+        const randomPaymentMethod = getRandomElement(paymentMethods);
+        const randomCustomer = getRandomElement(customerNames);
 
-    // Sale 3: 5 days ago, Juan Pérez, Corte Básico
-    const fiveDaysAgo = new Date(today);
-    fiveDaysAgo.setDate(today.getDate() - 5);
-    saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        fiveDaysAgo.toISOString().slice(0, 10),
-        juanPerez.id,
-        1,
-        corteBasico.price,
-        'Cliente C',
-        'yape',
-      ]
-    );
-    saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
-      saleId,
-      corteBasico.id,
-      corteBasico.price,
-    ]);
+        const numServices = getRandomInt(1, 3); // 1 to 3 services per sale
+        let selectedServices = [];
+        let totalAmount = 0;
+        for (let k = 0; k < numServices; k++) {
+          const service = getRandomElement(allServices);
+          selectedServices.push(service);
+          totalAmount += service.price;
+        }
 
-    // Insert dummy reservations data
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
-    const dayAfterTomorrow = new Date();
-    dayAfterTomorrow.setDate(today.getDate() + 2);
+        const saleDate = currentDay.toISOString().slice(0, 10);
+        const saleResult = await db.run(
+          'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+          [
+            saleDate,
+            randomBarber.id,
+            randomStation.id,
+            totalAmount,
+            randomCustomer,
+            randomPaymentMethod,
+          ]
+        );
+        const saleId = saleResult.lastID;
 
-    // Reservation 1: Tomorrow, Juan Pérez, pending
-    await db.run(
-      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        juanPerez.id,
-        1,
-        'Cliente Reserva 1',
-        tomorrow.toISOString(),
-        new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(),
-        'pending',
-      ]
-    );
+        for (const service of selectedServices) {
+          await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+            saleId,
+            service.id,
+            service.price,
+          ]);
+        }
+      }
+    }
+  }
 
-    // Reservation 2: Day after tomorrow, Luis Gómez, completed
-    await db.run(
-      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        luisGomez.id,
-        2,
-        'Cliente Reserva 2',
-        dayAfterTomorrow.toISOString(),
-        new Date(dayAfterTomorrow.getTime() + 90 * 60 * 1000).toISOString(),
-        'completed',
-      ]
-    );
+  // Generate Reservations Data for the last 30 days
+  const reservationsCount = await db.get('SELECT COUNT(*) as count FROM reservations');
+  if (reservationsCount.count === 0) {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    // Reservation 3: 2 days ago, Juan Pérez, completed (for historical data)
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(today.getDate() - 2);
-    await db.run(
-      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        juanPerez.id,
-        1,
-        'Cliente Reserva 3',
-        twoDaysAgo.toISOString(),
-        new Date(twoDaysAgo.getTime() + 60 * 60 * 1000).toISOString(),
-        'completed',
-      ]
-    );
+    for (let i = 0; i < 30; i++) {
+      const currentDay = new Date(thirtyDaysAgo);
+      currentDay.setDate(thirtyDaysAgo.getDate() + i);
+      const reservationsPerDay = getRandomInt(2, 7); // 2 to 7 reservations per day
+
+      for (let j = 0; j < reservationsPerDay; j++) {
+        const randomBarber = getRandomElement(allBarbers);
+        const randomStation = getRandomElement(allStations);
+        const randomCustomer = getRandomElement(customerNames);
+        const status = getRandomElement(['pending', 'completed', 'cancelled']);
+
+        const startTime = new Date(currentDay);
+        startTime.setHours(getRandomInt(9, 18), getRandomInt(0, 59), 0, 0); // Random time between 9 AM and 6 PM
+        const endTime = new Date(startTime.getTime() + getRandomInt(30, 90) * 60 * 1000); // 30 to 90 minutes duration
+
+        await db.run(
+          'INSERT INTO reservations (barber_id, station_id, customer_name, customer_phone, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [
+            randomBarber.id,
+            randomStation.id,
+            randomCustomer,
+            `+519${getRandomInt(10000000, 99999999)}`,
+            startTime.toISOString(),
+            endTime.toISOString(),
+            status,
+          ]
+        );
+      }
+    }
   }
 
   return db;
