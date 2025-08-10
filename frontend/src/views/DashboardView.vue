@@ -9,13 +9,12 @@
 
     <!-- Main Content -->
     <div v-if="!salesStore.isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Total Sales Today -->
+      <!-- Row 1: Key Metrics -->
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Totales Hoy</h2>
         <p class="text-4xl font-extrabold text-indigo-600">S/ {{ salesToday.toFixed(2) }}</p>
       </div>
 
-      <!-- Total Payments to Barbers -->
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Pagos Totales a Barberos</h2>
         <p class="text-4xl font-extrabold text-green-600">
@@ -23,26 +22,12 @@
         </p>
       </div>
 
-      <!-- Total Reservations -->
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Total Reservas (7 Días)</h2>
         <p class="text-4xl font-extrabold text-blue-600">{{ totalReservations }}</p>
       </div>
 
-      <!-- Completed Reservations -->
-      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Reservas Completadas (7 Días)</h2>
-        <p class="text-4xl font-extrabold text-purple-600">{{ completedReservations }}</p>
-      </div>
-
-      <!-- Daily Sales Chart -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Diarias (Últimos 7 Días)</h2>
-        <apexchart type="bar" :options="chartOptions" :series="series"></apexchart>
-        <p class="text-sm text-gray-500 mt-2">Última actualización: {{ lastUpdated }}</p>
-      </div>
-
-      <!-- Barber Ranking -->
+      <!-- Row 2: Barber Ranking and Daily Sales Chart -->
       <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Ranking de Barberos por Ventas</h2>
         <table class="min-w-full divide-y divide-gray-200">
@@ -69,16 +54,39 @@
         </table>
       </div>
 
-      <!-- Top Selling Services Chart -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Diarias (Últimos 7 Días)</h2>
+        <apexchart type="bar" :options="chartOptions" :series="series"></apexchart>
+        <p class="text-sm text-gray-500 mt-2">Última actualización: {{ lastUpdated }}</p>
+      </div>
+
+      <!-- Row 3: Completed Reservations (List) and Sales by Payment Method Chart -->
+      <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Reservas Completadas (7 Días)</h2>
+        <div v-if="completedReservationsList.length > 0">
+          <ul class="divide-y divide-gray-200">
+            <li v-for="reservation in completedReservationsList" :key="reservation.id" class="py-2">
+              <p class="text-gray-700">
+                <span class="font-semibold">{{ reservation.client_name }}</span> con
+                <span class="font-semibold">{{ reservation.barber_name }}</span> el
+                {{ new Date(reservation.reservation_date).toLocaleDateString() }} a las
+                {{ reservation.reservation_time }}
+              </p>
+            </li>
+          </ul>
+        </div>
+        <div v-else class="text-gray-500">No hay reservas completadas en los últimos 7 días.</div>
+      </div>
+
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas por Método de Pago (Últimos 7 Días)</h2>
+        <apexchart type="donut" :options="paymentMethodChartOptions" :series="paymentMethodSeries"></apexchart>
+      </div>
+
+      <!-- Last Row: Top Selling Services Chart -->
       <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Servicios Más Vendidos (Últimos 7 Días)</h2>
         <apexchart type="bar" :options="topServicesChartOptions" :series="topServicesSeries"></apexchart>
-      </div>
-
-      <!-- Sales by Payment Method Chart -->
-      <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas por Método de Pago (Últimos 7 Días)</h2>
-        <apexchart type="donut" :options="paymentMethodChartOptions" :series="paymentMethodSeries"></apexchart>
       </div>
     </div>
   </div>
@@ -98,7 +106,7 @@ const reservationStore = useReservationStore();
 const salesToday = ref(0);
 const totalBarberPayments = ref(0);
 const totalReservations = ref(0);
-const completedReservations = ref(0);
+const completedReservationsList = ref([]);
 const dailySalesData = ref([]);
 const barberRanking = ref([]);
 const lastUpdated = ref('');
@@ -129,8 +137,8 @@ async function fetchDashboardData() {
   console.log('Total Reservations:', totalReservations.value);
 
   // Fetch Completed Reservations
-  completedReservations.value = await reservationStore.fetchCompletedReservationCount(sevenDaysAgo, today);
-  console.log('Completed Reservations:', completedReservations.value);
+  completedReservationsList.value = await reservationStore.fetchCompletedReservations(sevenDaysAgo, today);
+  console.log('Completed Reservations List:', completedReservationsList.value);
 
   // Fetch Daily Sales Summary for Chart
   dailySalesData.value = await salesStore.getSalesSummaryByDateRange(sevenDaysAgo, today);

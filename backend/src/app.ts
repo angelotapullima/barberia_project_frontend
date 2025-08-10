@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { setupDatabase } from './database';
+import setupDatabase from './database';
 import barberRoutes from './routes/barber.routes';
 import stationRoutes from './routes/station.routes';
 import serviceRoutes from './routes/service.routes';
@@ -28,7 +28,7 @@ setupDatabase().then(() => {
   app.use('/api/sales', saleRoutes);
   app.use('/api/reports', reportRoutes);
   app.use('/api/reservations', reservationRoutes); // Use reservation routes
-}).catch(err => {
+}).catch((err: any) => {
   console.error('Failed to initialize database:', err);
   process.exit(1);
 });

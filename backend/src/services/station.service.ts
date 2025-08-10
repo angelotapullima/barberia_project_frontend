@@ -1,4 +1,4 @@
-import { setupDatabase } from '../database';
+import setupDatabase from '../database';
 import { Database } from 'sqlite';
 
 interface Station {
@@ -10,7 +10,7 @@ class StationService {
   private db!: Database;
 
   constructor() {
-    setupDatabase().then(db => {
+    setupDatabase().then((db: Database) => {
       this.db = db;
     });
   }

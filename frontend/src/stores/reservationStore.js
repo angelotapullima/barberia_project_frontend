@@ -100,5 +100,21 @@ export const useReservationStore = defineStore('reservations', {
         this.isLoading = false;
       }
     },
+    async fetchCompletedReservations(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/reservations/completed`, {
+          params: { startDate, endDate },
+        });
+        return response.data; // Assuming response.data is an array of completed reservations
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener las reservas completadas.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 });

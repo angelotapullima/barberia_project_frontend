@@ -1,4 +1,4 @@
-import { setupDatabase } from '../database';
+import setupDatabase from '../database';
 import { Database } from 'sqlite';
 
 interface Barber {
@@ -13,7 +13,7 @@ class BarberService {
   private db!: Database;
 
   constructor() {
-    setupDatabase().then(db => {
+    setupDatabase().then((db: Database) => {
       this.db = db;
     });
   }

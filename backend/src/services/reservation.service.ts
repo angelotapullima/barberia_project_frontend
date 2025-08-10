@@ -1,4 +1,4 @@
-import { setupDatabase } from '../database';
+import setupDatabase from '../database';
 import { Database } from 'sqlite';
 
 interface Reservation {
@@ -19,7 +19,7 @@ class ReservationService {
   private db!: Database;
 
   constructor() {
-    setupDatabase().then(db => {
+    setupDatabase().then((db: Database) => {
       this.db = db;
     });
   }

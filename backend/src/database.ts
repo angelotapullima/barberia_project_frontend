@@ -1,14 +1,8 @@
-import * as sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
-let db: Database;
-
-export async function setupDatabase(): Promise<Database> {
-  if (db) {
-    return db; // Return existing connection if already established
-  }
-
-  db = await open({
+async function setup() {
+  const db = await open({
     filename: './barberia.sqlite',
     driver: sqlite3.Database,
   });
@@ -21,7 +15,7 @@ export async function setupDatabase(): Promise<Database> {
 
     CREATE TABLE IF NOT EXISTS barbers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
       base_salary REAL DEFAULT 1300,
       station_id INTEGER,
       FOREIGN KEY (station_id) REFERENCES stations (id)
@@ -29,7 +23,7 @@ export async function setupDatabase(): Promise<Database> {
 
     CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
       price REAL NOT NULL
     );
 
@@ -40,6 +34,7 @@ export async function setupDatabase(): Promise<Database> {
       station_id INTEGER NOT NULL,
       total_amount REAL NOT NULL,
       customer_name TEXT,
+      payment_method TEXT DEFAULT 'cash',
       FOREIGN KEY (barber_id) REFERENCES barbers (id),
       FOREIGN KEY (station_id) REFERENCES stations (id)
     );
@@ -61,7 +56,7 @@ export async function setupDatabase(): Promise<Database> {
       customer_phone TEXT,
       start_time TEXT NOT NULL,
       end_time TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
+      status TEXT DEFAULT 'pending',
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (barber_id) REFERENCES barbers (id),
       FOREIGN KEY (station_id) REFERENCES stations (id)
@@ -69,18 +64,18 @@ export async function setupDatabase(): Promise<Database> {
   `);
 
   // Pre-seed some data for testing if tables are empty
-  const stationsCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM stations');
-  if (stationsCount && stationsCount.count === 0) {
-    await db.run('INSERT OR IGNORE INTO stations (name) VALUES (?), (?), (?)', [
+  const stations = await db.get('SELECT COUNT(*) as count FROM stations');
+  if (stations.count === 0) {
+    await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
       'Estación 1',
       'Estación 2',
       'Estación 3',
     ]);
   }
 
-  const barbersCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM barbers');
-  if (barbersCount && barbersCount.count === 0) {
-    await db.run('INSERT OR IGNORE INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
+  const barbers = await db.get('SELECT COUNT(*) as count FROM barbers');
+  if (barbers.count === 0) {
+    await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?)', [
       'Juan Pérez',
       1,
       'Luis Gómez',
@@ -88,9 +83,9 @@ export async function setupDatabase(): Promise<Database> {
     ]);
   }
 
-  const servicesCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM services');
-  if (servicesCount && servicesCount.count === 0) {
-    await db.run('INSERT OR IGNORE INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
+  const services = await db.get('SELECT COUNT(*) as count FROM services');
+  if (services.count === 0) {
+    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?)', [
       'Corte Básico',
       25,
       'Corte + Barba',
@@ -98,65 +93,139 @@ export async function setupDatabase(): Promise<Database> {
       'Refresco',
       5,
     ]);
-  }
 
-  // Seed some sample reservations
-  const reservationsCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM reservations');
-  if (reservationsCount && reservationsCount.count === 0) {
+    // Insert dummy sales data
+    const juanPerez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Juan Pérez');
+    const luisGomez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Luis Gómez');
+    const corteBasico = await db.get(
+      'SELECT id, price FROM services WHERE name = ?',
+      'Corte Básico'
+    );
+    const corteBarba = await db.get(
+      'SELECT id, price FROM services WHERE name = ?',
+      'Corte + Barba'
+    );
+    const refresco = await db.get('SELECT id, price FROM services WHERE name = ?', 'Refresco');
+
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
 
-    await db.run(
-      'INSERT INTO reservations (barber_id, station_id, customer_name, customer_phone, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [1, 1, 'Cliente Reserva 1', '123456789', `${today.toISOString().slice(0, 10)}T10:00:00`, `${today.toISOString().slice(0, 10)}T11:00:00`, 'confirmed']
+    // Sale 1: Today, Juan Pérez, Corte Básico + Refresco
+    let saleResult = await db.run(
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        today.toISOString().slice(0, 10),
+        juanPerez.id,
+        1,
+        corteBasico.price + refresco.price,
+        'Cliente A',
+        'cash',
+      ]
     );
-    await db.run(
-      'INSERT INTO reservations (barber_id, station_id, customer_name, customer_phone, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [2, 2, 'Cliente Reserva 2', '987654321', `${tomorrow.toISOString().slice(0, 10)}T14:00:00`, `${tomorrow.toISOString().slice(0, 10)}T15:00:00`, 'pending']
+    let saleId = saleResult.lastID;
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBasico.id,
+      corteBasico.price,
+    ]);
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      refresco.id,
+      refresco.price,
+    ]);
+
+    // Sale 2: 3 days ago, Luis Gómez, Corte + Barba
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(today.getDate() - 3);
+    saleResult = await db.run(
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        threeDaysAgo.toISOString().slice(0, 10),
+        luisGomez.id,
+        2,
+        corteBarba.price,
+        'Cliente B',
+        'card',
+      ]
     );
-  }
+    saleId = saleResult.lastID;
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBarba.id,
+      corteBarba.price,
+    ]);
 
-  // Seed some sample sales
-  const salesCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM sales');
-  if (salesCount && salesCount.count === 0) {
-    const barbers = await db.all<Array<{ id: number; name: string; base_salary: number }>>('SELECT id FROM barbers');
-    const stations = await db.all<Array<{ id: number; name: string }>>('SELECT id FROM stations');
-    const services = await db.all<Array<{ id: number; name: string; price: number }>>('SELECT id, price FROM services');
+    // Sale 3: 5 days ago, Juan Pérez, Corte Básico
+    const fiveDaysAgo = new Date(today);
+    fiveDaysAgo.setDate(today.getDate() - 5);
+    saleResult = await db.run(
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        fiveDaysAgo.toISOString().slice(0, 10),
+        juanPerez.id,
+        1,
+        corteBasico.price,
+        'Cliente C',
+        'yape',
+      ]
+    );
+    saleId = saleResult.lastID;
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBasico.id,
+      corteBasico.price,
+    ]);
 
-    if (barbers.length === 0 || stations.length === 0 || services.length === 0) {
-      console.warn('Cannot seed sales data: Missing barbers, stations, or services.');
-      return db;
-    }
+    // Insert dummy reservations data
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const dayAfterTomorrow = new Date();
+    dayAfterTomorrow.setDate(today.getDate() + 2);
 
-    for (let i = 0; i < 7; i++) {
-      const saleDate = new Date();
-      saleDate.setDate(saleDate.getDate() - i);
-      const formattedDate = saleDate.toISOString().slice(0, 10);
+    // Reservation 1: Tomorrow, Juan Pérez, pending
+    await db.run(
+      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        juanPerez.id,
+        1,
+        'Cliente Reserva 1',
+        tomorrow.toISOString(),
+        new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(),
+        'pending',
+      ]
+    );
 
-      // Insert 3-5 sales per day
-      const numberOfSales = Math.floor(Math.random() * 3) + 3; // 3 to 5 sales
+    // Reservation 2: Day after tomorrow, Luis Gómez, completed
+    await db.run(
+      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        luisGomez.id,
+        2,
+        'Cliente Reserva 2',
+        dayAfterTomorrow.toISOString(),
+        new Date(dayAfterTomorrow.getTime() + 90 * 60 * 1000).toISOString(),
+        'completed',
+      ]
+    );
 
-      for (let j = 0; j < numberOfSales; j++) {
-        const randomBarber = barbers[Math.floor(Math.random() * barbers.length)];
-        const randomStation = stations[Math.floor(Math.random() * stations.length)];
-        const randomService = services[Math.floor(Math.random() * services.length)];
-
-        const totalAmount = randomService.price;
-        const customerName = `Cliente ${formattedDate} - ${j + 1}`;
-
-        const saleResult = await db.run(
-          'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-          [formattedDate, randomBarber.id, randomStation.id, totalAmount, customerName]
-        );
-
-        await db.run(
-          'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
-          [saleResult.lastID, randomService.id, randomService.price]
-        );
-      }
-    }
+    // Reservation 3: 2 days ago, Juan Pérez, completed (for historical data)
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(today.getDate() - 2);
+    await db.run(
+      'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        juanPerez.id,
+        1,
+        'Cliente Reserva 3',
+        twoDaysAgo.toISOString(),
+        new Date(twoDaysAgo.getTime() + 60 * 60 * 1000).toISOString(),
+        'completed',
+      ]
+    );
   }
 
   return db;
 }
+
+export default setup;
