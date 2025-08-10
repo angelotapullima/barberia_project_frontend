@@ -28,7 +28,6 @@ class BarberController {
   }
 
   async updateBarber(req: Request, res: Response): Promise<void> {
-    console.log('Executing updateBarber controller method');
     const { name, station_id, base_salary } = req.body;
     const { id } = req.params;
     if (!name) {
@@ -41,7 +40,7 @@ class BarberController {
         res.status(404).json({ error: 'Barber not found' });
         return;
       }
-      res.json(updatedBarber);
+      res.status(200).json(updatedBarber);
     } catch (error) {
       console.error('Error updating barber:', error);
       res.status(500).json({ error: 'Internal server error' });

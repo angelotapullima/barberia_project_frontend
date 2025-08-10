@@ -48,7 +48,7 @@ class ServiceController {
         res.status(404).json({ error: 'Service not found' });
         return;
       }
-      res.json(updatedService);
+      res.status(200).json(updatedService);
     } catch (error) {
       console.error('Error updating service:', error);
       res.status(500).json({ error: 'Internal server error' });

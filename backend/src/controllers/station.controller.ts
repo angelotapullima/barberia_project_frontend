@@ -48,7 +48,7 @@ class StationController {
         res.status(400).json({ error: updatedStation.error });
         return;
       }
-      res.json(updatedStation);
+      res.status(200).json(updatedStation);
     } catch (error) {
       console.error('Error updating station:', error);
       res.status(500).json({ error: 'Internal server error' });
