@@ -21,7 +21,7 @@ export async function setupDatabase(): Promise<Database> {
 
     CREATE TABLE IF NOT EXISTS barbers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
+      name TEXT NOT NULL UNIQUE,
       base_salary REAL DEFAULT 1300,
       station_id INTEGER,
       FOREIGN KEY (station_id) REFERENCES stations (id)
@@ -29,7 +29,7 @@ export async function setupDatabase(): Promise<Database> {
 
     CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
+      name TEXT NOT NULL UNIQUE,
       price REAL NOT NULL
     );
 
