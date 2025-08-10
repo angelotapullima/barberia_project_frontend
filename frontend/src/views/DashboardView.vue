@@ -74,6 +74,12 @@
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Servicios Más Vendidos (Últimos 7 Días)</h2>
         <apexchart type="bar" :options="topServicesChartOptions" :series="topServicesSeries"></apexchart>
       </div>
+
+      <!-- Sales by Payment Method Chart -->
+      <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas por Método de Pago (Últimos 7 Días)</h2>
+        <apexchart type="donut" :options="paymentMethodChartOptions" :series="paymentMethodSeries"></apexchart>
+      </div>
     </div>
   </div>
 </template>
@@ -101,6 +107,8 @@ const chartOptions = ref({});
 const series = ref([]);
 const topServicesChartOptions = ref({});
 const topServicesSeries = ref([]);
+const paymentMethodChartOptions = ref({});
+const paymentMethodSeries = ref([]);
 
 async function fetchDashboardData() {
   console.log('Fetching dashboard data...');
@@ -243,6 +251,60 @@ async function fetchDashboardData() {
       },
     },
     colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26A69A', '#D10363', '#F9A825', '#66BB6A'], // Example colors
+  };
+
+  // Fetch Sales Summary by Payment Method
+  const salesByPaymentMethod = await salesStore.getSalesSummaryByPaymentMethod(sevenDaysAgo, today);
+  console.log('Sales by Payment Method Data:', salesByPaymentMethod);
+
+  paymentMethodSeries.value = salesByPaymentMethod.map(item => item.total_sales);
+  paymentMethodChartOptions.value = {
+    chart: {
+      type: 'donut',
+      height: 350,
+    },
+    labels: salesByPaymentMethod.map(item => item.payment_method),
+    responsive: [{
+      breakpoint: 480,
+      options: {
+        chart: {
+          width: 200
+        },
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }],
+    legend: {
+      position: 'right',
+      offsetY: 0,
+      height: 230,
+    },
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return "S/ " + val.toFixed(2);
+        },
+      },
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: 'Total',
+              formatter: function (w) {
+                return "S/ " + w.globals.seriesTotals.reduce((a, b) => {
+                  return a + b
+                }, 0).toFixed(2);
+              }
+            }
+          }
+        }
+      }
+    }
   };
 }
 

@@ -119,5 +119,21 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
+    async getSalesSummaryByPaymentMethod(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/summary-by-payment-method`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas por método de pago.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 });

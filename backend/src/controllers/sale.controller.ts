@@ -30,7 +30,7 @@ class SaleController {
   }
 
   async createSale(req: Request, res: Response): Promise<void> {
-    const { sale_date, barber_id, station_id, services, total_amount, customer_name } = req.body;
+    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method } = req.body;
 
     // Validation
     if (
@@ -40,14 +40,15 @@ class SaleController {
       !services ||
       !Array.isArray(services) ||
       services.length === 0 ||
-      total_amount === undefined
+      total_amount === undefined ||
+      !payment_method // Add validation for payment_method
     ) {
       res.status(400).json({ error: 'Missing or invalid required fields' });
       return;
     }
 
     try {
-      const newSale = await saleService.createSale({ sale_date, barber_id, station_id, services, total_amount, customer_name });
+      const newSale = await saleService.createSale({ sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method });
       res.status(201).json({ id: newSale.id });
     } catch (error) {
       console.error('Error creating sale:', error);
@@ -119,6 +120,23 @@ class SaleController {
       res.json(summary);
     } catch (error) {
       console.error('Error getting sales summary by service:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getSalesSummaryByPaymentMethod(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const summary = await saleService.getSalesSummaryByPaymentMethod(startDate as string, endDate as string);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting sales summary by payment method:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

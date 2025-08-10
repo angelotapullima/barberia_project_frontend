@@ -34,6 +34,7 @@ async function setup() {
       station_id INTEGER NOT NULL,
       total_amount REAL NOT NULL,
       customer_name TEXT,
+      payment_method TEXT DEFAULT 'cash', -- New column
       FOREIGN KEY (barber_id) REFERENCES barbers (id),
       FOREIGN KEY (station_id) REFERENCES stations (id)
     );
@@ -106,8 +107,8 @@ async function setup() {
 
     // Sale 1: Today, Juan Pérez, Corte Básico + Refresco
     let saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-      [today.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price + refresco.price, 'Cliente A']
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [today.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price + refresco.price, 'Cliente A', 'cash']
     );
     let saleId = saleResult.lastID;
     await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBasico.id, corteBasico.price]);
@@ -117,8 +118,8 @@ async function setup() {
     const threeDaysAgo = new Date(today);
     threeDaysAgo.setDate(today.getDate() - 3);
     saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-      [threeDaysAgo.toISOString().slice(0, 10), luisGomez.id, 2, corteBarba.price, 'Cliente B']
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [threeDaysAgo.toISOString().slice(0, 10), luisGomez.id, 2, corteBarba.price, 'Cliente B', 'card']
     );
     saleId = saleResult.lastID;
     await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBarba.id, corteBarba.price]);
@@ -127,8 +128,8 @@ async function setup() {
     const fiveDaysAgo = new Date(today);
     fiveDaysAgo.setDate(today.getDate() - 5);
     saleResult = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-      [fiveDaysAgo.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price, 'Cliente C']
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
+      [fiveDaysAgo.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price, 'Cliente C', 'yape']
     );
     saleId = saleResult.lastID;
     await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBasico.id, corteBasico.price]);
