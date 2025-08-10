@@ -70,11 +70,14 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router'; // Import useRouter
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid'; // Import timeGridPlugin
 import { useReportStore } from '@/stores/reportStore';
 
 const store = useReportStore();
+const router = useRouter(); // Initialize useRouter
 
 const months = [
   'Enero',
@@ -96,17 +99,28 @@ const selectedMonth = ref(new Date().getMonth() + 1);
 const selectedYear = ref(new Date().getFullYear());
 
 const calendarOptions = reactive({
-  plugins: [dayGridPlugin],
-  initialView: 'dayGridMonth',
+  plugins: [dayGridPlugin, timeGridPlugin], // Add timeGridPlugin
+  initialView: 'timeGridWeek', // Change initial view to weekly
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
-    right: 'dayGridMonth',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay', // Add weekly and daily views
   },
   events: [], // This will be populated from the store
   locale: 'es',
   buttonText: {
     today: 'Hoy',
+    week: 'Semana', // Add button text for week view
+    day: 'Día', // Add button text for day view
+  },
+  dateClick: (info) => {
+    // Handle date click for sales registration
+    const selectedDate = info.dateStr.split('T')[0]; // Get only the date part
+    const selectedTime = info.dateStr.split('T')[1] ? info.dateStr.split('T')[1].substring(0, 5) : '00:00'; // Get time, default to 00:00 if not available
+    router.push({
+      name: 'SalesRegistration',
+      query: { date: selectedDate, time: selectedTime },
+    });
   },
 });
 

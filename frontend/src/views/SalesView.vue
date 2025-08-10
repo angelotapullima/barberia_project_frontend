@@ -108,11 +108,13 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue';
+import { useRoute } from 'vue-router'; // Import useRoute
 import { useBarberStore } from '@/stores/barberStore';
 import { useStationStore } from '@/stores/stationStore';
 import { useServiceStore } from '@/stores/serviceStore';
 import { useSalesStore } from '@/stores/salesStore';
 
+const route = useRoute(); // Initialize useRoute
 const barberStore = useBarberStore();
 const stationStore = useStationStore();
 const serviceStore = useServiceStore();
@@ -164,5 +166,10 @@ onMounted(() => {
   barberStore.fetchBarbers();
   stationStore.fetchStations();
   serviceStore.fetchServices();
+
+  // Check for query parameters for pre-filling date
+  if (route.query.date) {
+    sale.value.sale_date = route.query.date;
+  }
 });
 </script>

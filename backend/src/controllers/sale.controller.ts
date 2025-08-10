@@ -12,6 +12,23 @@ class SaleController {
     }
   }
 
+  async getSalesFiltered(req: Request, res: Response): Promise<void> {
+    const { filterType, filterValue } = req.query;
+
+    if (!filterType || !filterValue) {
+      res.status(400).json({ error: 'Missing filterType or filterValue query parameters' });
+      return;
+    }
+
+    try {
+      const sales = await saleService.getFilteredSales(filterType as string, filterValue as string);
+      res.json(sales);
+    } catch (error) {
+      console.error('Error getting filtered sales:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   async createSale(req: Request, res: Response): Promise<void> {
     const { sale_date, barber_id, station_id, services, total_amount, customer_name } = req.body;
 

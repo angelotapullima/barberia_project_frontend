@@ -29,16 +29,66 @@ class SaleService {
     });
   }
 
+  private async getSaleItems(saleId: number): Promise<SaleItem[]> {
+    return this.db.all('SELECT id, service_id, price_at_sale FROM sale_items WHERE sale_id = ?', saleId);
+  }
+
   async getAllSales(): Promise<Sale[]> {
     const sales = await this.db.all(`
       SELECT 
-          s.id, s.sale_date, s.total_amount, s.customer_name, 
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id,
           b.name as barber_name, st.name as station_name
       FROM sales s
       JOIN barbers b ON s.barber_id = b.id
       JOIN stations st ON s.station_id = st.id
       ORDER BY s.sale_date DESC
     `);
+
+    for (const sale of sales) {
+      sale.services = await this.getSaleItems(sale.id!);
+    }
+    return sales;
+  }
+
+  async getFilteredSales(filterType: string, filterValue: string | number): Promise<Sale[]> {
+    let query = `
+      SELECT 
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id,
+          b.name as barber_name, st.name as station_name
+      FROM sales s
+      JOIN barbers b ON s.barber_id = b.id
+      JOIN stations st ON s.station_id = st.id
+    `;
+    const params: (string | number)[] = [];
+
+    switch (filterType) {
+      case 'day':
+        query += ` WHERE DATE(s.sale_date) = DATE(?)`;
+        params.push(filterValue as string);
+        break;
+      case 'week':
+        query += ` WHERE STRFTIME('%Y-%W', s.sale_date) = STRFTIME('%Y-%W', ?)`;
+        params.push(filterValue as string);
+        break;
+      case 'month':
+        query += ` WHERE STRFTIME('%Y-%m', s.sale_date) = STRFTIME('%Y-%m', ?)`;
+        params.push(filterValue as string);
+        break;
+      case 'barber':
+        query += ` WHERE s.barber_id = ?`;
+        params.push(filterValue as number);
+        break;
+      default:
+        // No filter, return all sales (handled by getAllSales if no filter is applied)
+        break;
+    }
+
+    query += ` ORDER BY s.sale_date DESC`;
+
+    const sales = await this.db.all(query, ...params);
+    for (const sale of sales) {
+      sale.services = await this.getSaleItems(sale.id!);
+    }
     return sales;
   }
 

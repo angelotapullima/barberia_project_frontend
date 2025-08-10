@@ -10,6 +10,37 @@ export const useSalesStore = defineStore('sales', {
     error: null,
   }),
   actions: {
+    async getAllSales() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales`);
+        this.sales = response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar las ventas.';
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getFilteredSales(filterType, filterValue) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/filtered`, {
+          params: {
+            filterType,
+            filterValue,
+          },
+        });
+        this.sales = response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar las ventas filtradas.';
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async addSale(saleData) {
       this.isLoading = true;
       this.error = null;

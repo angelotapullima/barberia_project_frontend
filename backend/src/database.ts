@@ -52,6 +52,20 @@ export async function setupDatabase(): Promise<Database> {
         FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE CASCADE,
         FOREIGN KEY (service_id) REFERENCES services (id)
     );
+
+    CREATE TABLE IF NOT EXISTS reservations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      barber_id INTEGER NOT NULL,
+      station_id INTEGER NOT NULL,
+      customer_name TEXT NOT NULL,
+      customer_phone TEXT,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (barber_id) REFERENCES barbers (id),
+      FOREIGN KEY (station_id) REFERENCES stations (id)
+    );
   `);
 
   // Pre-seed some data for testing if tables are empty
@@ -84,6 +98,50 @@ export async function setupDatabase(): Promise<Database> {
       'Refresco',
       5,
     ]);
+  }
+
+  // Seed some sample reservations
+  const reservationsCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM reservations');
+  if (reservationsCount && reservationsCount.count === 0) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    await db.run(
+      'INSERT INTO reservations (barber_id, station_id, customer_name, customer_phone, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [1, 1, 'Cliente Reserva 1', '123456789', `${today.toISOString().slice(0, 10)}T10:00:00`, `${today.toISOString().slice(0, 10)}T11:00:00`, 'confirmed']
+    );
+    await db.run(
+      'INSERT INTO reservations (barber_id, station_id, customer_name, customer_phone, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [2, 2, 'Cliente Reserva 2', '987654321', `${tomorrow.toISOString().slice(0, 10)}T14:00:00`, `${tomorrow.toISOString().slice(0, 10)}T15:00:00`, 'pending']
+    );
+  }
+
+  // Seed some sample sales
+  const salesCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM sales');
+  if (salesCount && salesCount.count === 0) {
+    const saleDate1 = new Date();
+    saleDate1.setDate(saleDate1.getDate() - 2); // 2 days ago
+    const saleDate2 = new Date();
+    saleDate2.setDate(saleDate2.getDate() - 1); // 1 day ago
+
+    const sale1Result = await db.run(
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
+      [saleDate1.toISOString().slice(0, 10), 1, 1, 25, 'Cliente Venta 1']
+    );
+    await db.run(
+      'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
+      [sale1Result.lastID, 1, 25]
+    );
+
+    const sale2Result = await db.run(
+      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
+      [saleDate2.toISOString().slice(0, 10), 2, 2, 40, 'Cliente Venta 2']
+    );
+    await db.run(
+      'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
+      [sale2Result.lastID, 2, 40]
+    );
   }
 
   return db;

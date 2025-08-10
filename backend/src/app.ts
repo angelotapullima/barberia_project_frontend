@@ -6,6 +6,7 @@ import stationRoutes from './routes/station.routes';
 import serviceRoutes from './routes/service.routes';
 import saleRoutes from './routes/sale.routes';
 import reportRoutes from './routes/report.routes';
+import reservationRoutes from './routes/reservation.routes'; // Import reservation routes
 
 const app = express();
 
@@ -26,6 +27,7 @@ setupDatabase().then(() => {
   app.use('/api/services', serviceRoutes);
   app.use('/api/sales', saleRoutes);
   app.use('/api/reports', reportRoutes);
+  app.use('/api/reservations', reservationRoutes); // Use reservation routes
 }).catch(err => {
   console.error('Failed to initialize database:', err);
   process.exit(1);
