@@ -86,6 +86,72 @@ class ReportService {
 
     return { events, stats };
   }
+
+  async getComprehensiveSales(filters: {
+    barberId?: number;
+    serviceId?: number;
+    paymentMethod?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any[]> {
+    let query = `
+      SELECT
+          s.id AS sale_id,
+          s.sale_date,
+          s.total_amount,
+          s.customer_name,
+          s.payment_method,
+          b.name AS barber_name,
+          st.name AS station_name,
+          GROUP_CONCAT(svc.name || ' (' || si.price_at_sale || ')', ', ') AS services_sold
+      FROM sales s
+      JOIN barbers b ON s.barber_id = b.id
+      JOIN stations st ON s.station_id = st.id
+      JOIN sale_items si ON s.id = si.sale_id
+      JOIN services svc ON si.service_id = svc.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (filters.barberId) {
+      query += ` AND s.barber_id = ?`;
+      params.push(filters.barberId);
+    }
+    if (filters.serviceId) {
+      query += ` AND si.service_id = ?`;
+      params.push(filters.serviceId);
+    }
+    if (filters.paymentMethod) {
+      query += ` AND s.payment_method = ?`;
+      params.push(filters.paymentMethod);
+    }
+    if (filters.startDate) {
+      query += ` AND s.sale_date >= ?`;
+      params.push(filters.startDate);
+    }
+    if (filters.endDate) {
+      query += ` AND s.sale_date <= ?`;
+      params.push(filters.endDate);
+    }
+
+    query += ` GROUP BY s.id ORDER BY s.sale_date DESC`;
+
+    return await this.db.all(query, params);
+  }
+
+  async getServicesProductsSales(startDate: string, endDate: string): Promise<any[]> {
+    const query = `
+      SELECT
+          s.type,
+          SUM(si.price_at_sale) as total_sales_by_type
+      FROM sale_items si
+      JOIN services s ON si.service_id = s.id
+      JOIN sales sa ON si.sale_id = sa.id
+      WHERE sa.sale_date BETWEEN ? AND ?
+      GROUP BY s.type
+    `;
+    return await this.db.all(query, [startDate, endDate]);
+  }
 }
 
 export const reportService = new ReportService();

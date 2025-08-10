@@ -24,7 +24,8 @@ async function setup() {
     CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      price REAL NOT NULL
+      price REAL NOT NULL,
+      type TEXT NOT NULL DEFAULT 'service' -- 'service' or 'product'
     );
 
     CREATE TABLE IF NOT EXISTS sales (
@@ -100,12 +101,12 @@ async function setup() {
 
   const servicesCount = await db.get('SELECT COUNT(*) as count FROM services');
   if (servicesCount.count === 0) {
-    await db.run('INSERT INTO services (name, price) VALUES (?, ?), (?, ?), (?, ?), (?, ?), (?, ?)', [
-      'Corte Básico', 25,
-      'Corte + Barba', 40,
-      'Afeitado Clásico', 30,
-      'Lavado de Cabello', 15,
-      'Refresco', 5,
+    await db.run('INSERT INTO services (name, price, type) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?)', [
+      'Corte Básico', 25, 'service',
+      'Corte + Barba', 40, 'service',
+      'Afeitado Clásico', 30, 'service',
+      'Lavado de Cabello', 15, 'service',
+      'Refresco', 5, 'product', // Mark Refresco as a product
     ]);
   }
 
