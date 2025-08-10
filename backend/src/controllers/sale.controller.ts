@@ -54,6 +54,57 @@ class SaleController {
       res.status(500).json({ error: 'Failed to record sale.' });
     }
   }
+
+  async getDailySalesSummary(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const salesSummary = await saleService.getSalesSummaryByDateRange(startDate as string, endDate as string);
+      res.json(salesSummary);
+    } catch (error) {
+      console.error('Error getting daily sales summary:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getBarberRanking(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const ranking = await saleService.getBarberSalesRanking(startDate as string, endDate as string);
+      res.json(ranking);
+    } catch (error) {
+      console.error('Error getting barber ranking:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getTotalBarberPayments(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const totalPayments = await saleService.getTotalPaymentsToBarbers(startDate as string, endDate as string);
+      res.json({ totalPayments });
+    } catch (error) {
+      console.error('Error getting total barber payments:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export const saleController = new SaleController();

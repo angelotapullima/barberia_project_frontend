@@ -33,10 +33,11 @@ export const useSalesStore = defineStore('sales', {
             filterValue,
           },
         });
-        this.sales = response.data;
+        return response.data; // Return data directly
       } catch (error) {
         this.error = error.response?.data?.error || 'Error al cargar las ventas filtradas.';
         console.error(error);
+        return []; // Return empty array on error
       } finally {
         this.isLoading = false;
       }
@@ -50,6 +51,54 @@ export const useSalesStore = defineStore('sales', {
         this.error = error.response?.data?.error || 'Error al registrar la venta.';
         console.error(error);
         throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getSalesSummaryByDateRange(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/summary`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas diarias.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getBarberSalesRanking(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/ranking`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener el ranking de barberos.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getTotalPaymentsToBarbers(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/total-payments`, {
+          params: { startDate, endDate },
+        });
+        return response.data.totalPayments;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener el total de pagos a barberos.';
+        console.error(error);
+        return 0;
       } finally {
         this.isLoading = false;
       }

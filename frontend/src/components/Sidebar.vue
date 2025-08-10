@@ -155,6 +155,17 @@
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
+
+                <svg
+                  v-else-if="item.icon === 'chart-bar'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 20V10M18 20V4M6 20v-6" />
+                </svg>
               </span>
 
               <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
@@ -178,6 +189,7 @@ const emitToggle = () => emit('toggle');
 
 const items = [
   { to: '/', label: 'Dashboard', icon: 'home' },
+  { to: '/reports', label: 'Reportes', icon: 'chart-bar' },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },
   { to: '/services', label: 'Servicios', icon: 'scissors' },

@@ -2,64 +2,56 @@
   <div class="container mx-auto p-6">
     <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Dashboard y Reportes</h1>
 
-    <!-- Filters -->
-    <div class="bg-white p-6 rounded-xl shadow-lg mb-8 flex flex-wrap items-end gap-6">
-      <div>
-        <label for="month" class="block text-sm font-semibold text-gray-700 mb-1">Mes</label>
-        <select
-          v-model="selectedMonth"
-          id="month"
-          class="block w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
-        >
-          <option v-for="(name, index) in months" :key="index" :value="index + 1">
-            {{ name }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="year" class="block text-sm font-semibold text-gray-700 mb-1">Año</label>
-        <select
-          v-model="selectedYear"
-          id="year"
-          class="block w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
-        >
-          <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
-        </select>
-      </div>
-    </div>
-
-    <div v-if="store.isLoading" class="text-center text-gray-500">Generando reporte...</div>
-    <div v-if="store.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-      {{ store.error }}
+    <div v-if="salesStore.isLoading" class="text-center text-gray-500">Generando reporte...</div>
+    <div v-if="salesStore.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+      {{ salesStore.error }}
     </div>
 
     <!-- Main Content -->
-    <div v-if="!store.isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Calendar -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-        <FullCalendar :options="calendarOptions" />
+    <div v-if="!salesStore.isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Total Sales Today -->
+      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Totales Hoy</h2>
+        <p class="text-4xl font-extrabold text-indigo-600">S/ {{ salesToday.toFixed(2) }}</p>
       </div>
 
-      <!-- Stats Table -->
-      <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Reporte de Pagos</h2>
+      <!-- Total Payments to Barbers -->
+      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Pagos Totales a Barberos</h2>
+        <p class="text-4xl font-extrabold text-green-600">
+          S/ {{ totalBarberPayments.toFixed(2) }}
+        </p>
+      </div>
+
+      <!-- Daily Sales Chart -->
+      <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Diarias (Últimos 7 Días)</h2>
+        <canvas id="dailySalesChart" style="height: 300px; width: 100%"></canvas>
+        <p class="text-sm text-gray-500 mt-2">Última actualización: {{ lastUpdated }}</p>
+      </div>
+
+      <!-- Barber Ranking -->
+      <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ranking de Barberos por Ventas</h2>
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                Posición
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                 Barbero
               </th>
               <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
-                Generado
+                Ventas Totales
               </th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pago</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="stat in store.stats" :key="stat.barber_id">
-              <td class="px-4 py-2">{{ stat.barber_name }}</td>
-              <td class="px-4 py-2 text-right">S/ {{ stat.total_generated.toFixed(2) }}</td>
-              <td class="px-4 py-2 text-right font-bold">S/ {{ stat.payment.toFixed(2) }}</td>
+            <tr v-for="(barber, index) in barberRanking" :key="barber.barber_id">
+              <td class="px-4 py-2">{{ index + 1 }}</td>
+              <td class="px-4 py-2">{{ barber.barber_name }}</td>
+              <td class="px-4 py-2 text-right">S/ {{ barber.total_sales.toFixed(2) }}</td>
             </tr>
           </tbody>
         </table>
@@ -69,68 +61,96 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router'; // Import useRouter
-import FullCalendar from '@fullcalendar/vue3';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid'; // Import timeGridPlugin
-import { useReportStore } from '@/stores/reportStore';
+import { ref, onMounted, nextTick } from 'vue'; // Import nextTick
+import { useRouter } from 'vue-router';
+import { useSalesStore } from '@/stores/salesStore';
+import Chart from 'chart.js/auto';
 
-const store = useReportStore();
-const router = useRouter(); // Initialize useRouter
+const salesStore = useSalesStore();
+const router = useRouter();
 
-const months = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
-const years = [new Date().getFullYear(), new Date().getFullYear() - 1];
+const salesToday = ref(0);
+const totalBarberPayments = ref(0);
+const dailySalesData = ref([]);
+const barberRanking = ref([]);
+const lastUpdated = ref('');
 
-const selectedMonth = ref(new Date().getMonth() + 1);
-const selectedYear = ref(new Date().getFullYear());
+let dailySalesChart = null;
 
-const calendarOptions = reactive({
-  plugins: [dayGridPlugin, timeGridPlugin], // Add timeGridPlugin
-  initialView: 'timeGridWeek', // Change initial view to weekly
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: 'dayGridMonth,timeGridWeek,timeGridDay', // Add weekly and daily views
-  },
-  events: [], // This will be populated from the store
-  locale: 'es',
-  buttonText: {
-    today: 'Hoy',
-    week: 'Semana', // Add button text for week view
-    day: 'Día', // Add button text for day view
-  },
-  dateClick: (info) => {
-    // Handle date click for sales registration
-    const selectedDate = info.dateStr.split('T')[0]; // Get only the date part
-    const selectedTime = info.dateStr.split('T')[1] ? info.dateStr.split('T')[1].substring(0, 5) : '00:00'; // Get time, default to 00:00 if not available
-    router.push({
-      name: 'SalesRegistration',
-      query: { date: selectedDate, time: selectedTime },
-    });
-  },
-});
+async function fetchDashboardData() {
+  console.log('Fetching dashboard data...');
+  const today = new Date().toISOString().slice(0, 10);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-function generateReport() {
-  store.fetchReport(selectedYear.value, selectedMonth.value).then(() => {
-    calendarOptions.events = store.events;
+  // Fetch Total Sales Today
+  const salesFilteredToday = await salesStore.getFilteredSales('day', today);
+  salesToday.value = salesFilteredToday.reduce((sum, sale) => sum + sale.total_amount, 0);
+  console.log('Sales Today:', salesToday.value);
+
+  // Fetch Total Payments to Barbers
+  totalBarberPayments.value = await salesStore.getTotalPaymentsToBarbers(sevenDaysAgo, today);
+  console.log('Total Barber Payments:', totalBarberPayments.value);
+
+  // Fetch Daily Sales Summary for Chart
+  dailySalesData.value = await salesStore.getSalesSummaryByDateRange(sevenDaysAgo, today);
+  console.log('Daily Sales Data:', dailySalesData.value);
+
+  // Ensure canvas is rendered before trying to draw chart
+  nextTick(() => {
+    renderDailySalesChart();
   });
+
+  // Fetch Barber Ranking
+  barberRanking.value = await salesStore.getBarberSalesRanking(sevenDaysAgo, today);
+  console.log('Barber Ranking:', barberRanking.value);
+
+  lastUpdated.value = new Date().toLocaleString();
 }
 
-watch([selectedMonth, selectedYear], generateReport);
+function renderDailySalesChart() {
+  console.log('Attempting to render daily sales chart...');
+  const ctx = document.getElementById('dailySalesChart');
+  if (!ctx) {
+    console.error('Canvas element not found for daily sales chart.');
+    return;
+  }
+  console.log('Canvas context (ctx):', ctx);
 
-onMounted(generateReport);
+  if (dailySalesChart) {
+    dailySalesChart.destroy();
+  }
+
+  const labels = dailySalesData.value.map((data) => data.date);
+  const data = dailySalesData.value.map((data) => data.total);
+
+  console.log('Chart Labels:', labels);
+  console.log('Chart Data:', data);
+
+  dailySalesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Ventas Diarias',
+          data: data,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+  console.log('Chart rendered successfully.');
+}
+
+onMounted(fetchDashboardData);
 </script>

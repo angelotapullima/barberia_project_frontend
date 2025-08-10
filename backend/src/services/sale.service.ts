@@ -121,6 +121,64 @@ class SaleService {
       throw new Error('Failed to record sale.');
     }
   }
+
+  async getSalesSummaryByDateRange(startDate: string, endDate: string): Promise<{ date: string; total: number }[]> {
+    const query = `
+      SELECT
+          strftime('%Y-%m-%d', sale_date) as date,
+          SUM(total_amount) as total
+      FROM sales
+      WHERE sale_date BETWEEN ? AND ?
+      GROUP BY date
+      ORDER BY date ASC
+    `;
+    return this.db.all(query, [startDate, endDate]);
+  }
+
+  async getBarberSalesRanking(startDate: string, endDate: string): Promise<{ barber_id: number; barber_name: string; total_sales: number }[]> {
+    const query = `
+      SELECT
+          b.id as barber_id,
+          b.name as barber_name,
+          SUM(s.total_amount) as total_sales
+      FROM sales s
+      JOIN barbers b ON s.barber_id = b.id
+      WHERE s.sale_date BETWEEN ? AND ?
+      GROUP BY b.id, b.name
+      ORDER BY total_sales DESC
+    `;
+    return this.db.all(query, [startDate, endDate]);
+  }
+
+  async getTotalPaymentsToBarbers(startDate: string, endDate: string): Promise<number> {
+    const barbers = await this.db.all<{ id: number; name: string; base_salary: number }[]>(
+      'SELECT id, name, base_salary FROM barbers'
+    );
+    const salesByBarber = await this.db.all<{ barber_id: number; total_generated: number }[]>(
+      `
+            SELECT barber_id, SUM(total_amount) as total_generated
+            FROM sales
+            WHERE sale_date BETWEEN ? AND ?
+            GROUP BY barber_id
+        `,
+      startDate,
+      endDate
+    );
+
+    let totalPayments = 0;
+
+    for (const barber of barbers) {
+      const saleInfo = salesByBarber.find((s) => s.barber_id === barber.id);
+      const total_generated = saleInfo ? saleInfo.total_generated : 0;
+      let payment = barber.base_salary;
+
+      if (total_generated > barber.base_salary) {
+        payment = total_generated * 0.5;
+      }
+      totalPayments += payment;
+    }
+    return totalPayments;
+  }
 }
 
 export const saleService = new SaleService();

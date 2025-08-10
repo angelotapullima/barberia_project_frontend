@@ -120,28 +120,42 @@ export async function setupDatabase(): Promise<Database> {
   // Seed some sample sales
   const salesCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM sales');
   if (salesCount && salesCount.count === 0) {
-    const saleDate1 = new Date();
-    saleDate1.setDate(saleDate1.getDate() - 2); // 2 days ago
-    const saleDate2 = new Date();
-    saleDate2.setDate(saleDate2.getDate() - 1); // 1 day ago
+    const barbers = await db.all<Array<{ id: number; name: string; base_salary: number }>>('SELECT id FROM barbers');
+    const stations = await db.all<Array<{ id: number; name: string }>>('SELECT id FROM stations');
+    const services = await db.all<Array<{ id: number; name: string; price: number }>>('SELECT id, price FROM services');
 
-    const sale1Result = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-      [saleDate1.toISOString().slice(0, 10), 1, 1, 25, 'Cliente Venta 1']
-    );
-    await db.run(
-      'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
-      [sale1Result.lastID, 1, 25]
-    );
+    if (barbers.length === 0 || stations.length === 0 || services.length === 0) {
+      console.warn('Cannot seed sales data: Missing barbers, stations, or services.');
+      return db;
+    }
 
-    const sale2Result = await db.run(
-      'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
-      [saleDate2.toISOString().slice(0, 10), 2, 2, 40, 'Cliente Venta 2']
-    );
-    await db.run(
-      'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
-      [sale2Result.lastID, 2, 40]
-    );
+    for (let i = 0; i < 7; i++) {
+      const saleDate = new Date();
+      saleDate.setDate(saleDate.getDate() - i);
+      const formattedDate = saleDate.toISOString().slice(0, 10);
+
+      // Insert 3-5 sales per day
+      const numberOfSales = Math.floor(Math.random() * 3) + 3; // 3 to 5 sales
+
+      for (let j = 0; j < numberOfSales; j++) {
+        const randomBarber = barbers[Math.floor(Math.random() * barbers.length)];
+        const randomStation = stations[Math.floor(Math.random() * stations.length)];
+        const randomService = services[Math.floor(Math.random() * services.length)];
+
+        const totalAmount = randomService.price;
+        const customerName = `Cliente ${formattedDate} - ${j + 1}`;
+
+        const saleResult = await db.run(
+          'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)',
+          [formattedDate, randomBarber.id, randomStation.id, totalAmount, customerName]
+        );
+
+        await db.run(
+          'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)',
+          [saleResult.lastID, randomService.id, randomService.price]
+        );
+      }
+    }
   }
 
   return db;
