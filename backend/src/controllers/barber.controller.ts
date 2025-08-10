@@ -28,6 +28,7 @@ class BarberController {
   }
 
   async updateBarber(req: Request, res: Response): Promise<void> {
+    console.log('Executing updateBarber controller method');
     const { name, station_id, base_salary } = req.body;
     const { id } = req.params;
     if (!name) {

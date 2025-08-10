@@ -79,7 +79,7 @@ class ReservationController {
       res.status(200).json({ message: 'Reservation deleted successfully' });
     } catch (error) {
       console.error('Error deleting reservation:', error);
-      res.status(500).json({ error: 'Failed to delete reservation.' });
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -109,6 +109,21 @@ class ReservationController {
       res.json({ count });
     } catch (error) {
       console.error('Error getting completed reservation count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getCompletedReservations(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+    try {
+      const reservations = await reservationService.getCompletedReservations(startDate as string, endDate as string);
+      res.json(reservations);
+    } catch (error) {
+      console.error('Error getting completed reservations:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

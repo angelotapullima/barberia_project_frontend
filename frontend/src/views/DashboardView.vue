@@ -62,6 +62,29 @@
         </table>
       </div>
 
+      <!-- Reporte de Pagos a Barberos -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Reporte de Pagos a Barberos (Mes Actual)</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Barbero</th>
+                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Generado</th>
+                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pago Calculado</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="stat in barberPayments" :key="stat.barber_id">
+                <td class="px-4 py-2">{{ stat.barber_name }}</td>
+                <td class="px-4 py-2 text-right">S/ {{ stat.total_generated.toFixed(2) }}</td>
+                <td class="px-4 py-2 text-right font-bold">S/ {{ stat.payment.toFixed(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold text-gray-800">Ventas Diarias</h2>
@@ -129,11 +152,15 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSalesStore } from '@/stores/salesStore';
 import { useReservationStore } from '@/stores/reservationStore';
+import { useReportStore } from '@/stores/reportStore'; // Importar el store de reportes
 import VueApexCharts from 'vue3-apexcharts';
 
 const salesStore = useSalesStore();
 const router = useRouter();
 const reservationStore = useReservationStore();
+const reportStore = useReportStore(); // Instanciar el store
+
+const barberPayments = ref([]); // Para guardar los datos del reporte de pagos
 
 const salesToday = ref(0);
 const totalBarberPayments = ref(0);
@@ -205,6 +232,11 @@ async function fetchDashboardData() {
   await fetchDailySalesData(dailySalesTimeRange.value);
   await fetchPaymentMethodData(paymentMethodTimeRange.value);
   await fetchTopServicesData(topServicesTimeRange.value);
+
+  // Fetch Barber Payments Report Data
+  const todayForReport = new Date();
+  await reportStore.fetchReport(todayForReport.getFullYear(), todayForReport.getMonth() + 1);
+  barberPayments.value = reportStore.stats;
 
   lastUpdated.value = new Date().toLocaleString();
 }

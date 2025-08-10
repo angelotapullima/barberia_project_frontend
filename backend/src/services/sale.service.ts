@@ -21,13 +21,17 @@ interface Sale {
   station_name?: string;
 }
 
-class SaleService {
+export class SaleService {
   private db!: Database;
 
-  constructor() {
-    setupDatabase().then((db: Database) => {
+  constructor(db?: Database) {
+    if (db) {
       this.db = db;
-    });
+    } else {
+      setupDatabase().then((db: Database) => {
+        this.db = db;
+      });
+    }
   }
 
   private async getSaleItems(saleId: number): Promise<SaleItem[]> {

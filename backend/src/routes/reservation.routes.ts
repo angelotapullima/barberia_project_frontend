@@ -4,6 +4,7 @@ import { reservationController } from '../controllers/reservation.controller';
 const router = Router();
 
 // Specific routes should come before general routes with parameters
+router.get('/completed', reservationController.getCompletedReservations);
 router.get('/count', reservationController.getReservationCount);
 router.get('/count-completed', reservationController.getCompletedReservationCount);
 

@@ -53,6 +53,52 @@ class ReportController {
       res.status(500).json({ error: 'Failed to fetch services/products sales report.' });
     }
   }
+
+  // Nuevos métodos para los reportes específicos
+  async getStationUsageReport(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Start date and end date are required' });
+      return;
+    }
+    try {
+      const data = await reportService.getStationUsage(String(startDate), String(endDate));
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching station usage report:', error);
+      res.status(500).json({ error: 'Failed to fetch station usage report.' });
+    }
+  }
+
+  async getCustomerFrequencyReport(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Start date and end date are required' });
+      return;
+    }
+    try {
+      const data = await reportService.getCustomerFrequency(String(startDate), String(endDate));
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching customer frequency report:', error);
+      res.status(500).json({ error: 'Failed to fetch customer frequency report.' });
+    }
+  }
+
+  async getPeakHoursReport(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Start date and end date are required' });
+      return;
+    }
+    try {
+      const data = await reportService.getPeakHours(String(startDate), String(endDate));
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching peak hours report:', error);
+      res.status(500).json({ error: 'Failed to fetch peak hours report.' });
+    }
+  }
 }
 
 export const reportController = new ReportController();

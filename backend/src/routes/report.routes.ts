@@ -7,4 +7,9 @@ router.get('/', reportController.getReport);
 router.get('/comprehensive-sales', reportController.getComprehensiveSalesReport);
 router.get('/services-products-sales', reportController.getServicesProductsSalesReport);
 
+// Rutas para los nuevos reportes
+router.get('/station-usage', reportController.getStationUsageReport);
+router.get('/customer-frequency', reportController.getCustomerFrequencyReport);
+router.get('/peak-hours', reportController.getPeakHoursReport);
+
 export default router;

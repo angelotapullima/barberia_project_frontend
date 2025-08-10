@@ -7,13 +7,17 @@ interface Service {
   price: number;
 }
 
-class ServiceService {
+export class ServiceService {
   private db!: Database;
 
-  constructor() {
-    setupDatabase().then((db: Database) => {
+  constructor(db?: Database) {
+    if (db) {
       this.db = db;
-    });
+    } else {
+      setupDatabase().then((db: Database) => {
+        this.db = db;
+      });
+    }
   }
 
   async getAllServices(): Promise<Service[]> {
@@ -41,8 +45,8 @@ class ServiceService {
   }
 
   async deleteService(id: number): Promise<boolean | { error: string }> {
-    const sale = await this.db.get('SELECT id FROM sales WHERE service_id = ?', id);
-    if (sale) {
+    const saleItem = await this.db.get('SELECT id FROM sale_items WHERE service_id = ?', id);
+    if (saleItem) {
       return { error: 'No se puede eliminar el servicio porque está asociado a una venta.' };
     }
 

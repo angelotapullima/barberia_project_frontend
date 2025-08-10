@@ -20,13 +20,17 @@ interface ReportData {
   stats: BarberStat[];
 }
 
-class ReportService {
+export class ReportService {
   private db!: Database;
 
-  constructor() {
-    setupDatabase().then((db: Database) => {
+  constructor(db?: Database) {
+    if (db) {
       this.db = db;
-    });
+    } else {
+      setupDatabase().then((db: Database) => {
+        this.db = db;
+      });
+    }
   }
 
   async generateReport(year: number, month: number): Promise<ReportData> {
@@ -149,6 +153,49 @@ class ReportService {
       JOIN sales sa ON si.sale_id = sa.id
       WHERE sa.sale_date BETWEEN ? AND ?
       GROUP BY s.type
+    `;
+    return await this.db.all(query, [startDate, endDate]);
+  }
+
+  async getStationUsage(startDate: string, endDate: string): Promise<any[]> {
+    // Este reporte calcula cuántas veces se usó cada estación en un período.
+    const query = `
+      SELECT
+        st.name as station_name,
+        COUNT(r.id) as usage_count
+      FROM stations st
+      LEFT JOIN reservations r ON st.id = r.station_id AND date(r.start_time) BETWEEN ? AND ?
+      GROUP BY st.name
+      ORDER BY usage_count DESC
+    `;
+    return await this.db.all(query, [startDate, endDate]);
+  }
+
+  async getCustomerFrequency(startDate: string, endDate: string): Promise<any[]> {
+    // Este reporte cuenta cuántas veces ha venido cada cliente.
+    const query = `
+      SELECT
+        customer_name,
+        COUNT(id) as visit_count
+      FROM sales
+      WHERE sale_date BETWEEN ? AND ? AND customer_name IS NOT NULL AND customer_name != ''
+      GROUP BY customer_name
+      ORDER BY visit_count DESC
+      LIMIT 15 -- Limitamos a los 15 clientes más frecuentes
+    `;
+    return await this.db.all(query, [startDate, endDate]);
+  }
+
+  async getPeakHours(startDate: string, endDate: string): Promise<any[]> {
+    // Este reporte encuentra las horas con más reservaciones.
+    const query = `
+      SELECT
+        strftime('%H:00', start_time) as hour,
+        COUNT(id) as reservation_count
+      FROM reservations
+      WHERE date(start_time) BETWEEN ? AND ?
+      GROUP BY hour
+      ORDER BY reservation_count DESC
     `;
     return await this.db.all(query, [startDate, endDate]);
   }

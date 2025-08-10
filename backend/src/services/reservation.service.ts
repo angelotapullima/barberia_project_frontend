@@ -15,13 +15,17 @@ interface Reservation {
   station_name?: string;
 }
 
-class ReservationService {
+export class ReservationService {
   private db!: Database;
 
-  constructor() {
-    setupDatabase().then((db: Database) => {
+  constructor(db?: Database) {
+    if (db) {
       this.db = db;
-    });
+    } else {
+      setupDatabase().then((db: Database) => {
+        this.db = db;
+      });
+    }
   }
 
   async getAllReservations(): Promise<Reservation[]> {
@@ -123,6 +127,21 @@ class ReservationService {
       WHERE start_time BETWEEN ? AND ? AND status = 'completed'
     `, [startDate, endDate]);
     return result.count;
+  }
+
+  async getCompletedReservations(startDate: string, endDate: string): Promise<Reservation[]> {
+    const query = `
+      SELECT 
+          r.id, r.barber_id, b.name as barber_name,
+          r.station_id, st.name as station_name,
+          r.customer_name, r.customer_phone, r.start_time, r.end_time, r.status, r.created_at
+      FROM reservations r
+      JOIN barbers b ON r.barber_id = b.id
+      JOIN stations st ON r.station_id = st.id
+      WHERE date(r.start_time) BETWEEN ? AND ? AND r.status = 'completed'
+      ORDER BY r.start_time DESC
+    `;
+    return this.db.all(query, [startDate, endDate]);
   }
 }
 

@@ -9,6 +9,10 @@ export const useReportStore = defineStore('reports', {
     stats: [],
     comprehensiveSales: [], // New state for comprehensive sales report
     servicesProductsSales: [], // New state for services vs products sales report
+    // Nuevos estados para los reportes
+    stationUsage: [],
+    customerFrequency: [],
+    peakHours: [],
     isLoading: false,
     error: null,
   }),
@@ -22,6 +26,26 @@ export const useReportStore = defineStore('reports', {
         this.stats = response.data.stats;
       } catch (error) {
         this.error = error.response?.data?.error || 'Error al cargar el reporte.';
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchNewReports(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const params = { startDate, endDate };
+        const [stationUsageRes, customerFrequencyRes, peakHoursRes] = await Promise.all([
+          axios.get(`${API_URL}/reports/station-usage`, { params }),
+          axios.get(`${API_URL}/reports/customer-frequency`, { params }),
+          axios.get(`${API_URL}/reports/peak-hours`, { params })
+        ]);
+        this.stationUsage = stationUsageRes.data;
+        this.customerFrequency = customerFrequencyRes.data;
+        this.peakHours = peakHoursRes.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar los nuevos reportes.';
         console.error(error);
       } finally {
         this.isLoading = false;

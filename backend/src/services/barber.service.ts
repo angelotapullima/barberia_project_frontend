@@ -9,13 +9,17 @@ interface Barber {
   station_name?: string;
 }
 
-class BarberService {
+export class BarberService {
   private db!: Database;
 
-  constructor() {
-    setupDatabase().then((db: Database) => {
+  constructor(db?: Database) {
+    if (db) {
       this.db = db;
-    });
+    } else {
+      setupDatabase().then((db: Database) => {
+        this.db = db;
+      });
+    }
   }
 
   async getAllBarbers(): Promise<Barber[]> {

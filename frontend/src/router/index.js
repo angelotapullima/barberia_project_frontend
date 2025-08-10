@@ -8,6 +8,7 @@ import ServicesView from '@/views/ServicesView.vue';
 import SalesView from '@/views/SalesView.vue'; // This is now SalesRegistrationView
 import SalesListView from '@/views/SalesListView.vue'; // New component for sales list
 import ReservationsView from '@/views/ReservationsView.vue'; // New component for reservations
+import ScheduleView from '@/views/ScheduleView.vue'; // Vista para el calendario de distribución
 
 import DashboardView from '@/views/DashboardView.vue';
 
@@ -20,6 +21,7 @@ const routes = [
   { path: '/services', component: ServicesView, name: 'Services' },
   { path: '/reservations', component: ReservationsView, name: 'Reservations' }, // New route for reservations
   { path: '/reports', component: () => import('@/views/ReportsView.vue'), name: 'Reports' },
+  { path: '/schedule', component: ScheduleView, name: 'Schedule' }, // Nueva ruta para la agenda
 ];
 
 const router = createRouter({

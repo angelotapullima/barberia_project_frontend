@@ -166,6 +166,19 @@
                 >
                   <path d="M12 20V10M18 20V4M6 20v-6" />
                 </svg>
+
+                <svg 
+                  v-else-if="item.icon === 'clipboard-list'" 
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2">
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                </svg>
               </span>
 
               <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
@@ -189,6 +202,7 @@ const emitToggle = () => emit('toggle');
 
 const items = [
   { to: '/', label: 'Dashboard', icon: 'home' },
+  { to: '/schedule', label: 'Distribución', icon: 'clipboard-list' },
   { to: '/reports', label: 'Reportes', icon: 'chart-bar' },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },
