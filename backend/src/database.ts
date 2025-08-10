@@ -10,6 +10,8 @@ async function createSchema(db: Database) {
     CREATE TABLE IF NOT EXISTS stations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE);
     CREATE TABLE IF NOT EXISTS barbers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, base_salary REAL DEFAULT 1300, station_id INTEGER, FOREIGN KEY (station_id) REFERENCES stations (id));
     CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, price REAL NOT NULL, type TEXT NOT NULL DEFAULT 'service');
+    ALTER TABLE services ADD COLUMN stock_quantity INTEGER DEFAULT 0;
+    ALTER TABLE services ADD COLUMN min_stock_level INTEGER DEFAULT 0;
     CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, sale_date TEXT NOT NULL, barber_id INTEGER NOT NULL, station_id INTEGER NOT NULL, total_amount REAL NOT NULL, customer_name TEXT, payment_method TEXT DEFAULT 'cash', FOREIGN KEY (barber_id) REFERENCES barbers (id), FOREIGN KEY (station_id) REFERENCES stations (id));
     CREATE TABLE IF NOT EXISTS sale_items (id INTEGER PRIMARY KEY AUTOINCREMENT, sale_id INTEGER NOT NULL, service_id INTEGER NOT NULL, price_at_sale REAL NOT NULL, FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE CASCADE, FOREIGN KEY (service_id) REFERENCES services (id));
     CREATE TABLE IF NOT EXISTS reservations (id INTEGER PRIMARY KEY AUTOINCREMENT, barber_id INTEGER NOT NULL, station_id INTEGER NOT NULL, customer_name TEXT NOT NULL, customer_phone TEXT, start_time TEXT NOT NULL, end_time TEXT NOT NULL, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (barber_id) REFERENCES barbers (id), FOREIGN KEY (station_id) REFERENCES stations (id));
@@ -22,7 +24,17 @@ export async function seedDatabase(db: Database) {
   const stations = await db.all('SELECT id FROM stations');
   await db.run('INSERT INTO barbers (name, station_id) VALUES (?, ?), (?, ?), (?, ?)', ['Juan Pérez', stations[0].id, 'Luis Gómez', stations[1].id, 'Carlos Ruiz', stations[2].id]);
   const barbers = await db.all('SELECT id FROM barbers');
-  await db.run('INSERT INTO services (name, price, type) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?)', ['Corte de Cabello', 30, 'service', 'Afeitado Clásico', 25, 'service', 'Corte y Barba', 50, 'service', 'Cera para Peinar', 15, 'product', 'Aceite para Barba', 20, 'product']);
+  await db.run('INSERT INTO services (name, price, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)', [
+  'Corte de Cabello', 30, 'service', 0, 0,
+  'Afeitado Clásico', 25, 'service', 0, 0,
+  'Corte y Barba', 50, 'service', 0, 0,
+  'Cera para Peinar', 15, 'product', 100, 10,
+  'Aceite para Barba', 20, 'product', 50, 5,
+  'Shampoo Especializado', 35, 'product', 20, 25, // Low stock
+  'Acondicionador Premium', 30, 'product', 15, 10,
+  'Gel Fijador Fuerte', 12, 'product', 5, 10, // Low stock
+  'Navajas Desechables (pack)', 8, 'product', 30, 5
+]);
   const services = await db.all('SELECT id, price FROM services');
   const customers = ['Pedro Pascal', 'Ana de Armas', 'Ricardo Arjona', 'Shakira Mebarak', 'Lionel Messi', 'Karol G', 'Bad Bunny'];
   const paymentMethods = ['cash', 'card', 'yape', 'plin'];

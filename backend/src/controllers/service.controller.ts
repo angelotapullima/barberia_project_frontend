@@ -73,6 +73,58 @@ class ServiceController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async getProducts(req: Request, res: Response): Promise<void> {
+    try {
+      const products = await serviceService.getProducts();
+      res.json(products);
+    } catch (error) {
+      console.error('Error getting products:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async updateProductStock(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    if (quantity === undefined || typeof quantity !== 'number' || quantity < 0) {
+      res.status(400).json({ error: 'Quantity must be a non-negative number' });
+      return;
+    }
+
+    try {
+      const updatedProduct = await serviceService.updateProductStock(Number(id), quantity);
+      if (!updatedProduct) {
+        res.status(404).json({ error: 'Product not found or not a product type' });
+        return;
+      }
+      res.status(200).json(updatedProduct);
+    } catch (error) {
+      console.error('Error updating product stock:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getLowStockProducts(req: Request, res: Response): Promise<void> {
+    try {
+      const lowStockProducts = await serviceService.getLowStockProducts();
+      res.json(lowStockProducts);
+    } catch (error) {
+      console.error('Error getting low stock products:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getInventoryReportSummary(req: Request, res: Response): Promise<void> {
+    try {
+      const summary = await serviceService.getInventoryReportSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting inventory report summary:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export const serviceController = new ServiceController();

@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import BarbersView from '@/views/BarbersView.vue';
+import ProductsView from '@/views/ProductsView.vue';
+import InventoryReportView from '@/views/InventoryReportView.vue';
 
 import StationsView from '@/views/StationsView.vue';
 
@@ -19,6 +21,8 @@ const routes = [
   { path: '/barbers', component: BarbersView, name: 'Barbers' },
   { path: '/stations', component: StationsView, name: 'Stations' },
   { path: '/services', component: ServicesView, name: 'Services' },
+  { path: '/products', component: ProductsView, name: 'Products' },
+  { path: '/inventory-report', component: InventoryReportView, name: 'InventoryReport' },
   { path: '/reservations', component: ReservationsView, name: 'Reservations' }, // New route for reservations
   { path: '/reports', component: () => import('@/views/ReportsView.vue'), name: 'Reports' },
   { path: '/schedule', component: ScheduleView, name: 'Schedule' }, // Nueva ruta para la agenda

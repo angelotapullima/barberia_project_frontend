@@ -12,19 +12,35 @@
       <!-- Row 1: Key Metrics -->
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Totales Hoy</h2>
-        <p class="text-4xl font-extrabold text-indigo-600">S/ {{ salesToday.toFixed(2) }}</p>
+        <p class="text-4xl font-extrabold text-indigo-600">S/ {{ (salesToday || 0).toFixed(2) }}</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Pagos Totales a Barberos</h2>
         <p class="text-4xl font-extrabold text-green-600">
-          S/ {{ totalBarberPayments.toFixed(2) }}
+          S/ {{ (totalBarberPayments || 0).toFixed(2) }}
         </p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Total Reservas (7 Días)</h2>
         <p class="text-4xl font-extrabold text-blue-600">{{ totalReservations }}</p>
+      </div>
+
+      <!-- Inventory Metrics -->
+      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Total Productos</h2>
+        <p class="text-4xl font-extrabold text-purple-600">{{ inventorySummary.totalProducts }}</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Productos Bajo Stock</h2>
+        <p class="text-4xl font-extrabold text-red-600">{{ inventorySummary.lowStockCount }}</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Valor Inventario</h2>
+        <p class="text-4xl font-extrabold text-orange-600">S/ {{ (inventorySummary.totalInventoryValue || 0).toFixed(2) }}</p>
       </div>
 
       <!-- Row 2: Barber Ranking and Daily Sales Chart -->
@@ -56,7 +72,7 @@
             <tr v-for="(barber, index) in barberRanking" :key="barber.barber_id">
               <td class="px-4 py-2">{{ index + 1 }}</td>
               <td class="px-4 py-2">{{ barber.barber_name }}</td>
-              <td class="px-4 py-2 text-right">S/ {{ barber.total_sales.toFixed(2) }}</td>
+              <td class="px-4 py-2 text-right">S/ {{ (barber.total_sales || 0).toFixed(2) }}</td>
             </tr>
           </tbody>
         </table>
@@ -77,8 +93,8 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="stat in barberPayments" :key="stat.barber_id">
                 <td class="px-4 py-2">{{ stat.barber_name }}</td>
-                <td class="px-4 py-2 text-right">S/ {{ stat.total_generated.toFixed(2) }}</td>
-                <td class="px-4 py-2 text-right font-bold">S/ {{ stat.payment.toFixed(2) }}</td>
+                <td class="px-4 py-2 text-right">S/ {{ (stat.total_generated || 0).toFixed(2) }}</td>
+                <td class="px-4 py-2 text-right font-bold">S/ {{ (stat.payment || 0).toFixed(2) }}</td>
               </tr>
             </tbody>
           </table>
@@ -153,12 +169,14 @@ import { useRouter } from 'vue-router';
 import { useSalesStore } from '@/stores/salesStore';
 import { useReservationStore } from '@/stores/reservationStore';
 import { useReportStore } from '@/stores/reportStore'; // Importar el store de reportes
+import { useProductStore } from '@/stores/productStore'; // Importar el store de productos
 import VueApexCharts from 'vue3-apexcharts';
 
 const salesStore = useSalesStore();
 const router = useRouter();
 const reservationStore = useReservationStore();
 const reportStore = useReportStore(); // Instanciar el store
+const productStore = useProductStore(); // Instanciar el store de productos
 
 const barberPayments = ref([]); // Para guardar los datos del reporte de pagos
 
@@ -168,6 +186,7 @@ const totalReservations = ref(0);
 const completedReservationsList = ref([]);
 const dailySalesData = ref([]);
 const barberRanking = ref([]);
+const inventorySummary = ref({ totalProducts: 0, lowStockCount: 0, totalInventoryValue: 0 });
 const lastUpdated = ref('');
 
 // Time range selectors
@@ -226,6 +245,19 @@ async function fetchDashboardData() {
   // Fetch Completed Reservations
   completedReservationsList.value = await reservationStore.fetchCompletedReservations(sevenDaysAgo, today);
   console.log('Completed Reservations List:', completedReservationsList.value);
+
+  // Fetch Inventory Summary
+  try {
+    inventorySummary.value = await productStore.fetchInventorySummary();
+    console.log('Inventory Summary:', inventorySummary.value);
+  } catch (error) {
+    console.error('Error fetching inventory summary for dashboard:', error);
+    // Handle error display if needed
+  }
+
+  // Fetch Low Stock Products (for count)
+  await productStore.fetchLowStockProducts(); // This populates productStore.lowStockProducts
+  console.log('Low Stock Products Count:', productStore.lowStockProducts.length);
 
   // Call individual data fetching functions with their respective time ranges
   await fetchBarberRankingData(barberRankingTimeRange.value);

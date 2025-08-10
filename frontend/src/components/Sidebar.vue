@@ -179,6 +179,21 @@
                     <line x1="12" y1="11" x2="12" y2="17"></line>
                     <line x1="9" y1="14" x2="15" y2="14"></line>
                 </svg>
+
+                <svg
+                  v-else-if="item.icon === 'box'"
+                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7L12 4L4 7L12 10L20 7Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 17L12 20L20 17" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V17" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10V20" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7V17" />
+                </svg>
               </span>
 
               <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
@@ -209,6 +224,8 @@ const items = [
   { to: '/services', label: 'Servicios', icon: 'scissors' },
   { to: '/stations', label: 'Estaciones', icon: 'map-pin' },
   { to: '/reservations', label: 'Reservas', icon: 'calendar' }, // New item for Reservations
+  { to: '/products', label: 'Inventario', icon: 'box' }, // New item for Products
+  { to: '/inventory-report', label: 'Reporte Inventario', icon: 'chart-bar' }, // New item for Inventory Report
 ];
 </script>
 
