@@ -29,7 +29,15 @@
 
       <!-- Row 2: Barber Ranking and Daily Sales Chart -->
       <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ranking de Barberos por Ventas</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Ranking de Barberos por Ventas</h2>
+          <select v-model="barberRankingTimeRange" @change="fetchBarberRankingData(barberRankingTimeRange)"
+            class="p-2 border rounded-md">
+            <option value="day">Día</option>
+            <option value="week">Semana</option>
+            <option value="month">Mes</option>
+          </select>
+        </div>
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -55,7 +63,15 @@
       </div>
 
       <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas Diarias (Últimos 7 Días)</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Ventas Diarias</h2>
+          <select v-model="dailySalesTimeRange" @change="fetchDailySalesData(dailySalesTimeRange)"
+            class="p-2 border rounded-md">
+            <option value="day">Día</option>
+            <option value="week">Semana</option>
+            <option value="month">Mes</option>
+          </select>
+        </div>
         <apexchart type="bar" :options="chartOptions" :series="series"></apexchart>
         <p class="text-sm text-gray-500 mt-2">Última actualización: {{ lastUpdated }}</p>
       </div>
@@ -79,13 +95,29 @@
       </div>
 
       <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Ventas por Método de Pago (Últimos 7 Días)</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Ventas por Método de Pago</h2>
+          <select v-model="paymentMethodTimeRange" @change="fetchPaymentMethodData(paymentMethodTimeRange)"
+            class="p-2 border rounded-md">
+            <option value="day">Día</option>
+            <option value="week">Semana</option>
+            <option value="month">Mes</option>
+          </select>
+        </div>
         <apexchart type="donut" :options="paymentMethodChartOptions" :series="paymentMethodSeries"></apexchart>
       </div>
 
       <!-- Last Row: Top Selling Services Chart -->
       <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Servicios Más Vendidos (Últimos 7 Días)</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Servicios Más Vendidos</h2>
+          <select v-model="topServicesTimeRange" @change="fetchTopServicesData(topServicesTimeRange)"
+            class="p-2 border rounded-md">
+            <option value="day">Día</option>
+            <option value="week">Semana</option>
+            <option value="month">Mes</option>
+          </select>
+        </div>
         <apexchart type="bar" :options="topServicesChartOptions" :series="topServicesSeries"></apexchart>
       </div>
     </div>
@@ -111,6 +143,33 @@ const dailySalesData = ref([]);
 const barberRanking = ref([]);
 const lastUpdated = ref('');
 
+// Time range selectors
+const barberRankingTimeRange = ref('week');
+const dailySalesTimeRange = ref('week');
+const paymentMethodTimeRange = ref('week');
+const topServicesTimeRange = ref('week');
+
+// Helper function to get date ranges
+function getDateRange(timeRange) {
+  const today = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+
+  if (timeRange === 'day') {
+    // startDate is today
+  } else if (timeRange === 'week') {
+    startDate.setDate(today.getDate() - 6); // Last 7 days including today
+  } else if (timeRange === 'month') {
+    startDate.setMonth(today.getMonth() - 1); // Last 30 days approximately
+    startDate.setDate(today.getDate() + 1); // Adjust to start of month
+  }
+
+  return {
+    startDate: startDate.toISOString().slice(0, 10),
+    endDate: endDate.toISOString().slice(0, 10),
+  };
+}
+
 const chartOptions = ref({});
 const series = ref([]);
 const topServicesChartOptions = ref({});
@@ -118,6 +177,7 @@ const topServicesSeries = ref([]);
 const paymentMethodChartOptions = ref({});
 const paymentMethodSeries = ref([]);
 
+// Main data fetching function
 async function fetchDashboardData() {
   console.log('Fetching dashboard data...');
   const today = new Date().toISOString().slice(0, 10);
@@ -140,11 +200,27 @@ async function fetchDashboardData() {
   completedReservationsList.value = await reservationStore.fetchCompletedReservations(sevenDaysAgo, today);
   console.log('Completed Reservations List:', completedReservationsList.value);
 
-  // Fetch Daily Sales Summary for Chart
-  dailySalesData.value = await salesStore.getSalesSummaryByDateRange(sevenDaysAgo, today);
+  // Call individual data fetching functions with their respective time ranges
+  await fetchBarberRankingData(barberRankingTimeRange.value);
+  await fetchDailySalesData(dailySalesTimeRange.value);
+  await fetchPaymentMethodData(paymentMethodTimeRange.value);
+  await fetchTopServicesData(topServicesTimeRange.value);
+
+  lastUpdated.value = new Date().toLocaleString();
+}
+
+// Individual data fetching functions
+async function fetchBarberRankingData(timeRange) {
+  const { startDate, endDate } = getDateRange(timeRange);
+  barberRanking.value = await salesStore.getBarberSalesRanking(startDate, endDate);
+  console.log('Barber Ranking:', barberRanking.value);
+}
+
+async function fetchDailySalesData(timeRange) {
+  const { startDate, endDate } = getDateRange(timeRange);
+  dailySalesData.value = await salesStore.getSalesSummaryByDateRange(startDate, endDate);
   console.log('Daily Sales Data:', dailySalesData.value);
 
-  // Ensure canvas is rendered before trying to draw chart
   const labels = dailySalesData.value.map((data) => data.date);
   const data = dailySalesData.value.map((data) => data.total);
 
@@ -204,65 +280,11 @@ async function fetchDashboardData() {
       },
     ],
   };
+}
 
-  // Fetch Barber Ranking
-  barberRanking.value = await salesStore.getBarberSalesRanking(sevenDaysAgo, today);
-  console.log('Barber Ranking:', barberRanking.value);
-
-  lastUpdated.value = new Date().toLocaleString();
-
-  // Fetch Top Selling Services
-  const topServices = await salesStore.getSalesSummaryByService(sevenDaysAgo, today);
-  console.log('Top Services Data:', topServices);
-
-  topServicesSeries.value = [{
-    name: 'Ventas por Servicio',
-    data: topServices.map(service => service.total_sales),
-  }];
-
-  topServicesChartOptions.value = {
-    chart: {
-      type: 'bar',
-      height: 350,
-      toolbar: {
-        show: false,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true, // Make it a horizontal bar chart
-        distributed: true, // Distribute colors
-      },
-    },
-    dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return "S/ " + val.toFixed(2);
-      },
-    },
-    xaxis: {
-      categories: topServices.map(service => service.service_name),
-      title: {
-        text: 'Total de Ventas (S/)',
-      },
-    },
-    yaxis: {
-      title: {
-        text: 'Servicio',
-      },
-    },
-    tooltip: {
-      y: {
-        formatter: function (val) {
-          return "S/ " + val.toFixed(2);
-        },
-      },
-    },
-    colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26A69A', '#D10363', '#F9A825', '#66BB6A'], // Example colors
-  };
-
-  // Fetch Sales Summary by Payment Method
-  const salesByPaymentMethod = await salesStore.getSalesSummaryByPaymentMethod(sevenDaysAgo, today);
+async function fetchPaymentMethodData(timeRange) {
+  const { startDate, endDate } = getDateRange(timeRange);
+  const salesByPaymentMethod = await salesStore.getSalesSummaryByPaymentMethod(startDate, endDate);
   console.log('Sales by Payment Method Data:', salesByPaymentMethod);
 
   paymentMethodSeries.value = salesByPaymentMethod.map(item => item.total_sales);
@@ -313,6 +335,58 @@ async function fetchDashboardData() {
         }
       }
     }
+  };
+}
+
+async function fetchTopServicesData(timeRange) {
+  const { startDate, endDate } = getDateRange(timeRange);
+  const topServices = await salesStore.getSalesSummaryByService(startDate, endDate);
+  console.log('Top Services Data:', topServices);
+
+  topServicesSeries.value = [{
+    name: 'Ventas por Servicio',
+    data: topServices.map(service => service.total_sales),
+  }];
+
+  topServicesChartOptions.value = {
+    chart: {
+      type: 'bar',
+      height: 350,
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true, // Make it a horizontal bar chart
+        distributed: true, // Distribute colors
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val) {
+        return "S/ " + val.toFixed(2);
+      },
+    },
+    xaxis: {
+      categories: topServices.map(service => service.service_name),
+      title: {
+        text: 'Total de Ventas (S/)',
+      },
+    },
+    yaxis: {
+      title: {
+        text: 'Servicio',
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return "S/ " + val.toFixed(2);
+        },
+      },
+    },
+    colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26A69A', '#D10363', '#F9A825', '#66BB6A'], // Example colors
   };
 }
 
