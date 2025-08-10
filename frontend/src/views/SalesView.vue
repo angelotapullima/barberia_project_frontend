@@ -1,36 +1,36 @@
 <template>
-  <div class="container mx-auto max-w-2xl">
-    <h1 class="text-3xl font-bold mb-6">Registrar Venta</h1>
+  <div class="sales-container">
+    <h1 class="sales-title">Registrar Venta</h1>
 
-    <div v-if="formError" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+    <div v-if="formError" class="error-message">
       {{ formError }}
     </div>
-    <div v-if="salesStore.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+    <div v-if="salesStore.error" class="error-message">
       Error del servidor: {{ salesStore.error }}
     </div>
 
-    <form @submit.prevent="handleSubmit" class="bg-white shadow-md rounded-lg p-8">
+    <form @submit.prevent="handleSubmit" class="sales-form">
       <!-- Date -->
-      <div class="mb-4">
-        <label for="sale_date" class="block text-sm font-medium text-gray-700"
+      <div class="form-group">
+        <label for="sale_date" class="form-label"
           >Fecha de Venta</label
         >
         <input
           v-model="sale.sale_date"
           type="date"
           id="sale_date"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+          class="form-input"
           required
         />
       </div>
 
       <!-- Barber -->
-      <div class="mb-4">
-        <label for="barber" class="block text-sm font-medium text-gray-700">Barbero</label>
+      <div class="form-group">
+        <label for="barber" class="form-label">Barbero</label>
         <select
           v-model="sale.barber_id"
           id="barber"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+          class="form-input"
           required
         >
           <option disabled value="">Seleccione un barbero</option>
@@ -41,12 +41,12 @@
       </div>
 
       <!-- Station -->
-      <div class="mb-4">
-        <label for="station" class="block text-sm font-medium text-gray-700">Estación</label>
+      <div class="form-group">
+        <label for="station" class="form-label">Estación</label>
         <select
           v-model="sale.station_id"
           id="station"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+          class="form-input"
           required
         >
           <option disabled value="">Seleccione una estación</option>
@@ -57,18 +57,18 @@
       </div>
 
       <!-- Services -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Servicios</label>
-        <div class="mt-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-2">
-          <div v-for="service in serviceStore.services" :key="service.id" class="flex items-center">
+      <div class="form-group">
+        <label class="form-label">Servicios</label>
+        <div class="services-checkbox-group">
+          <div v-for="service in serviceStore.services" :key="service.id" class="checkbox-item">
             <input
               type="checkbox"
               :id="`service-${service.id}`"
               :value="service"
               v-model="sale.services"
-              class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+              class="checkbox-input"
             />
-            <label :for="`service-${service.id}`" class="ml-3 block text-sm text-gray-700"
+            <label :for="`service-${service.id}`" class="checkbox-label"
               >{{ service.name }} - S/ {{ service.price.toFixed(2) }}</label
             >
           </div>
@@ -76,27 +76,27 @@
       </div>
 
       <!-- Customer Name -->
-      <div class="mb-6">
-        <label for="customer_name" class="block text-sm font-medium text-gray-700"
+      <div class="form-group">
+        <label for="customer_name" class="form-label"
           >Nombre del Cliente (Opcional)</label
         >
         <input
           v-model="sale.customer_name"
           type="text"
           id="customer_name"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+          class="form-input"
         />
       </div>
 
       <!-- Total Amount -->
-      <div class="text-2xl font-bold text-right mb-6">Total: S/ {{ totalAmount.toFixed(2) }}</div>
+      <div class="total-amount">Total: S/ {{ totalAmount.toFixed(2) }}</div>
 
       <!-- Submit -->
-      <div class="flex justify-end">
+      <div class="form-actions">
         <button
           type="submit"
           :disabled="salesStore.isLoading"
-          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded disabled:bg-gray-400"
+          class="btn btn-success"
         >
           <span v-if="salesStore.isLoading">Registrando...</span>
           <span v-else>Registrar Venta</span>
@@ -166,3 +166,120 @@ onMounted(() => {
   serviceStore.fetchServices();
 });
 </script>
+
+<style scoped>
+.sales-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 42rem; /* max-w-2xl */
+  padding: 1rem;
+}
+
+.sales-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  background-color: #fee2e2;
+  border-radius: 0.5rem;
+}
+
+.sales-form {
+  background-color: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-input {
+  margin-top: 0.25rem;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.services-checkbox-group {
+  margin-top: 0.5rem;
+  max-height: 12rem; /* max-h-48 */
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-input {
+  height: 1rem;
+  width: 1rem;
+  color: #4f46e5;
+  border-color: #d1d5db;
+  border-radius: 0.25rem;
+}
+
+.checkbox-label {
+  margin-left: 0.75rem;
+  display: block;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.total-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 0.5rem 1.5rem;
+  font-weight: 700;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.btn-success {
+  background-color: #22c55e;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #16a34a;
+}
+
+.btn-success:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+</style>

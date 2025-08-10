@@ -1,41 +1,22 @@
 <template>
   <aside
-    :class="[
-      isCollapsed ? 'w-20' : 'w-64',
-      'bg-gradient-to-b from-white to-gray-50 text-gray-700 flex flex-col shadow-lg border-r border-gray-200 transition-all duration-300 ease-in-out',
-    ]"
+    :class="[isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded', 'sidebar-main']"
     aria-label="Sidebar"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
-          <svg
-            class="w-6 h-6 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </div>
-        <h1 v-if="!isCollapsed" class="text-lg font-bold tracking-wide text-gray-800">
-          BARBERSHOP
-        </h1>
+    <div class="sidebar-header">
+      <div class="sidebar-logo-container">
+        <h1 v-if="!isCollapsed" class="sidebar-title">BARBERSHOP</h1>
       </div>
 
       <!-- Botón colapsar -->
       <button
         @click="emitToggle"
         :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        class="p-1 rounded-md hover:bg-gray-100 transition-colors"
+        class="sidebar-toggle-button"
       >
         <svg
-          :class="[
-            'w-5 h-5 transform transition-transform duration-200',
-            isCollapsed ? 'rotate-180' : 'rotate-0',
-          ]"
+          :class="['sidebar-toggle-icon', isCollapsed ? 'rotate-180' : 'rotate-0']"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -47,32 +28,25 @@
     </div>
 
     <!-- Menú label -->
-    <div
-      v-if="!isCollapsed"
-      class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
-    >
-      Menú
-    </div>
+    <div v-if="!isCollapsed" class="sidebar-menu-label">Menú</div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-2 py-4">
-      <ul class="space-y-1">
+    <nav class="sidebar-nav">
+      <ul class="sidebar-nav-list">
         <li v-for="item in items" :key="item.to">
           <router-link :to="item.to" v-slot="{ isActive }">
             <div
               :class="[
-                'group flex items-center px-3 py-2.5 rounded-md text-sm font-semibold tracking-wide transition-all duration-200',
-                isActive
-                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700 hover:shadow-sm',
-                isCollapsed ? 'justify-center' : '',
+                'sidebar-nav-item',
+                isActive ? 'sidebar-nav-item-active' : 'sidebar-nav-item-inactive',
+                isCollapsed ? 'sidebar-nav-item-collapsed' : '',
               ]"
               :title="isCollapsed ? item.label : null"
             >
-              <span class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+              <span class="sidebar-nav-icon-wrapper">
                 <svg
                   v-if="item.icon === 'home'"
-                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  class="sidebar-nav-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -87,7 +61,7 @@
 
                 <svg
                   v-else-if="item.icon === 'users'"
-                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  class="sidebar-nav-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -102,7 +76,7 @@
 
                 <svg
                   v-else-if="item.icon === 'credit-card'"
-                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  class="sidebar-nav-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -114,7 +88,7 @@
 
                 <svg
                   v-else-if="item.icon === 'scissors'"
-                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  class="sidebar-nav-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -128,7 +102,7 @@
 
                 <svg
                   v-else-if="item.icon === 'map-pin'"
-                  class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                  class="sidebar-nav-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -143,7 +117,7 @@
                 </svg>
               </span>
 
-              <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
+              <span v-if="!isCollapsed" class="sidebar-nav-label">{{ item.label }}</span>
             </div>
           </router-link>
         </li>
@@ -172,5 +146,166 @@ const items = [
 </script>
 
 <style scoped>
-/* Nada extra porque todo se maneja con Tailwind */
+.sidebar-main {
+  background: linear-gradient(to bottom, #fff, #f9fafb);
+  color: #4b5563;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-right: 1px solid #e5e7eb;
+  transition: all 300ms ease-in-out;
+}
+
+.sidebar-collapsed {
+  width: 5rem;
+}
+
+.sidebar-expanded {
+  width: 16rem;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-logo-icon-wrapper {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #2563eb;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-logo-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #fff;
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  color: #1f2937;
+}
+
+.sidebar-toggle-button {
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-toggle-button:hover {
+  background-color: #f3f4f6;
+}
+
+.sidebar-toggle-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 200ms;
+}
+
+.sidebar-toggle-icon.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.sidebar-toggle-icon.rotate-0 {
+  transform: rotate(0deg);
+}
+
+.sidebar-menu-label {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sidebar-nav {
+  flex: 1 1 0%;
+  padding: 1rem 0.5rem;
+}
+
+.sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 200ms;
+}
+
+.sidebar-nav-item-active {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-left: 4px solid #2563eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-nav-item-inactive {
+  color: #4b5563;
+}
+
+.sidebar-nav-item-inactive:hover {
+  background-color: #f9fafb;
+  color: #1d4ed8;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-nav-item-collapsed {
+  justify-content: center;
+}
+
+.sidebar-nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+  transition: color 200ms;
+}
+
+.sidebar-nav-item-inactive:hover .sidebar-nav-icon {
+  color: #1d4ed8;
+}
+
+.sidebar-nav-label {
+  margin-left: 0.75rem;
+}
 </style>

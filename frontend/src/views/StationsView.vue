@@ -1,46 +1,46 @@
 <template>
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Gestión de Estaciones</h1>
+  <div class="stations-container">
+    <h1 class="stations-title">Gestión de Estaciones</h1>
 
-    <div v-if="store.isLoading" class="text-center text-gray-500">Cargando...</div>
-    <div v-if="store.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+    <div v-if="store.isLoading" class="loading-message">Cargando...</div>
+    <div v-if="store.error" class="error-message">
       {{ store.error }}
     </div>
 
-    <div class="bg-white shadow-md rounded-lg">
-      <div class="p-4 border-b flex justify-between items-center">
-        <h2 class="text-xl font-semibold">Lista de Estaciones</h2>
+    <div class="stations-table-wrapper">
+      <div class="stations-table-header">
+        <h2 class="stations-table-title">Lista de Estaciones</h2>
         <button
           @click="openModal()"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          class="btn btn-primary"
         >
           Añadir Estación
         </button>
       </div>
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="stations-table">
+        <thead class="stations-table-head">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-            <th class="relative px-6 py-3"><span class="sr-only">Acciones</span></th>
+            <th class="stations-table-th">Nombre</th>
+            <th class="stations-table-th-actions"><span class="sr-only">Acciones</span></th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="stations-table-body">
           <tr v-for="station in store.stations" :key="station.id">
-            <td class="px-6 py-4">{{ station.name }}</td>
-            <td class="px-6 py-4 text-right text-sm font-medium">
-              <button @click="openModal(station)" class="text-indigo-600 hover:text-indigo-900">
+            <td class="stations-table-td">{{ station.name }}</td>
+            <td class="stations-table-td-actions">
+              <button @click="openModal(station)" class="btn btn-link btn-edit">
                 Editar
               </button>
               <button
                 @click="confirmDelete(station.id)"
-                class="text-red-600 hover:text-red-900 ml-4"
+                class="btn btn-link btn-delete"
               >
                 Eliminar
               </button>
             </td>
           </tr>
           <tr v-if="store.stations.length === 0">
-            <td colspan="2" class="px-6 py-4 text-center text-gray-500">
+            <td colspan="2" class="stations-table-td-empty">
               No se encontraron estaciones.
             </td>
           </tr>
@@ -51,34 +51,34 @@
     <!-- Modal -->
     <div
       v-if="isModalOpen"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
+      class="modal-overlay"
     >
-      <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">{{ modalTitle }}</h3>
+      <div class="modal-content">
+        <h3 class="modal-title">{{ modalTitle }}</h3>
         <form @submit.prevent="handleSubmit">
-          <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700"
+          <div class="form-group">
+            <label for="name" class="form-label"
               >Nombre de la Estación</label
             >
             <input
               v-model="currentStation.name"
               type="text"
               id="name"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              class="form-input"
               required
             />
           </div>
-          <div class="mt-6 flex justify-end">
+          <div class="form-actions">
             <button
               type="button"
               @click="closeModal"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded mr-2"
+              class="btn btn-secondary"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              class="btn btn-primary"
             >
               Guardar
             </button>
@@ -145,3 +145,230 @@ onMounted(() => {
   store.fetchStations();
 });
 </script>
+
+<style scoped>
+.stations-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+}
+
+.stations-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.loading-message {
+  text-align: center;
+  color: #6b7280;
+}
+
+.error-message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  background-color: #fee2e2;
+  border-radius: 0.5rem;
+}
+
+.stations-table-wrapper {
+  background-color: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+}
+
+.stations-table-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stations-table-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.stations-table {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.stations-table-head {
+  background-color: #f9fafb;
+}
+
+.stations-table-th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stations-table-th-actions {
+  position: relative;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.stations-table-body {
+  background-color: #fff;
+}
+
+.stations-table-body tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stations-table-body tr:last-child {
+  border-bottom: none;
+}
+
+.stations-table-td {
+  padding: 1rem 1.5rem;
+}
+
+.stations-table-td-actions {
+  padding: 1rem 1.5rem;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-edit {
+  color: #4f46e5;
+}
+
+.btn-edit:hover {
+  color: #3730a3;
+}
+
+.btn-delete {
+  color: #dc2626;
+  margin-left: 1rem;
+}
+
+.btn-delete:hover {
+  color: #7f1d1d;
+}
+
+.stations-table-td-empty {
+  padding: 1rem 1.5rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(75, 85, 99, 0.5);
+  overflow-y: auto;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensure modal is on top */
+}
+
+.modal-content {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.375rem;
+  background-color: #fff;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-input {
+  margin-top: 0.25rem;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #1f2937;
+  margin-right: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+</style>
