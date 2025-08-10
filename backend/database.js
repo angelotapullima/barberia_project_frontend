@@ -34,7 +34,7 @@ async function setup() {
       station_id INTEGER NOT NULL,
       total_amount REAL NOT NULL,
       customer_name TEXT,
-      payment_method TEXT DEFAULT 'cash', -- New column
+      payment_method TEXT DEFAULT 'cash',
       FOREIGN KEY (barber_id) REFERENCES barbers (id),
       FOREIGN KEY (station_id) REFERENCES stations (id)
     );
@@ -97,8 +97,14 @@ async function setup() {
     // Insert dummy sales data
     const juanPerez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Juan Pérez');
     const luisGomez = await db.get('SELECT id FROM barbers WHERE name = ?', 'Luis Gómez');
-    const corteBasico = await db.get('SELECT id, price FROM services WHERE name = ?', 'Corte Básico');
-    const corteBarba = await db.get('SELECT id, price FROM services WHERE name = ?', 'Corte + Barba');
+    const corteBasico = await db.get(
+      'SELECT id, price FROM services WHERE name = ?',
+      'Corte Básico'
+    );
+    const corteBarba = await db.get(
+      'SELECT id, price FROM services WHERE name = ?',
+      'Corte + Barba'
+    );
     const refresco = await db.get('SELECT id, price FROM services WHERE name = ?', 'Refresco');
 
     const today = new Date();
@@ -108,31 +114,68 @@ async function setup() {
     // Sale 1: Today, Juan Pérez, Corte Básico + Refresco
     let saleResult = await db.run(
       'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [today.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price + refresco.price, 'Cliente A', 'cash']
+      [
+        today.toISOString().slice(0, 10),
+        juanPerez.id,
+        1,
+        corteBasico.price + refresco.price,
+        'Cliente A',
+        'cash',
+      ]
     );
     let saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBasico.id, corteBasico.price]);
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, refresco.id, refresco.price]);
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBasico.id,
+      corteBasico.price,
+    ]);
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      refresco.id,
+      refresco.price,
+    ]);
 
     // Sale 2: 3 days ago, Luis Gómez, Corte + Barba
     const threeDaysAgo = new Date(today);
     threeDaysAgo.setDate(today.getDate() - 3);
     saleResult = await db.run(
       'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [threeDaysAgo.toISOString().slice(0, 10), luisGomez.id, 2, corteBarba.price, 'Cliente B', 'card']
+      [
+        threeDaysAgo.toISOString().slice(0, 10),
+        luisGomez.id,
+        2,
+        corteBarba.price,
+        'Cliente B',
+        'card',
+      ]
     );
     saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBarba.id, corteBarba.price]);
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBarba.id,
+      corteBarba.price,
+    ]);
 
     // Sale 3: 5 days ago, Juan Pérez, Corte Básico
     const fiveDaysAgo = new Date(today);
     fiveDaysAgo.setDate(today.getDate() - 5);
     saleResult = await db.run(
       'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-      [fiveDaysAgo.toISOString().slice(0, 10), juanPerez.id, 1, corteBasico.price, 'Cliente C', 'yape']
+      [
+        fiveDaysAgo.toISOString().slice(0, 10),
+        juanPerez.id,
+        1,
+        corteBasico.price,
+        'Cliente C',
+        'yape',
+      ]
     );
     saleId = saleResult.lastID;
-    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [saleId, corteBasico.id, corteBasico.price]);
+    await db.run('INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)', [
+      saleId,
+      corteBasico.id,
+      corteBasico.price,
+    ]);
 
     // Insert dummy reservations data
     const tomorrow = new Date();
@@ -143,13 +186,27 @@ async function setup() {
     // Reservation 1: Tomorrow, Juan Pérez, pending
     await db.run(
       'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [juanPerez.id, 1, 'Cliente Reserva 1', tomorrow.toISOString(), new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(), 'pending']
+      [
+        juanPerez.id,
+        1,
+        'Cliente Reserva 1',
+        tomorrow.toISOString(),
+        new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(),
+        'pending',
+      ]
     );
 
     // Reservation 2: Day after tomorrow, Luis Gómez, completed
     await db.run(
       'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [luisGomez.id, 2, 'Cliente Reserva 2', dayAfterTomorrow.toISOString(), new Date(dayAfterTomorrow.getTime() + 90 * 60 * 1000).toISOString(), 'completed']
+      [
+        luisGomez.id,
+        2,
+        'Cliente Reserva 2',
+        dayAfterTomorrow.toISOString(),
+        new Date(dayAfterTomorrow.getTime() + 90 * 60 * 1000).toISOString(),
+        'completed',
+      ]
     );
 
     // Reservation 3: 2 days ago, Juan Pérez, completed (for historical data)
@@ -157,7 +214,14 @@ async function setup() {
     twoDaysAgo.setDate(today.getDate() - 2);
     await db.run(
       'INSERT INTO reservations (barber_id, station_id, customer_name, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [juanPerez.id, 1, 'Cliente Reserva 3', twoDaysAgo.toISOString(), new Date(twoDaysAgo.getTime() + 60 * 60 * 1000).toISOString(), 'completed']
+      [
+        juanPerez.id,
+        1,
+        'Cliente Reserva 3',
+        twoDaysAgo.toISOString(),
+        new Date(twoDaysAgo.getTime() + 60 * 60 * 1000).toISOString(),
+        'completed',
+      ]
     );
   }
 
