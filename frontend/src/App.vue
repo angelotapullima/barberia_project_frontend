@@ -1,14 +1,11 @@
 <template>
   <div class="flex h-screen bg-barber-black">
-    <!-- Sidebar -->
-    <Sidebar :isCollapsed="isCollapsed" @toggle="isCollapsed = !isCollapsed" />
+    <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
 
-    <!-- Main Content Area -->
     <div
-      :class="{ 'ml-16': isSidebarCollapsed, 'ml-64': !isSidebarCollapsed }"
-      class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+      :class="{ 'ml-0': isSidebarCollapsed, 'ml-0': !isSidebarCollapsed }"
+      class="flex-1 flex flex-col bg-barber-white transition-all duration-300 ease-in-out"
     >
-      <!-- Header/Navbar -->
       <header class="flex items-center justify-between p-4 bg-barber-red shadow-md">
         <button @click="toggleSidebar" class="text-barber-white focus:outline-none">
           <svg
@@ -28,11 +25,9 @@
         </button>
         <h1 class="text-xl font-semibold text-barber-white">Barberia App</h1>
         <div></div>
-        <!-- Placeholder for right side if needed -->
       </header>
 
-      <!-- Contenido de la página -->
-      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-barber-white p-4">
+      <main class="flex-1 overflow-x-hidden overflow-y-auto p-4">
         <RouterView />
       </main>
     </div>

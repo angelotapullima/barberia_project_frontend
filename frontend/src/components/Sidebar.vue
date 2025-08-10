@@ -2,7 +2,7 @@
   <aside
     :class="[
       isCollapsed ? 'w-20' : 'w-64',
-      'bg-gradient-to-b from-white to-gray-50 text-gray-700 flex flex-col shadow-lg border-r border-gray-200 transition-all duration-300 ease-in-out',
+      'bg-white opacity-100 text-gray-700 flex flex-col shadow-lg transition-all duration-300 ease-in-out',
     ]"
     aria-label="Sidebar"
   >
