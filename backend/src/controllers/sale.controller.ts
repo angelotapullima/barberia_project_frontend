@@ -105,6 +105,23 @@ class SaleController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async getSalesSummaryByService(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const summary = await saleService.getSalesSummaryByService(startDate as string, endDate as string);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting sales summary by service:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export const saleController = new SaleController();

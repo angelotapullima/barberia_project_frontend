@@ -103,5 +103,21 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
+    async getSalesSummaryByService(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/summary-by-service`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas por servicio.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 });

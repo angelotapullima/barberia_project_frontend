@@ -179,6 +179,21 @@ class SaleService {
     }
     return totalPayments;
   }
+
+  async getSalesSummaryByService(startDate: string, endDate: string): Promise<{ service_name: string; total_sales: number }[]> {
+    const query = `
+      SELECT
+          s.name as service_name,
+          SUM(si.price_at_sale) as total_sales
+      FROM sales sa
+      JOIN sale_items si ON sa.id = si.sale_id
+      JOIN services s ON si.service_id = s.id
+      WHERE sa.sale_date BETWEEN ? AND ?
+      GROUP BY s.name
+      ORDER BY total_sales DESC
+    `;
+    return this.db.all(query, [startDate, endDate]);
+  }
 }
 
 export const saleService = new SaleService();

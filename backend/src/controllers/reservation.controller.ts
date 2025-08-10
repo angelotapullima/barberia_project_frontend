@@ -82,6 +82,36 @@ class ReservationController {
       res.status(500).json({ error: 'Failed to delete reservation.' });
     }
   }
+
+  async getReservationCount(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+    try {
+      const count = await reservationService.getReservationCount(startDate as string, endDate as string);
+      res.json({ count });
+    } catch (error) {
+      console.error('Error getting reservation count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getCompletedReservationCount(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+    try {
+      const count = await reservationService.getCompletedReservationCount(startDate as string, endDate as string);
+      res.json({ count });
+    } catch (error) {
+      console.error('Error getting completed reservation count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export const reservationController = new ReservationController();

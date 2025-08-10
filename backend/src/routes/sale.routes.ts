@@ -10,5 +10,6 @@ router.post('/', saleController.createSale);
 router.get('/summary', saleController.getDailySalesSummary);
 router.get('/ranking', saleController.getBarberRanking);
 router.get('/total-payments', saleController.getTotalBarberPayments);
+router.get('/summary-by-service', saleController.getSalesSummaryByService);
 
 export default router;

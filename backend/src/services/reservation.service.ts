@@ -106,6 +106,24 @@ class ReservationService {
   async deleteReservation(id: number): Promise<void> {
     await this.db.run('DELETE FROM reservations WHERE id = ?', id);
   }
+
+  async getReservationCount(startDate: string, endDate: string): Promise<number> {
+    const result = await this.db.get(`
+      SELECT COUNT(*) as count
+      FROM reservations
+      WHERE start_time BETWEEN ? AND ?
+    `, [startDate, endDate]);
+    return result.count;
+  }
+
+  async getCompletedReservationCount(startDate: string, endDate: string): Promise<number> {
+    const result = await this.db.get(`
+      SELECT COUNT(*) as count
+      FROM reservations
+      WHERE start_time BETWEEN ? AND ? AND status = 'completed'
+    `, [startDate, endDate]);
+    return result.count;
+  }
 }
 
 export const reservationService = new ReservationService();
