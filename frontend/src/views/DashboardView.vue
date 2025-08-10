@@ -1,15 +1,15 @@
 <template>
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Dashboard y Reportes</h1>
+  <div class="container mx-auto p-6">
+    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Dashboard y Reportes</h1>
 
     <!-- Filters -->
-    <div class="flex items-center space-x-4 mb-6 bg-white p-4 rounded-lg shadow">
+    <div class="bg-white p-6 rounded-xl shadow-lg mb-8 flex flex-wrap items-end gap-6">
       <div>
-        <label for="month" class="block text-sm font-medium text-gray-700">Mes</label>
+        <label for="month" class="block text-sm font-semibold text-gray-700 mb-1">Mes</label>
         <select
           v-model="selectedMonth"
           id="month"
-          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          class="block w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
         >
           <option v-for="(name, index) in months" :key="index" :value="index + 1">
             {{ name }}
@@ -17,11 +17,11 @@
         </select>
       </div>
       <div>
-        <label for="year" class="block text-sm font-medium text-gray-700">Año</label>
+        <label for="year" class="block text-sm font-semibold text-gray-700 mb-1">Año</label>
         <select
           v-model="selectedYear"
           id="year"
-          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          class="block w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
         >
           <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
         </select>
@@ -36,13 +36,13 @@
     <!-- Main Content -->
     <div v-if="!store.isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Calendar -->
-      <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
         <FullCalendar :options="calendarOptions" />
       </div>
 
       <!-- Stats Table -->
-      <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">Reporte de Pagos</h2>
+      <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Reporte de Pagos</h2>
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>

@@ -1,13 +1,13 @@
 <template>
-  <div class="flex h-screen bg-barber-black">
+  <div class="flex h-screen bg-gray-50">
     <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
 
     <div
       :class="{ 'ml-0': isSidebarCollapsed, 'ml-0': !isSidebarCollapsed }"
       class="flex-1 flex flex-col bg-barber-white transition-all duration-300 ease-in-out"
     >
-      <header class="flex items-center justify-between p-4 bg-barber-red shadow-md">
-        <button @click="toggleSidebar" class="text-barber-white focus:outline-none">
+      <header class="flex items-center justify-between p-4 bg-white shadow-md border-b border-gray-200">
+        <button @click="toggleSidebar" class="text-gray-600 focus:outline-none p-2 rounded-md hover:bg-gray-100 transition-colors duration-200">
           <svg
             class="w-6 h-6"
             fill="none"
@@ -23,7 +23,7 @@
             ></path>
           </svg>
         </button>
-        <h1 class="text-xl font-semibold text-barber-white">Barberia App</h1>
+        <h1 class="text-2xl font-bold text-gray-800">Barberia App</h1>
         <div></div>
       </header>
 
