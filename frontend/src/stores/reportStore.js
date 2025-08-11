@@ -9,6 +9,7 @@ export const useReportStore = defineStore('reports', {
     stats: [],
     comprehensiveSales: [], // New state for comprehensive sales report
     servicesProductsSales: [], // New state for services vs products sales report
+    servicesProductsSalesComparison: [], // New state for comparison data
     // Nuevos estados para los reportes
     stationUsage: [],
     customerFrequency: [],
@@ -31,21 +32,43 @@ export const useReportStore = defineStore('reports', {
         this.isLoading = false;
       }
     },
-    async fetchNewReports(startDate, endDate) {
+    async fetchStationUsage(startDate, endDate) {
       this.isLoading = true;
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const [stationUsageRes, customerFrequencyRes, peakHoursRes] = await Promise.all([
-          axios.get(`${API_URL}/reports/station-usage`, { params }),
-          axios.get(`${API_URL}/reports/customer-frequency`, { params }),
-          axios.get(`${API_URL}/reports/peak-hours`, { params })
-        ]);
-        this.stationUsage = stationUsageRes.data;
-        this.customerFrequency = customerFrequencyRes.data;
-        this.peakHours = peakHoursRes.data;
+        const response = await axios.get(`${API_URL}/reports/station-usage`, { params });
+        this.stationUsage = response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al cargar los nuevos reportes.';
+        this.error = error.response?.data?.error || 'Error al cargar el reporte de uso de estaciones.';
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchCustomerFrequency(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const params = { startDate, endDate };
+        const response = await axios.get(`${API_URL}/reports/customer-frequency`, { params });
+        this.customerFrequency = response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar el reporte de frecuencia de clientes.';
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchPeakHours(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const params = { startDate, endDate };
+        const response = await axios.get(`${API_URL}/reports/peak-hours`, { params });
+        this.peakHours = response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar el reporte de horas pico.';
         console.error(error);
       } finally {
         this.isLoading = false;
@@ -64,12 +87,25 @@ export const useReportStore = defineStore('reports', {
         this.isLoading = false;
       }
     },
-    async fetchServicesProductsSales(startDate, endDate) {
+    async fetchServicesProductsSales(startDate, endDate, comparisonFilters = null) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reports/services-products-sales`, { params: { startDate, endDate } });
-        this.servicesProductsSales = response.data;
+        const currentPeriodPromise = axios.get(`${API_URL}/reports/services-products-sales`, { params: { startDate, endDate } });
+        
+        let comparisonPeriodPromise = Promise.resolve({ data: [] });
+        if (comparisonFilters) {
+          comparisonPeriodPromise = axios.get(`${API_URL}/reports/services-products-sales`, { params: comparisonFilters });
+        }
+
+        const [currentResponse, comparisonResponse] = await Promise.all([
+          currentPeriodPromise,
+          comparisonPeriodPromise
+        ]);
+
+        this.servicesProductsSales = currentResponse.data;
+        this.servicesProductsSalesComparison = comparisonResponse.data;
+
       } catch (error) {
         this.error = error.response?.data?.error || 'Error al cargar el reporte de servicios vs productos.';
         console.error(error);

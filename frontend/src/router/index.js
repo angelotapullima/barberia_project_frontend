@@ -14,6 +14,14 @@ import ScheduleView from '@/views/ScheduleView.vue'; // Vista para el calendario
 
 import DashboardView from '@/views/DashboardView.vue';
 
+// Importar las nuevas vistas de reportes
+import ReportsView from '@/views/ReportsView.vue'; // La vista placeholder
+import StationUsageReportView from '@/views/StationUsageReportView.vue';
+import CustomerFrequencyReportView from '@/views/CustomerFrequencyReportView.vue';
+import PeakHoursReportView from '@/views/PeakHoursReportView.vue';
+import ComprehensiveSalesReportView from '@/views/ComprehensiveSalesReportView.vue';
+import ServicesProductsSalesReportView from '@/views/ServicesProductsSalesReportView.vue';
+
 const routes = [
   { path: '/', component: DashboardView, name: 'Dashboard' },
   { path: '/sales/register', component: SalesView, name: 'SalesRegistration' }, // Renamed route
@@ -22,10 +30,17 @@ const routes = [
   { path: '/stations', component: StationsView, name: 'Stations' },
   { path: '/services', component: ServicesView, name: 'Services' },
   { path: '/products', component: ProductsView, name: 'Products' },
-  { path: '/inventory-report', component: InventoryReportView, name: 'InventoryReport' },
   { path: '/reservations', component: ReservationsView, name: 'Reservations' }, // New route for reservations
-  { path: '/reports', component: () => import('@/views/ReportsView.vue'), name: 'Reports' },
   { path: '/schedule', component: ScheduleView, name: 'Schedule' }, // Nueva ruta para la agenda
+
+  // Rutas de reportes
+  { path: '/reports', component: ReportsView, name: 'Reports' }, // La vista principal de reportes (placeholder)
+  { path: '/reports/inventory', component: InventoryReportView, name: 'InventoryReport' },
+  { path: '/reports/station-usage', component: StationUsageReportView, name: 'StationUsageReport' },
+  { path: '/reports/customer-frequency', component: CustomerFrequencyReportView, name: 'CustomerFrequencyReport' },
+  { path: '/reports/peak-hours', component: PeakHoursReportView, name: 'PeakHoursReport' },
+  { path: '/reports/sales/comprehensive', component: ComprehensiveSalesReportView, name: 'ComprehensiveSalesReport' },
+  { path: '/reports/sales/by-type', component: ServicesProductsSalesReportView, name: 'ServicesProductsSalesReport' },
 ];
 
 const router = createRouter({

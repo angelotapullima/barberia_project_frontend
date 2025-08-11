@@ -25,6 +25,13 @@
       <p>¡Excelente! No hay productos con bajo stock en este momento.</p>
     </div>
     <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
+      <!-- Botón de Exportar -->
+      <div class="flex justify-end p-4">
+        <button @click="exportLowStockToCsv" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+          Exportar Bajo Stock a CSV
+        </button>
+      </div>
+
       <table class="min-w-full leading-normal">
         <thead>
           <tr>
@@ -68,6 +75,34 @@ const fetchInventorySummary = async () => {
     productStore.loading = false;
   }
 };
+
+function exportLowStockToCsv() {
+  if (productStore.lowStockProducts.length === 0) {
+    alert('No hay productos con bajo stock para exportar.');
+    return;
+  }
+
+  const headers = ['Nombre', 'Precio', 'Stock Actual', 'Stock Mínimo'];
+  const rows = productStore.lowStockProducts.map(product => [
+    product.name,
+    (product.price || 0).toFixed(2),
+    product.stock_quantity,
+    product.min_stock_level
+  ]);
+
+  let csvContent = headers.join(',') + '\n';
+  rows.forEach(row => {
+    csvContent += row.join(',') + '\n';
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'reporte_inventario_bajo_stock.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 onMounted(() => {
   fetchInventorySummary();

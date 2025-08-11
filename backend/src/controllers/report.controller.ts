@@ -38,15 +38,26 @@ class ReportController {
   }
 
   async getServicesProductsSalesReport(req: Request, res: Response): Promise<void> {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, compareStartDate, compareEndDate } = req.query;
 
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Start date and end date are required' });
+      res.status(400).json({ error: 'Start date and end date are required for the current period.' });
+      return;
+    }
+
+    // Validar fechas de comparación solo si están presentes
+    if ((compareStartDate && !compareEndDate) || (!compareStartDate && compareEndDate)) {
+      res.status(400).json({ error: 'Both compareStartDate and compareEndDate are required if comparison is enabled.' });
       return;
     }
 
     try {
-      const salesData = await reportService.getServicesProductsSales(String(startDate), String(endDate));
+      const salesData = await reportService.getServicesProductsSales(
+        String(startDate),
+        String(endDate),
+        compareStartDate ? String(compareStartDate) : undefined,
+        compareEndDate ? String(compareEndDate) : undefined
+      );
       res.json(salesData);
     } catch (error) {
       console.error('Error fetching services/products sales report:', error);
