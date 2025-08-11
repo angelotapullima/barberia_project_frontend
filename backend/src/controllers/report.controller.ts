@@ -52,13 +52,17 @@ class ReportController {
     }
 
     try {
-      const salesData = await reportService.getServicesProductsSales(
-        String(startDate),
-        String(endDate),
-        compareStartDate ? String(compareStartDate) : undefined,
-        compareEndDate ? String(compareEndDate) : undefined
-      );
-      res.json(salesData);
+      const salesData = await reportService.getServicesProductsSales(String(startDate), String(endDate));
+
+      let comparisonData;
+      if (compareStartDate && compareEndDate) {
+        comparisonData = await reportService.getServicesProductsSales(String(compareStartDate), String(compareEndDate));
+      }
+
+      res.json({
+        currentPeriod: salesData,
+        comparisonPeriod: comparisonData,
+      });
     } catch (error) {
       console.error('Error fetching services/products sales report:', error);
       res.status(500).json({ error: 'Failed to fetch services/products sales report.' });

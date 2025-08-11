@@ -2,7 +2,7 @@
   <aside
     :class="[
       isCollapsed ? 'w-20' : 'w-64',
-      'bg-white opacity-100 text-gray-700 flex flex-col shadow-lg transition-all duration-300 ease-in-out',
+      'h-full overflow-y-auto bg-white opacity-100 text-gray-700 flex flex-col shadow-lg transition-all duration-300 ease-in-out',
     ]"
     aria-label="Sidebar"
   >
@@ -255,6 +255,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V17" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 10V20" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 7V17" />
+                      </svg>
+                      <svg
+                        v-else-if="subItem.icon === 'credit-card'"
+                        class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <rect x="2" y="5" width="20" height="14" rx="2" />
+                        <path d="M2 10h20" />
                       </svg>
                     </span>
                     <span class="ml-3">{{ subItem.label }}</span>

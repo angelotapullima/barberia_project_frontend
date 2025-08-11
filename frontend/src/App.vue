@@ -3,7 +3,6 @@
     <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
 
     <div
-      :class="{ 'ml-0': isSidebarCollapsed, 'ml-0': !isSidebarCollapsed }"
       class="flex-1 flex flex-col bg-barber-white transition-all duration-300 ease-in-out"
     >
       <header class="flex items-center justify-between p-4 bg-white shadow-md border-b border-gray-200">
