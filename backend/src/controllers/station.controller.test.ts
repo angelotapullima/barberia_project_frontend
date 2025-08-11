@@ -18,6 +18,7 @@ describe('StationController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
 
     mockRequest = {};
     mockResponse = {
@@ -25,6 +26,10 @@ describe('StationController', () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(), // Añadido para manejar res.send()
     };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore console.error
   });
 
   it('debería obtener todas las estaciones', async () => {

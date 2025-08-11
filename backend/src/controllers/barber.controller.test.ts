@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { barberController } from '../controllers/barber.controller'; // Importar la instancia
+import { barberController } from './barber.controller'; // Importar la instancia
 import { barberService } from '../services/barber.service'; // Importar la instancia
 
 // Mock del servicio de barbero
@@ -19,6 +19,7 @@ describe('BarberController', () => {
   beforeEach(() => {
     // Reiniciar los mocks y las instancias antes de cada test
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
 
     mockRequest = {};
     mockResponse = {
@@ -26,6 +27,10 @@ describe('BarberController', () => {
       status: jest.fn().mockReturnThis(), // Permite encadenar .status().json()
       send: jest.fn(), // Añadido para manejar res.send()
     };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore console.error
   });
 
   it('debería obtener todos los barberos', async () => {

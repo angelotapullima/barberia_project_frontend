@@ -9,10 +9,13 @@ describe('BarberService', () => {
   beforeEach(async () => {
     db = await setupTestDB(); // Obtener una nueva DB limpia para cada test
     barberService = new BarberService(db);
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
+    jest.spyOn(console, 'log').mockImplementation(() => {}); // Suppress console.log
   });
 
   afterEach(async () => {
     await db.close();
+    jest.restoreAllMocks(); // Restore console.error
   });
 
   it('debería obtener todos los barberos', async () => {
@@ -23,7 +26,7 @@ describe('BarberService', () => {
   });
 
   it('debería crear un nuevo barbero', async () => {
-    const newBarber = { name: 'Nuevo Barbero', station_id: 1, base_salary: 1500 };
+    const newBarber = { name: 'Nuevo Barbero', base_salary: 1500 }; // Removed station_id
     const createdBarber = await barberService.createBarber(newBarber);
     expect(createdBarber).toHaveProperty('id');
     expect(createdBarber.name).toBe('Nuevo Barbero');
@@ -33,7 +36,7 @@ describe('BarberService', () => {
   });
 
   it('debería actualizar un barbero existente', async () => {
-    const updatedBarber = await barberService.updateBarber(1, { name: 'Juan Actualizado', station_id: 1, base_salary: 1400 });
+    const updatedBarber = await barberService.updateBarber(1, { name: 'Juan Actualizado', base_salary: 1400 }); // Removed station_id
     expect(updatedBarber).not.toBeNull();
     expect(updatedBarber?.name).toBe('Juan Actualizado');
 
@@ -51,7 +54,7 @@ describe('BarberService', () => {
   });
 
   it('no debería actualizar un barbero que no existe', async () => {
-    const updatedBarber = await barberService.updateBarber(999, { name: 'No Existe', station_id: 1, base_salary: 1000 });
+    const updatedBarber = await barberService.updateBarber(999, { name: 'No Existe', base_salary: 1000 }); // Removed station_id
     expect(updatedBarber).toBeNull();
   });
 

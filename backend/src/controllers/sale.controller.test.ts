@@ -25,6 +25,7 @@ describe('SaleController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
 
     mockRequest = {};
     mockResponse = {
@@ -41,6 +42,10 @@ describe('SaleController', () => {
     mockedSaleService.getTotalPaymentsToBarbers.mockResolvedValue(0);
     mockedSaleService.getSalesSummaryByService.mockResolvedValue([]);
     mockedSaleService.getSalesSummaryByPaymentMethod.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore console.error
   });
 
   it('debería obtener todas las ventas', async () => {

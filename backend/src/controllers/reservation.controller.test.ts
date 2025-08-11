@@ -22,6 +22,7 @@ describe('ReservationController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
 
     mockRequest = {};
     mockResponse = {
@@ -31,10 +32,15 @@ describe('ReservationController', () => {
     };
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore console.error
+  });
+
   it('debería obtener todas las reservaciones', async () => {
     const reservations = [{ id: 1, customer_name: 'Cliente 1' }];
     (reservationService.getAllReservations as jest.Mock).mockResolvedValue(reservations);
 
+    mockRequest.query = {}; // Initialize req.query
     await reservationController.getAllReservations(mockRequest as Request, mockResponse as Response);
 
     expect(reservationService.getAllReservations).toHaveBeenCalledTimes(1);
@@ -57,9 +63,10 @@ describe('ReservationController', () => {
     const newReservation = {
       barber_id: 1,
       station_id: 1,
-      customer_name: 'Nuevo Cliente',
+      client_name: 'Nuevo Cliente', // Changed from customer_name
       start_time: '2025-08-15T10:00:00.000Z',
       end_time: '2025-08-15T11:00:00.000Z',
+      service_id: 1, // Added missing service_id
     };
     const createdReservation = { id: 2, ...newReservation };
     (reservationService.createReservation as jest.Mock).mockResolvedValue(createdReservation);
@@ -73,13 +80,39 @@ describe('ReservationController', () => {
     expect(mockResponse.json).toHaveBeenCalledWith(createdReservation);
   });
 
+  it('debería retornar 400 si faltan campos requeridos al crear una reservación', async () => {
+    mockRequest.body = {
+      barber_id: 1,
+      station_id: 1,
+      // customer_name is missing
+      start_time: '2025-08-15T10:00:00.000Z',
+      end_time: '2025-08-15T11:00:00.000Z',
+    };
+
+    // Mock the service to throw an error if validation fails in the controller
+    // Assuming the controller handles validation and sends a 400
+    // If the service itself throws a validation error, we might mock that instead.
+    // For now, let's assume the controller is responsible for basic input validation.
+    // If the controller relies on the service for validation, then the service mock should reject.
+    // Let's assume the controller has some basic validation before calling the service.
+
+    // If the controller calls a validation function that throws an error,
+    // or if it directly checks for missing fields and sets the status.
+    // For this test, we'll assume the controller will set the status to 400 and send an error message.
+
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' }); // Updated error message
+  });
+
   it('debería actualizar una reservación existente', async () => {
     mockRequest.params = { id: '1' };
-    mockRequest.body = { customer_name: 'Cliente Actualizado' };
+    mockRequest.body = { client_name: 'Cliente Actualizado' }; // Changed from customer_name
 
     await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
 
-    expect(reservationService.updateReservation).toHaveBeenCalledWith(1, { customer_name: 'Cliente Actualizado' });
+    expect(reservationService.updateReservation).toHaveBeenCalledWith(1, { client_name: 'Cliente Actualizado' });
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Reservation updated successfully' });
   });
@@ -134,6 +167,7 @@ describe('ReservationController', () => {
   it('debería manejar errores al obtener todas las reservaciones', async () => {
     (reservationService.getAllReservations as jest.Mock).mockRejectedValue(new Error('Error de DB'));
 
+    mockRequest.query = {}; // Initialize req.query
     await reservationController.getAllReservations(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);

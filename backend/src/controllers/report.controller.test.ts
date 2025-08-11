@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { reportController } from '../controllers/report.controller'; // Importar la instancia
+import { reportController } from './report.controller'; // Importar la instancia
 import { reportService } from '../services/report.service';
 
 // Mock del servicio de reportes
@@ -20,6 +20,7 @@ describe('ReportController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
 
     mockRequest = {};
     mockResponse = {
@@ -27,6 +28,10 @@ describe('ReportController', () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(), // Añadido para manejar res.send()
     };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore console.error
   });
 
   it('debería generar un reporte general', async () => {
@@ -65,7 +70,10 @@ describe('ReportController', () => {
     await reportController.getServicesProductsSalesReport(mockRequest as Request, mockResponse as Response);
 
     expect(reportService.getServicesProductsSales).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
-    expect(mockResponse.json).toHaveBeenCalledWith(salesData);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      currentPeriod: salesData,
+      comparisonPeriod: undefined, // Since compareStartDate and compareEndDate are not provided in the test
+    });
   });
 
   it('debería obtener el reporte de utilización de estaciones', async () => {
