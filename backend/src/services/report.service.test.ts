@@ -9,6 +9,9 @@ describe('ReportService', () => {
   let testEndDate: string;
 
   beforeAll(async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console.error
+    jest.spyOn(console, 'log').mockImplementation(() => {}); // Suppress console.log
+
     db = await setupTestDB();
     // @ts-ignore
     reportService = new ReportService(db); // Inyectamos la BD de prueba
@@ -23,6 +26,7 @@ describe('ReportService', () => {
 
   afterAll(async () => {
     await db.close();
+    jest.restoreAllMocks(); // Restore console.error and console.log
   });
 
   it('debería calcular correctamente la utilización de estaciones', async () => {

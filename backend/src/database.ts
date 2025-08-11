@@ -134,7 +134,7 @@ export async function seedDatabase(db: Database) {
         itemsSold.push(service);
         totalAmount += service.price;
       }
-      const saleResult = await db.run('INSERT INTO sales (sale_date, barber_id, station_id, total_amount) VALUES (?, ?, ?, ?)', [dateString, barber.id, station.id, totalAmount]);
+      const saleResult = await db.run('INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)', [dateString, barber.id, station.id, totalAmount, customer]);
       const saleId = saleResult.lastID;
       for (const item of itemsSold) {
         await db.run('INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)', [saleId, item.id, item.type, item.name, item.price, item.price, 1]); // Assuming quantity 1 for now

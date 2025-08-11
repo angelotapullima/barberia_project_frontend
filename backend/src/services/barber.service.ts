@@ -31,24 +31,24 @@ export class BarberService {
   }
 
   async createBarber(barber: Barber): Promise<Barber> {
-    const { name, station_id, base_salary } = barber;
+    const { name, email, station_id, base_salary } = barber;
     const result = await this.db.run(
-      'INSERT INTO barbers (name, station_id, base_salary) VALUES (?, ?, ?)',
-      [name, station_id, base_salary || 1300]
+      'INSERT INTO barbers (name, email, station_id, base_salary) VALUES (?, ?, ?, ?)',
+      [name, email || null, station_id || null, base_salary || 1300]
     );
-    return { id: result.lastID, name, station_id, base_salary: base_salary || 1300 };
+    return { id: result.lastID, name, email, station_id, base_salary: base_salary || 1300 };
   }
 
   async updateBarber(id: number, barber: Barber): Promise<Barber | null> {
-    const { name, station_id, base_salary } = barber;
+    const { name, email, station_id, base_salary } = barber;
     const result = await this.db.run(
-      'UPDATE barbers SET name = ?, station_id = ?, base_salary = ? WHERE id = ?',
-      [name, station_id, base_salary, id]
+      'UPDATE barbers SET name = ?, email = ?, station_id = ?, base_salary = ? WHERE id = ?',
+      [name, email, station_id, base_salary, id]
     );
     if (result.changes === 0) {
       return null;
     }
-    return { id, name, station_id, base_salary };
+    return { id, name, email, station_id, base_salary };
   }
 
   async deleteBarber(id: number): Promise<boolean> {
