@@ -38,7 +38,10 @@ describe('SaleService', () => {
       total_amount: 50,
       customer_name: 'Nuevo Cliente',
       payment_method: 'cash',
-      services: [{ service_id: 1, price_at_sale: 30 }, { service_id: 2, price_at_sale: 20 }],
+      services: [
+        { service_id: 1, price_at_sale: 30, name: 'Service 1', type: 'service' },
+        { service_id: 2, price_at_sale: 20, name: 'Service 2', type: 'service' }
+      ],
     };
     const createdSale = await saleService.createSale(newSale);
     expect(createdSale).toHaveProperty('id');
