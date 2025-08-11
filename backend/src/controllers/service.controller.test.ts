@@ -43,7 +43,7 @@ describe('ServiceController', () => {
   });
 
   it('debería crear un nuevo servicio', async () => {
-    const newService = { name: 'Nuevo Servicio', price: 50 };
+    const newService = { name: 'Nuevo Servicio', price: 50, duration_minutes: 60 };
     const createdService = { id: 3, ...newService };
     (serviceService.createService as jest.Mock).mockResolvedValue(createdService);
 
@@ -57,15 +57,15 @@ describe('ServiceController', () => {
   });
 
   it('debería actualizar un servicio existente', async () => {
-    const updatedService = { id: 1, name: 'Corte Actualizado', price: 35 };
+    const updatedService = { id: 1, name: 'Corte Actualizado', price: 35, duration_minutes: 45 };
     (serviceService.updateService as jest.Mock).mockResolvedValue(updatedService);
 
     mockRequest.params = { id: '1' };
-    mockRequest.body = { name: 'Corte Actualizado', price: 35 };
+    mockRequest.body = { name: 'Corte Actualizado', price: 35, duration_minutes: 45 };
 
     await serviceController.updateService(mockRequest as Request, mockResponse as Response);
 
-    expect(serviceService.updateService).toHaveBeenCalledWith(1, { name: 'Corte Actualizado', price: 35 });
+    expect(serviceService.updateService).toHaveBeenCalledWith(1, { name: 'Corte Actualizado', price: 35, duration_minutes: 45 });
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.json).toHaveBeenCalledWith(updatedService); // Changed to updatedService
   });
@@ -98,12 +98,12 @@ describe('ServiceController', () => {
     await serviceController.createService(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Name and price are required' });
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Name, price, and duration_minutes are required' });
   });
 
   it('debería manejar error al actualizar servicio con datos inválidos', async () => {
     mockRequest.params = { id: '1' };
-    mockRequest.body = { name: 'Test', price: -10 }; // Invalid price
+    mockRequest.body = { name: 'Test', price: -10, duration_minutes: 30 }; // Invalid price
 
     await serviceController.updateService(mockRequest as Request, mockResponse as Response);
 
@@ -115,7 +115,7 @@ describe('ServiceController', () => {
     (serviceService.updateService as jest.Mock).mockResolvedValue(null);
 
     mockRequest.params = { id: '999' };
-    mockRequest.body = { name: 'No Existe', price: 10 };
+    mockRequest.body = { name: 'No Existe', price: 10, duration_minutes: 30 };
 
     await serviceController.updateService(mockRequest as Request, mockResponse as Response);
 

@@ -23,27 +23,32 @@ describe('ServiceService', () => {
   });
 
   it('debería crear un nuevo servicio', async () => {
-    const newService = { name: 'Nuevo Servicio', price: 100 };
+    const newService = { name: 'Nuevo Servicio', price: 100, duration_minutes: 60 };
     const createdService = await serviceService.createService(newService);
     expect(createdService).toHaveProperty('id');
     expect(createdService.name).toBe('Nuevo Servicio');
+    expect(createdService.duration_minutes).toBe(60);
 
     const allServices = await serviceService.getAllServices();
-    expect(allServices.length).toBe(6); // 5 iniciales + 1 nuevo
+    expect(allServices.length).toBe(10); // 9 iniciales + 1 nuevo
   });
 
   it('debería actualizar un servicio existente', async () => {
-    const updatedService = await serviceService.updateService(1, { name: 'Corte Actualizado', price: 35 });
+    const updatedService = await serviceService.updateService(1, { name: 'Corte Actualizado', price: 35, duration_minutes: 45 });
     expect(updatedService).not.toBeNull();
     expect(updatedService?.name).toBe('Corte Actualizado');
+    expect(updatedService?.price).toBe(35);
+    expect(updatedService?.duration_minutes).toBe(45);
 
     const service = (await serviceService.getAllServices()).find(s => s.id === 1);
     expect(service?.name).toBe('Corte Actualizado');
+    expect(service?.price).toBe(35);
+    expect(service?.duration_minutes).toBe(45);
   });
 
   it('debería eliminar un servicio', async () => {
     // Creamos un nuevo servicio que no estará asociado a ninguna venta
-    const serviceToDelete = await serviceService.createService({ name: 'Servicio a Eliminar', price: 10 });
+    const serviceToDelete = await serviceService.createService({ name: 'Servicio a Eliminar', price: 10, duration_minutes: 30 });
     const isDeleted = await serviceService.deleteService(serviceToDelete.id!);
     expect(isDeleted).toBe(true);
 
@@ -59,7 +64,7 @@ describe('ServiceService', () => {
   });
 
   it('no debería actualizar un servicio que no existe', async () => {
-    const updatedService = await serviceService.updateService(999, { name: 'No Existe', price: 10 });
+    const updatedService = await serviceService.updateService(999, { name: 'No Existe', price: 10, duration_minutes: 30 });
     expect(updatedService).toBeNull();
   });
 

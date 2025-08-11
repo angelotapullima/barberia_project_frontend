@@ -13,17 +13,21 @@ class ServiceController {
   }
 
   async createService(req: Request, res: Response): Promise<void> {
-    const { name, price } = req.body;
-    if (!name || price === undefined) {
-      res.status(400).json({ error: 'Name and price are required' });
+    const { name, price, duration_minutes } = req.body;
+    if (!name || price === undefined || duration_minutes === undefined) {
+      res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
       return;
     }
     if (typeof price !== 'number' || price < 0) {
       res.status(400).json({ error: 'Price must be a non-negative number' });
       return;
     }
+    if (typeof duration_minutes !== 'number' || duration_minutes < 0) {
+      res.status(400).json({ error: 'Duration minutes must be a non-negative number' });
+      return;
+    }
     try {
-      const newService = await serviceService.createService({ name, price });
+      const newService = await serviceService.createService({ name, price, duration_minutes });
       res.status(201).json(newService);
     } catch (error) {
       console.error('Error creating service:', error);
@@ -32,18 +36,22 @@ class ServiceController {
   }
 
   async updateService(req: Request, res: Response): Promise<void> {
-    const { name, price } = req.body;
+    const { name, price, duration_minutes } = req.body;
     const { id } = req.params;
-    if (!name || price === undefined) {
-      res.status(400).json({ error: 'Name and price are required' });
+    if (!name || price === undefined || duration_minutes === undefined) {
+      res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
       return;
     }
     if (typeof price !== 'number' || price < 0) {
       res.status(400).json({ error: 'Price must be a non-negative number' });
       return;
     }
+    if (typeof duration_minutes !== 'number' || duration_minutes < 0) {
+      res.status(400).json({ error: 'Duration minutes must be a non-negative number' });
+      return;
+    }
     try {
-      const updatedService = await serviceService.updateService(Number(id), { name, price });
+      const updatedService = await serviceService.updateService(Number(id), { name, price, duration_minutes });
       if (!updatedService) {
         res.status(404).json({ error: 'Service not found' });
         return;

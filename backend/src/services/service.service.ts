@@ -5,6 +5,7 @@ interface Service {
   id?: number;
   name: string;
   price: number;
+  duration_minutes: number; // Added
   type?: string;
   stock_quantity?: number;
   min_stock_level?: number;
@@ -29,16 +30,17 @@ export class ServiceService {
   }
 
   async createService(service: Service): Promise<Service> {
-    const { name, price, type = 'service', stock_quantity = 0, min_stock_level = 0 } = service;
-    const result = await this.db.run('INSERT INTO services (name, price, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?)', [name, price, type, stock_quantity, min_stock_level]);
-    return { id: result.lastID, name, price, type, stock_quantity, min_stock_level };
+    const { name, price, duration_minutes, type = 'service', stock_quantity = 0, min_stock_level = 0 } = service;
+    const result = await this.db.run('INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?)', [name, price, duration_minutes, type, stock_quantity, min_stock_level]);
+    return { id: result.lastID, name, price, duration_minutes, type, stock_quantity, min_stock_level };
   }
 
   async updateService(id: number, service: Service): Promise<Service | null> {
-    const { name, price, type = 'service', stock_quantity = 0, min_stock_level = 0 } = service;
-    const result = await this.db.run('UPDATE services SET name = ?, price = ?, type = ?, stock_quantity = ?, min_stock_level = ? WHERE id = ?', [
+    const { name, price, duration_minutes, type = 'service', stock_quantity = 0, min_stock_level = 0 } = service;
+    const result = await this.db.run('UPDATE services SET name = ?, price = ?, duration_minutes = ?, type = ?, stock_quantity = ?, min_stock_level = ? WHERE id = ?', [
       name,
       price,
+      duration_minutes,
       type,
       stock_quantity,
       min_stock_level,
@@ -47,7 +49,7 @@ export class ServiceService {
     if (result.changes === 0) {
       return null;
     }
-    return { id, name, price, type, stock_quantity, min_stock_level };
+    return { id, name, price, duration_minutes, type, stock_quantity, min_stock_level };
   }
 
   async deleteService(id: number): Promise<boolean | { error: string }> {
