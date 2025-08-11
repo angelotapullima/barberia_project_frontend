@@ -10,13 +10,15 @@ async function createSchema(db: Database) {
         CREATE TABLE IF NOT EXISTS barbers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE,
       phone TEXT,
       specialty TEXT,
       photo_url TEXT,
-      base_salary REAL DEFAULT 1300, -- Added
+      station_id INTEGER, -- Added station_id
+      base_salary REAL DEFAULT 1300,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (station_id) REFERENCES stations (id)
     );
     CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

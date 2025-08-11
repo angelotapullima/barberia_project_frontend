@@ -26,7 +26,7 @@ describe('BarberService', () => {
   });
 
   it('debería crear un nuevo barbero', async () => {
-    const newBarber = { name: 'Nuevo Barbero', base_salary: 1500 }; // Removed station_id
+    const newBarber = { name: 'Nuevo Barbero', email: 'nuevo.barbero@example.com', station_id: 1, base_salary: 1500 }; // Added email and station_id
     const createdBarber = await barberService.createBarber(newBarber);
     expect(createdBarber).toHaveProperty('id');
     expect(createdBarber.name).toBe('Nuevo Barbero');
@@ -36,7 +36,7 @@ describe('BarberService', () => {
   });
 
   it('debería actualizar un barbero existente', async () => {
-    const updatedBarber = await barberService.updateBarber(1, { name: 'Juan Actualizado', base_salary: 1400 }); // Removed station_id
+    const updatedBarber = await barberService.updateBarber(1, { name: 'Juan Actualizado', email: 'juan.actualizado@example.com', station_id: 1, base_salary: 1400 }); // Added email and station_id
     expect(updatedBarber).not.toBeNull();
     expect(updatedBarber?.name).toBe('Juan Actualizado');
 
@@ -54,7 +54,7 @@ describe('BarberService', () => {
   });
 
   it('no debería actualizar un barbero que no existe', async () => {
-    const updatedBarber = await barberService.updateBarber(999, { name: 'No Existe', base_salary: 1000 }); // Removed station_id
+    const updatedBarber = await barberService.updateBarber(999, { name: 'No Existe', email: 'no.existe@example.com', station_id: 1, base_salary: 1000 }); // Added email and station_id
     expect(updatedBarber).toBeNull();
   });
 

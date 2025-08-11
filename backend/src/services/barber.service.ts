@@ -4,6 +4,7 @@ import { Database } from 'sqlite';
 interface Barber {
   id?: number;
   name: string;
+  email?: string; // Added email
   station_id?: number;
   base_salary?: number;
   station_name?: string;
