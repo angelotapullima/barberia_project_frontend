@@ -80,7 +80,7 @@ async function createSchema(db: Database) {
     );
     CREATE TABLE IF NOT EXISTS stations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
+      name TEXT NOT NULL UNIQUE,
       description TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -93,11 +93,11 @@ export async function seedDatabase(db: Database) {
   await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', ['Estación Central', 'Estación VIP', 'Estación Rápida']);
   const stations = await db.all('SELECT id FROM stations');
   await db.run(
-    'INSERT INTO barbers (name, email, phone, specialty, photo_url) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
+    'INSERT INTO barbers (name, email, phone, specialty, photo_url, station_id) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
     [
-      'Juan Pérez', 'juan.perez@example.com', '+51987654321', 'Cortes Modernos', 'https://example.com/juan.jpg',
-      'Luis Gómez', 'luis.gomez@example.com', '+51912345678', 'Barbas Clásicas', 'https://example.com/luis.jpg',
-      'Carlos Ruiz', 'carlos.ruiz@example.com', '+51998877665', 'Coloración', 'https://example.com/carlos.jpg'
+      'Juan Pérez', 'juan.perez@example.com', '+51987654321', 'Cortes Modernos', 'https://example.com/juan.jpg', stations[0].id,
+      'Luis Gómez', 'luis.gomez@example.com', '+51912345678', 'Barbas Clásicas', 'https://example.com/luis.jpg', stations[1].id,
+      'Carlos Ruiz', 'carlos.ruiz@example.com', '+51998877665', 'Coloración', 'https://example.com/carlos.jpg', stations[2].id
     ]
   );
   const barbers = await db.all('SELECT id FROM barbers');
