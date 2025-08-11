@@ -1,21 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+
 import BarbersView from '@/views/BarbersView.vue';
 import ProductsView from '@/views/ProductsView.vue';
 import InventoryReportView from '@/views/InventoryReportView.vue';
-
 import StationsView from '@/views/StationsView.vue';
-
 import ServicesView from '@/views/ServicesView.vue';
-
-import SalesView from '@/views/SalesView.vue'; // This is now SalesRegistrationView
-import SalesListView from '@/views/SalesListView.vue'; // New component for sales list
-import ReservationsView from '@/views/ReservationsView.vue'; // New component for reservations
-import CalendarView from '@/views/CalendarView.vue'; // Vista para el calendario de distribución
-
+import SalesView from '@/views/SalesView.vue';
+import SalesListView from '@/views/SalesListView.vue';
+import ReservationsView from '@/views/ReservationsView.vue';
+import CalendarView from '@/views/CalendarView.vue';
 import DashboardView from '@/views/DashboardView.vue';
+import LoginView from '@/views/LoginView.vue'; // Import LoginView
+import ProfileView from '@/views/ProfileView.vue'; // Import LoginView
+import SettingsView from '@/views/SettingsView.vue'; // Import LoginView
 
-// Importar las nuevas vistas de reportes
-import ReportsView from '@/views/ReportsView.vue'; // La vista placeholder
+import ReportsView from '@/views/ReportsView.vue';
 import StationUsageReportView from '@/views/StationUsageReportView.vue';
 import CustomerFrequencyReportView from '@/views/CustomerFrequencyReportView.vue';
 import PeakHoursReportView from '@/views/PeakHoursReportView.vue';
@@ -24,28 +24,62 @@ import ServicesProductsSalesReportView from '@/views/ServicesProductsSalesReport
 
 const routes = [
   { path: '/', component: DashboardView, name: 'Dashboard' },
-  { path: '/sales/register', component: SalesView, name: 'SalesRegistration' }, // Renamed route
-  { path: '/sales', component: SalesListView, name: 'SalesList' }, // New route for sales list
+  { path: '/sales/register', component: SalesView, name: 'SalesRegistration' },
+  { path: '/sales', component: SalesListView, name: 'SalesList' },
   { path: '/barbers', component: BarbersView, name: 'Barbers' },
   { path: '/stations', component: StationsView, name: 'Stations' },
   { path: '/services', component: ServicesView, name: 'Services' },
   { path: '/products', component: ProductsView, name: 'Products' },
-  { path: '/reservations', component: ReservationsView, name: 'Reservations' }, // New route for reservations
-  { path: '/schedule', component: CalendarView, name: 'Schedule' }, // Nueva ruta para la agenda
+  { path: '/reservations', component: ReservationsView, name: 'Reservations' },
+  { path: '/schedule', component: CalendarView, name: 'Schedule' },
+  { path: '/login', component: LoginView, name: 'Login' },
+  { path: '/profile', component: ProfileView, name: 'Profile' },
+  { path: '/settings', component: SettingsView, name: 'Settings' },
 
   // Rutas de reportes
-  { path: '/reports', component: ReportsView, name: 'Reports' }, // La vista principal de reportes (placeholder)
+  { path: '/reports', component: ReportsView, name: 'Reports' },
   { path: '/reports/inventory', component: InventoryReportView, name: 'InventoryReport' },
   { path: '/reports/station-usage', component: StationUsageReportView, name: 'StationUsageReport' },
-  { path: '/reports/customer-frequency', component: CustomerFrequencyReportView, name: 'CustomerFrequencyReport' },
+  {
+    path: '/reports/customer-frequency',
+    component: CustomerFrequencyReportView,
+    name: 'CustomerFrequencyReport',
+  },
   { path: '/reports/peak-hours', component: PeakHoursReportView, name: 'PeakHoursReport' },
-  { path: '/reports/sales/comprehensive', component: ComprehensiveSalesReportView, name: 'ComprehensiveSalesReport' },
-  { path: '/reports/sales/by-type', component: ServicesProductsSalesReportView, name: 'ServicesProductsSalesReport' },
+  {
+    path: '/reports/sales/comprehensive',
+    component: ComprehensiveSalesReportView,
+    name: 'ComprehensiveSalesReport',
+  },
+  {
+    path: '/reports/sales/by-type',
+    component: ServicesProductsSalesReportView,
+    name: 'ServicesProductsSalesReport',
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  // Si el store no ha sido inicializado, lo hacemos
+  if (!authStore.user && !authStore.token) {
+    authStore.initializeStore();
+  }
+
+  const isAuthenticated = authStore.isAuthenticated;
+  const requiresAuth = to.name !== 'Login'; // Todas las rutas requieren autenticación excepto /login
+
+  if (requiresAuth && !isAuthenticated) {
+    next({ name: 'Login' }); // Redirigir al login si no está autenticado y la ruta lo requiere
+  } else if (isAuthenticated && to.name === 'Login') {
+    next({ name: 'Dashboard' }); // Redirigir al dashboard si ya está autenticado e intenta ir al login
+  } else {
+    next(); // Continuar con la navegación
+  }
 });
 
 export default router;

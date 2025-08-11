@@ -8,26 +8,21 @@ La arquitectura se basa en **Vue.js** para la reactividad, **Pinia** para un man
 
 ---
 
-## 2. Archivos de Configuración Principales
+## 2. Flujo de Datos y Estructura
 
--   **`main.js`**: Es el punto de arranque de la aplicación. Su función es crear la instancia de Vue, e instalar y configurar los plugins esenciales: Pinia (para el estado), Vue Router (para las rutas) y VueApexCharts (para los gráficos).
+El frontend es una Aplicación de Página Única (SPA) construida con Vue.js. El flujo de datos es centralizado y unidireccional, siguiendo las mejores prácticas de manejo de estado.
 
--   **`vite.config.js`**: Configura el entorno de desarrollo de Vite. La parte más importante es la sección `server.proxy`:
-    ```javascript
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-    },
-    ```
-    **Propósito:** Redirige todas las peticiones que el frontend haga a `/api` hacia el servidor backend que corre en `http://localhost:3000`. Esto evita problemas de CORS (Cross-Origin Resource Sharing) durante el desarrollo.
+**Renderizado Condicional en `App.vue`:**
+Un cambio clave es cómo `App.vue` (el componente raíz) maneja el renderizado del layout:
+-   Si el usuario **NO está autenticado** (o está en la ruta `/login`), `App.vue` solo renderiza el `<RouterView />`. Esto permite que la página de login ocupe toda la pantalla sin mostrar el sidebar o el header de la aplicación.
+-   Si el usuario **SÍ está autenticado** y no está en la página de login, `App.vue` renderiza el layout completo: el `Sidebar`, el `Header` y el `<RouterView />` para el contenido de la página actual.
 
--   **`tailwind.config.js`**: Configura TailwindCSS. Aquí se definen colores personalizados (ej. `barber-red`) para mantener una paleta de colores consistente en toda la aplicación.
-
--   **`router/index.js`**: Define el mapa de navegación del sitio. Conecta cada URL a un componente de Vista específico. 
-    - **Ejemplo de ruta:** `{ path: '/barbers', component: BarbersView, name: 'Barbers' }`
-    - **Significado:** Cuando el usuario navega a la URL `/barbers`, Vue Router cargará y mostrará el componente `BarbersView.vue`.
+**Flujo de Interacción Típico (Ejemplo: Añadir un Barbero):**
+1.  **Vista (Componente de Página):** El usuario interactúa con una vista (ej. `BarbersView.vue`).
+2.  **Llamada a la Acción (Action):** La interacción del usuario (ej. un clic en un botón) desencadena una llamada a una `action` en un `store` de Pinia (ej. `barberStore.addBarber(...)`).
+3.  **Comunicación con la API:** La `action` del store es la única responsable de comunicarse con el backend (a través de `axios`) para enviar o solicitar datos. Incluye el token de autenticación en los headers si es necesario.
+4.  **Mutación del Estado (State):** Una vez que la API responde, la `action` modifica el `state` centralizado del store (ej. actualiza el array `barbers`).
+5.  **Reactividad:** Gracias a la reactividad de Vue, cualquier componente o vista que esté utilizando datos de ese `state` se actualiza automáticamente para reflejar los nuevos cambios, sin necesidad de recargar la página.
 
 ---
 
@@ -47,79 +42,66 @@ La arquitectura se basa en **Vue.js** para la reactividad, **Pinia** para un man
 
 ## 4. Manejo de Estado (`/stores`)
 
-Cada store es una unidad que encapsula el estado y la lógica de una entidad de negocio.
+Cada store maneja una pieza del estado global de la aplicación.
 
-### `barberStore.js`
--   **Propósito:** Manejar todo lo relacionado con los barberos.
--   **State:** `barbers`, `isLoading`, `error`.
+### `authStore.js`
+-   **Propósito:** Gestionar el estado de autenticación del usuario (login, logout, token, datos del usuario).
+-   **State:** `user`, `token`, `isLoading`, `error`.
+-   **Getters:**
+    -   `isAuthenticated`: `true` si hay un token y datos de usuario.
+    -   `isAdmin`: `true` si el usuario autenticado tiene el rol 'administrador'.
 -   **Actions:**
-    -   `fetchBarbers()`: Llama a `GET /api/barbers` y guarda la lista en `state.barbers`.
-    -   `addBarber(barber)`: Llama a `POST /api/barbers` y refresca la lista.
-    -   `updateBarber(barber)`: Llama a `PUT /api/barbers/:id` y refresca la lista.
-    -   `deleteBarber(id)`: Llama a `DELETE /api/barbers/:id` y refresca la lista.
+    -   `login(email, password)`: Llama a `POST /api/auth/login`, guarda el token y los datos del usuario en el store y `localStorage`.
+    -   `logout()`: Limpia el store y `localStorage`, cerrando la sesión.
+    -   `initializeStore()`: Intenta cargar el token y los datos del usuario desde `localStorage` al iniciar la aplicación.
 
-### `stationStore.js`
--   **Propósito:** Manejar todo lo relacionado con las estaciones de trabajo. Sigue el mismo patrón que `barberStore` para las acciones CRUD.
+### `userStore.js`
+-   **Propósito:** Gestionar la lista de usuarios del sistema (para la gestión de usuarios en Configuración).
+-   **State:** `users`, `isLoading`, `error`.
+-   **Actions:**
+    -   `fetchUsers()`: Llama a `GET /api/auth/users` (protegida por rol de administrador).
+    -   `createUser(userData)`: Llama a `POST /api/auth/users`.
+    -   `updateUser(id, userData)`: Llama a `PUT /api/auth/users/:id`.
+    -   `deleteUser(id)`: Llama a `DELETE /api/auth/users/:id`.
 
-### `serviceStore.js`
--   **Propósito:** Manejar los servicios. Sigue el mismo patrón que `barberStore` para las acciones CRUD.
+### `settingStore.js`
+-   **Propósito:** Gestionar las configuraciones clave-valor de la aplicación.
+-   **State:** `settings`, `isLoading`, `error`.
+-   **Getters:**
+    -   `getSettingByKey(key)`: Devuelve el valor de una configuración específica por su clave.
+-   **Actions:**
+    -   `fetchAllSettings()`: Llama a `GET /api/settings` (protegida por rol de administrador).
+    -   `updateSetting(key, value)`: Llama a `PUT /api/settings/:key`.
 
-### `productStore.js`
--   **Propósito:** Manejar el inventario de productos.
--   **State:** `products`, `lowStockProducts`, `loading`, `error`.
--   **Actions:** Además de las acciones CRUD (que llaman a `/api/services` con `type: 'product'`), tiene acciones específicas de inventario:
-    -   `fetchLowStockProducts()`: Llama a `GET /api/services/products/low-stock`.
-    -   `updateProductStock(id, quantity)`: Llama a `PUT /api/services/products/:id/stock`.
-    -   `fetchInventorySummary()`: Llama a `GET /api/services/products/report/summary`.
-
-### `reservationStore.js`
--   **Propósito:** Manejar las citas.
--   **Actions:** Contiene acciones CRUD y otras para obtener conteos y reservas completadas, llamando a los endpoints correspondientes en `/api/reservations`.
-
-### `salesStore.js`
--   **Propósito:** Manejar las ventas y sus reportes asociados.
--   **Actions:** Contiene acciones para el CRUD de ventas y para todos los endpoints de resumen de `/api/sales` (summary, ranking, etc.).
-
-### `reportStore.js`
--   **Propósito:** Manejar los datos de los reportes complejos y multi-entidad.
--   **State:** `events`, `stats`, `comprehensiveSales`, `stationUsage`, etc. Cada uno almacena los datos para una vista de reporte específica.
--   **Actions:** Cada acción (ej. `fetchStationUsage`) llama a su endpoint específico en `/api/reports` y puebla la variable de estado correspondiente.
+### Otros Stores (barberStore, stationStore, serviceStore, productStore, salesStore, reservationStore, reportStore)
+-   Siguen un patrón similar, gestionando el estado y las interacciones con la API para sus respectivas entidades (barberos, estaciones, servicios, productos, ventas, reservas, reportes).
 
 ---
 
 ## 5. Vistas (`/views`)
 
-### `App.vue`
--   **Responsabilidad:** Es el componente principal que envuelve toda la aplicación. Contiene el `Sidebar` y un `<RouterView />`. Este último es el marcador de posición donde se renderizará la vista activa según la ruta del navegador.
+### `LoginView.vue`
+-   **Propósito:** Proveer la interfaz para que los usuarios inicien sesión en la aplicación.
+-   **Diseño:** Ahora es una vista de página completa, con un diseño moderno centrado, un fondo sutil y un formulario en estilo de tarjeta con campos mejorados.
+-   **Lógica:** Captura el email y la contraseña, y llama a `authStore.login()`. Si la autenticación es exitosa, redirige al dashboard.
 
-### `DashboardView.vue`
--   **Responsabilidad:** Mostrar una vista general del negocio con indicadores clave (KPIs) y gráficos.
--   **Lógica:** Usa `onMounted` para disparar en paralelo (`Promise.all`) las acciones de varios stores (`salesStore`, `reservationStore`, `reportStore`) para recopilar todos los datos necesarios para las tarjetas y los gráficos de ApexCharts.
+### `ProfileView.vue`
+-   **Propósito:** Mostrar la información del perfil del usuario autenticado y permitirle cambiar su contraseña.
+-   **Lógica:** Al cargar, intenta inicializar `authStore` para asegurar que los datos del usuario estén disponibles. Muestra el nombre, email y rol del usuario. Contiene un formulario para cambiar la contraseña, que llama al endpoint `PUT /api/auth/change-password`.
 
-### `BarbersView.vue` (y otras vistas de gestión como `StationsView`, `ServicesView`)
--   **Responsabilidad:** Mostrar una tabla con la lista de un recurso (ej. barberos) y permitir su gestión (CRUD).
--   **Lógica:** Usa el store correspondiente (ej. `useBarberStore`) para obtener la lista (`fetchBarbers`). Los botones de la tabla activan funciones que controlan la visibilidad del `Modal.vue` y preparan los datos para un formulario. El envío del formulario llama a la acción correspondiente del store (`addBarber`, `updateBarber`).
+### `SettingsView.vue`
+-   **Propósito:** Permitir a los usuarios con rol de administrador configurar aspectos clave del negocio y gestionar otros usuarios.
+-   **Secciones:**
+    -   **Reglas de Pago a Barberos:** Permite configurar el umbral de salario base, el porcentaje de comisión y el sueldo base por defecto. Estos valores se guardan en la tabla `settings` del backend.
+    -   **Gestión de Usuarios:** Muestra una tabla de todos los usuarios del sistema. Permite añadir nuevos usuarios (con nombre, email, contraseña y rol), editar usuarios existentes (nombre, email, rol) y eliminar usuarios. Todas estas operaciones están protegidas por el rol de administrador.
 
-### `ProductsView.vue`
--   **Responsabilidad:** Gestionar el inventario de productos.
--   **Lógica:** Similar a las vistas de gestión, pero utiliza `productStore`. Muestra una alerta destacada si el array `lowStockProducts` del store no está vacío.
+### Otras Vistas (DashboardView, BarbersView, StationsView, ServicesView, ProductsView, SalesView, SalesListView, ReservationsView, CalendarView, ReportsView, InventoryReportView, StationUsageReportView, CustomerFrequencyReportView, PeakHoursReportView, ComprehensiveSalesReportView, ServicesProductsSalesReportView)
+-   Mantienen sus propósitos y lógicas previamente documentadas, interactuando con sus respectivos stores para gestionar los datos y la UI.
 
-### `SalesView.vue`
--   **Responsabilidad:** Proveer el formulario para registrar una nueva venta manual.
--   **Lógica:** Carga los datos necesarios para los selectores (barberos, estaciones, servicios) desde sus respectivos stores. Calcula el `totalAmount` en tiempo real (propiedad `computed`) a medida que se seleccionan servicios. Al enviar, llama a `salesStore.addSale()`.
+---
 
-### `SalesListView.vue`
--   **Responsabilidad:** Mostrar un historial de todas las ventas y permitir filtrarlas.
--   **Lógica:** Permite al usuario seleccionar un tipo de filtro (`filterType`) y un valor (`filterValue`). Al hacer clic en "Aplicar Filtro", llama a la acción `salesStore.getFilteredSales()` si hay un filtro, o a `salesStore.getAllSales()` si no lo hay.
+## 6. Archivos de Configuración Clave
 
-### `ReservationsView.vue`
--   **Responsabilidad:** CRUD para las reservas.
--   **Lógica:** Similar a `BarbersView`, con un formulario para crear y editar reservas.
-
-### `ScheduleView.vue`
--   **Responsabilidad:** Mostrar una vista de calendario semanal/diario de las citas.
--   **Lógica:** Utiliza el componente `FullCalendar`. Llama a `reportStore.fetchReport()` para obtener los eventos. Implementa la función `dateClick` que redirige al usuario a la vista de registro de ventas, pasando la fecha y hora seleccionadas como parámetros en la URL.
-
-### Vistas de Reportes (ej. `ComprehensiveSalesReportView.vue`, `PeakHoursReportView.vue`, etc.)
--   **Responsabilidad:** Mostrar un reporte específico con filtros y una visualización gráfica.
--   **Lógica:** Cada vista se enfoca en un reporte. Contiene inputs para los filtros (usualmente fechas). Un botón "Generar" llama a la acción correspondiente en el `reportStore`. Los datos devueltos se conectan a un componente `ApexCharts` para su visualización. También incluyen una función para exportar los datos de la tabla a un archivo CSV.
+-   **`main.js`**: Punto de entrada de la aplicación. Aquí se inicializa Vue, Pinia, el Router y VueApexCharts. También se inicializa `authStore` para cargar el estado de autenticación al inicio.
+-   **`vite.config.js`**: Configura el entorno de desarrollo de Vite. La sección `server.proxy` redirige las peticiones `/api` al backend. También define alias como `@` para `src`.
+-   **`tailwind.config.js`**: Configura TailwindCSS, incluyendo la definición de colores personalizados.

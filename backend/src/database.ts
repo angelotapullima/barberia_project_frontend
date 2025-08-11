@@ -1,5 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
+import bcrypt from 'bcrypt';
 
 let dbPromise: Promise<Database> | null = null;
 
@@ -7,14 +8,27 @@ let dbPromise: Promise<Database> | null = null;
 
 async function createSchema(db: Database) {
   await db.exec(`
-        CREATE TABLE IF NOT EXISTS barbers (
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'cajero',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS settings (
+      setting_key TEXT PRIMARY KEY,
+      setting_value TEXT
+    );
+    CREATE TABLE IF NOT EXISTS barbers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       email TEXT UNIQUE,
       phone TEXT,
       specialty TEXT,
       photo_url TEXT,
-      station_id INTEGER, -- Added station_id
+      station_id INTEGER,
       base_salary REAL DEFAULT 1300,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -26,9 +40,9 @@ async function createSchema(db: Database) {
       description TEXT,
       price REAL NOT NULL,
       duration_minutes INTEGER NOT NULL,
-      type TEXT NOT NULL DEFAULT 'service', -- Added
-      stock_quantity INTEGER DEFAULT 0,    -- Added
-      min_stock_level INTEGER DEFAULT 0,   -- Added
+      type TEXT NOT NULL DEFAULT 'service',
+      stock_quantity INTEGER DEFAULT 0,
+      min_stock_level INTEGER DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -55,7 +69,7 @@ async function createSchema(db: Database) {
       barber_id INTEGER NOT NULL,
       station_id INTEGER NOT NULL,
       total_amount REAL NOT NULL,
-      customer_name TEXT, -- Added
+      customer_name TEXT,
       payment_method TEXT DEFAULT 'cash',
       sale_date TEXT DEFAULT CURRENT_TIMESTAMP,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -71,7 +85,7 @@ async function createSchema(db: Database) {
       item_type TEXT NOT NULL,
       item_name TEXT NOT NULL,
       price REAL NOT NULL,
-      price_at_sale REAL NOT NULL, -- Added
+      price_at_sale REAL NOT NULL,
       quantity INTEGER NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -90,6 +104,19 @@ async function createSchema(db: Database) {
 
 export async function seedDatabase(db: Database) {
   console.log('Insertando datos de prueba...');
+
+  // Seed Admin User
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  await db.run(
+    'INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+    ['Admin User', 'admin@example.com', adminPassword, 'administrador']
+  );
+
+  // Seed default settings
+  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['base_salary_threshold', '2500']);
+  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['commission_percentage', '0.5']);
+  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['default_base_salary', '1250']);
+
   await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', ['Estación Central', 'Estación VIP', 'Estación Rápida']);
   const stations = await db.all('SELECT id FROM stations');
   await db.run(
@@ -102,16 +129,16 @@ export async function seedDatabase(db: Database) {
   );
   const barbers = await db.all('SELECT id FROM barbers');
   await db.run('INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)', [
-  'Corte de Cabello', 30, 30, 'service', 0, 0,
-  'Afeitado Clásico', 25, 45, 'service', 0, 0,
-  'Corte y Barba', 50, 60, 'service', 0, 0,
-  'Cera para Peinar', 15, 0, 'product', 100, 10,
-  'Aceite para Barba', 20, 0, 'product', 50, 5,
-  'Shampoo Especializado', 35, 0, 'product', 20, 25, // Low stock
-  'Acondicionador Premium', 30, 0, 'product', 15, 10,
-  'Gel Fijador Fuerte', 12, 0, 'product', 5, 10, // Low stock
-  'Navajas Desechables (pack)', 8, 0, 'product', 30, 5
-]);
+    'Corte de Cabello', 30, 30, 'service', 0, 0,
+    'Afeitado Clásico', 25, 45, 'service', 0, 0,
+    'Corte y Barba', 50, 60, 'service', 0, 0,
+    'Cera para Peinar', 15, 0, 'product', 100, 10,
+    'Aceite para Barba', 20, 0, 'product', 50, 5,
+    'Shampoo Especializado', 35, 0, 'product', 20, 25, // Low stock
+    'Acondicionador Premium', 30, 0, 'product', 15, 10,
+    'Gel Fijador Fuerte', 12, 0, 'product', 5, 10, // Low stock
+    'Navajas Desechables (pack)', 8, 0, 'product', 30, 5
+  ]);
   const services = await db.all('SELECT id, name, price, type, duration_minutes FROM services');
   const customers = ['Pedro Pascal', 'Ana de Armas', 'Ricardo Arjona', 'Shakira Mebarak', 'Lionel Messi', 'Karol G', 'Bad Bunny'];
   const paymentMethods = ['cash', 'card', 'yape', 'plin'];
@@ -184,17 +211,17 @@ export async function seedDatabase(db: Database) {
   }
 
   console.log('Datos de prueba insertados.');
-}
 
-// --- Lógica de Conexión ---
+
+}
 
 async function initializeDatabase(isTest = false): Promise<Database> {
   const db = await open(isTest ? { filename: ':memory:', driver: sqlite3.Database } : { filename: './barberia.sqlite', driver: sqlite3.Database });
   await createSchema(db);
 
   if (!isTest) {
-    const barbersCount = await db.get('SELECT COUNT(*) as count FROM barbers');
-    if (barbersCount.count === 0) {
+    const usersCount = await db.get('SELECT COUNT(*) as count FROM users');
+    if (usersCount.count === 0) {
       console.log('Base de datos de desarrollo vacía, insertando datos...');
       await seedDatabase(db);
     }
@@ -210,11 +237,10 @@ function setup(): Promise<Database> {
   return dbPromise;
 }
 
-// Exportamos una función separada para obtener una instancia de BD para tests
 export async function setupTestDB(): Promise<Database> {
-    const db = await initializeDatabase(true); // true para usar la DB en memoria
-    await seedDatabase(db); // Llenamos la BD de prueba con datos
-    return db;
+  const db = await initializeDatabase(true);
+  await seedDatabase(db);
+  return db;
 }
 
 export default setup;
