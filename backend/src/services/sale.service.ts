@@ -6,6 +6,8 @@ interface SaleItem {
   sale_id?: number;
   service_id: number;
   price_at_sale: number;
+  name?: string; // Added
+  type?: string; // Added
 }
 
 interface Sale {
@@ -99,12 +101,10 @@ export class SaleService {
   }
 
   async createSale(sale: Sale): Promise<Sale> {
-    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method, reservation_id } = sale; // Added reservation_id
+    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method, reservation_id } = sale;
 
     let saleId: number;
-    try {
-      await this.db.run('BEGIN TRANSACTION');
-
+    
       const saleResult = await this.db.run(
         'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id) VALUES (?, ?, ?, ?, ?, ?, ?)', // Added reservation_id column
         [sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id || null] // Added reservation_id value
@@ -112,20 +112,16 @@ export class SaleService {
       saleId = saleResult.lastID!;
 
       const stmt = await this.db.prepare(
-        'INSERT INTO sale_items (sale_id, service_id, price_at_sale) VALUES (?, ?, ?)'
+        'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
       for (const service of services) {
-        await stmt.run(saleId, service.service_id, service.price_at_sale);
+        // Assuming service.name and service.price are available from the service object
+        // and quantity is 1 for a single service sale
+        await stmt.run(saleId, service.service_id, 'service', service.name, service.price_at_sale, service.price_at_sale, 1);
       }
       await stmt.finalize();
 
-      await this.db.run('COMMIT');
       return { id: saleId, ...sale };
-    } catch (error) {
-      await this.db.run('ROLLBACK');
-      console.error('Transaction Error:', error);
-      throw new Error('Failed to record sale.');
-    }
   }
 
   async getSalesSummaryByDateRange(startDate: string, endDate: string): Promise<{ date: string; total: number }[]> {

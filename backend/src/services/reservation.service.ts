@@ -60,6 +60,7 @@ export class ReservationService {
     const reservation = await this.db.get(`
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
+          r.station_id,
           r.client_name, r.client_phone, r.client_email,
           r.start_time, r.end_time, r.service_id, s.name as service_name,
           r.status, r.notes, r.created_at
@@ -161,7 +162,7 @@ export class ReservationService {
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
           r.station_id, st.name as station_name,
-          r.customer_name, r.customer_phone, r.start_time, r.end_time, r.status, r.created_at
+          r.client_name, r.client_phone, r.start_time, r.end_time, r.status, r.created_at
       FROM reservations r
       JOIN barbers b ON r.barber_id = b.id
       JOIN stations st ON r.station_id = st.id
@@ -209,6 +210,8 @@ export class ReservationService {
         services: [{
           service_id: service.id,
           price_at_sale: service.price,
+          name: service.name,
+          type: service.type,
         }],
       });
 
