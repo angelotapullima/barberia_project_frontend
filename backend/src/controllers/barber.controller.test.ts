@@ -94,6 +94,24 @@ describe('BarberController', () => {
     expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Internal server error' });
   });
 
+  it('debería manejar error al crear barbero con salario base inválido (negativo)', async () => {
+    mockRequest.body = { name: 'Test', base_salary: -100 };
+
+    await barberController.createBarber(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Base salary must be a non-negative number' });
+  });
+
+  it('debería manejar error al crear barbero con salario base inválido (no numérico)', async () => {
+    mockRequest.body = { name: 'Test', base_salary: 'abc' };
+
+    await barberController.createBarber(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Base salary must be a non-negative number' });
+  });
+
   it('debería manejar barbero no encontrado al actualizar', async () => {
     (barberService.updateBarber as jest.Mock).mockResolvedValue(null);
 
@@ -104,6 +122,26 @@ describe('BarberController', () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Barber not found' });
+  });
+
+  it('debería manejar error al actualizar barbero con salario base inválido (negativo)', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { name: 'Test', base_salary: -100 };
+
+    await barberController.updateBarber(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Base salary must be a non-negative number' });
+  });
+
+  it('debería manejar error al actualizar barbero con salario base inválido (no numérico)', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { name: 'Test', base_salary: 'abc' };
+
+    await barberController.updateBarber(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Base salary must be a non-negative number' });
   });
 
   it('debería manejar barbero no encontrado al eliminar', async () => {

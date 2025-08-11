@@ -57,12 +57,42 @@ class ReservationController {
 
   async updateReservation(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes } = req.body; // Added station_id
+    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes } = req.body;
+
+    // Basic validation for required fields if they are being updated
+    if (barber_id !== undefined && typeof barber_id !== 'number') {
+      res.status(400).json({ error: 'barber_id must be a number' });
+      return;
+    }
+    if (station_id !== undefined && typeof station_id !== 'number') {
+      res.status(400).json({ error: 'station_id must be a number' });
+      return;
+    }
+    if (client_name !== undefined && typeof client_name !== 'string') {
+      res.status(400).json({ error: 'client_name must be a string' });
+      return;
+    }
+    if (start_time !== undefined && typeof start_time !== 'string') {
+      res.status(400).json({ error: 'start_time must be a string (ISO date format)' });
+      return;
+    }
+    if (end_time !== undefined && typeof end_time !== 'string') {
+      res.status(400).json({ error: 'end_time must be a string (ISO date format)' });
+      return;
+    }
+    if (service_id !== undefined && typeof service_id !== 'number') {
+      res.status(400).json({ error: 'service_id must be a number' });
+      return;
+    }
+    if (status !== undefined && typeof status !== 'string') {
+      res.status(400).json({ error: 'status must be a string' });
+      return;
+    }
 
     try {
       await reservationService.updateReservation(Number(id), {
         barber_id,
-        station_id, // Added station_id
+        station_id,
         client_name,
         client_phone,
         client_email,

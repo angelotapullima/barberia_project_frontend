@@ -18,6 +18,10 @@ class BarberController {
       res.status(400).json({ error: 'Name is required' });
       return;
     }
+    if (base_salary !== undefined && (typeof base_salary !== 'number' || base_salary < 0)) {
+      res.status(400).json({ error: 'Base salary must be a non-negative number' });
+      return;
+    }
     try {
       const newBarber = await barberService.createBarber({ name, station_id, base_salary });
       res.status(201).json(newBarber);
@@ -32,6 +36,10 @@ class BarberController {
     const { id } = req.params;
     if (!name) {
       res.status(400).json({ error: 'Name is required' });
+      return;
+    }
+    if (base_salary !== undefined && (typeof base_salary !== 'number' || base_salary < 0)) {
+      res.status(400).json({ error: 'Base salary must be a non-negative number' });
       return;
     }
     try {

@@ -13,6 +13,7 @@ jest.mock('../services/reservation.service', () => ({
     getReservationCount: jest.fn(),
     getCompletedReservationCount: jest.fn(),
     getCompletedReservations: jest.fn(),
+    completeReservationAndCreateSale: jest.fn(),
   },
 }));
 
@@ -80,30 +81,88 @@ describe('ReservationController', () => {
     expect(mockResponse.json).toHaveBeenCalledWith(createdReservation);
   });
 
-  it('debería retornar 400 si faltan campos requeridos al crear una reservación', async () => {
+    it('debería retornar 400 si faltan campos requeridos al crear una reservación', async () => {
     mockRequest.body = {
       barber_id: 1,
       station_id: 1,
-      // customer_name is missing
+      // client_name is missing
       start_time: '2025-08-15T10:00:00.000Z',
       end_time: '2025-08-15T11:00:00.000Z',
+      service_id: 1,
     };
-
-    // Mock the service to throw an error if validation fails in the controller
-    // Assuming the controller handles validation and sends a 400
-    // If the service itself throws a validation error, we might mock that instead.
-    // For now, let's assume the controller is responsible for basic input validation.
-    // If the controller relies on the service for validation, then the service mock should reject.
-    // Let's assume the controller has some basic validation before calling the service.
-
-    // If the controller calls a validation function that throws an error,
-    // or if it directly checks for missing fields and sets the status.
-    // For this test, we'll assume the controller will set the status to 400 and send an error message.
 
     await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' }); // Updated error message
+  });
+
+  it('debería retornar 400 si falta barber_id al crear una reservación', async () => {
+    mockRequest.body = {
+      station_id: 1,
+      client_name: 'Test Client',
+      start_time: '2025-08-15T10:00:00.000Z',
+      end_time: '2025-08-15T11:00:00.000Z',
+      service_id: 1,
+    };
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' });
+  });
+
+  it('debería retornar 400 si falta station_id al crear una reservación', async () => {
+    mockRequest.body = {
+      barber_id: 1,
+      client_name: 'Test Client',
+      start_time: '2025-08-15T10:00:00.000Z',
+      end_time: '2025-08-15T11:00:00.000Z',
+      service_id: 1,
+    };
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' });
+  });
+
+  it('debería retornar 400 si falta start_time al crear una reservación', async () => {
+    mockRequest.body = {
+      barber_id: 1,
+      station_id: 1,
+      client_name: 'Test Client',
+      // start_time is missing
+      end_time: '2025-08-15T11:00:00.000Z',
+      service_id: 1,
+    };
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' });
+  });
+
+  it('debería retornar 400 si falta end_time al crear una reservación', async () => {
+    mockRequest.body = {
+      barber_id: 1,
+      station_id: 1,
+      client_name: 'Test Client',
+      start_time: '2025-08-15T10:00:00.000Z',
+      // end_time is missing
+      service_id: 1,
+    };
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' });
+  });
+
+  it('debería retornar 400 si falta service_id al crear una reservación', async () => {
+    mockRequest.body = {
+      barber_id: 1,
+      station_id: 1,
+      client_name: 'Test Client',
+      start_time: '2025-08-15T10:00:00.000Z',
+      end_time: '2025-08-15T11:00:00.000Z',
+      // service_id is missing
+    };
+    await reservationController.createReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' });
   });
 
   it('debería actualizar una reservación existente', async () => {
@@ -127,6 +186,62 @@ describe('ReservationController', () => {
     expect(reservationService.deleteReservation).toHaveBeenCalledWith(1);
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Reservation deleted successfully' });
+  });
+
+  it('debería retornar 400 si barber_id no es numérico al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { barber_id: 'abc' };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'barber_id must be a number' });
+  });
+
+  it('debería retornar 400 si station_id no es numérico al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { station_id: 'abc' };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'station_id must be a number' });
+  });
+
+  it('debería retornar 400 si client_name no es string al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { client_name: 123 };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'client_name must be a string' });
+  });
+
+  it('debería retornar 400 si start_time no es un formato de fecha válido al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { start_time: 123 };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'start_time must be a string (ISO date format)' });
+  });
+
+  it('debería retornar 400 si end_time no es un formato de fecha válido al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { end_time: 123 };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'end_time must be a string (ISO date format)' });
+  });
+
+  it('debería retornar 400 si service_id no es numérico al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { service_id: 'abc' };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'service_id must be a number' });
+  });
+
+  it('debería retornar 400 si status no es string al actualizar una reservación', async () => {
+    mockRequest.params = { id: '1' };
+    mockRequest.body = { status: 123 };
+    await reservationController.updateReservation(mockRequest as Request, mockResponse as Response);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'status must be a string' });
   });
 
   it('debería obtener el conteo de reservaciones', async () => {
@@ -172,5 +287,27 @@ describe('ReservationController', () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+  });
+
+  it('debería manejar errores al eliminar una reservación', async () => {
+    (reservationService.deleteReservation as jest.Mock).mockRejectedValue(new Error('Error de DB'));
+
+    mockRequest.params = { id: '1' };
+
+    await reservationController.deleteReservation(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+  });
+
+  it('debería manejar error interno del servidor al completar una reservación', async () => {
+    (reservationService.completeReservationAndCreateSale as jest.Mock).mockRejectedValue(new Error('Unexpected error'));
+
+    mockRequest.params = { id: '1' };
+
+    await reservationController.completeReservation(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Unexpected error' });
   });
 });
