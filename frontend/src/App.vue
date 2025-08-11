@@ -3,7 +3,7 @@
     <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
 
     <div
-      class="flex-1 flex flex-col bg-barber-white transition-all duration-300 ease-in-out"
+      class="flex-1 flex flex-col bg-barber-white transition-all duration-300 ease-in-out min-w-0"
     >
       <header class="flex items-center justify-between p-4 bg-white shadow-md border-b border-gray-200">
         <button @click="toggleSidebar" class="text-gray-600 focus:outline-none p-2 rounded-md hover:bg-gray-100 transition-colors duration-200">
