@@ -5,3 +5,30 @@
 .router-link-exact-active {
   background-color: #4a5568; /* Equivalente a bg-gray-700 */
 }
+
+/* Custom Scrollbar Styles */
+/* For Webkit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(37, 99, 235, 0.4); /* semi-transparent blue */
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(37, 99, 235, 0.6); /* slightly more opaque blue */
+}
+
+/* Auto-hide scrollbar for Firefox (not fully customizable like webkit) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.4) transparent;
+}

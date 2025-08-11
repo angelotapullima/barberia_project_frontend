@@ -10,6 +10,22 @@ export const useReservationStore = defineStore('reservations', {
     error: null,
   }),
   actions: {
+    async fetchReservationsByDateRange(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/reservations`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar las reservas por rango de fecha.';
+        console.error(error);
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async fetchReservations() {
       this.isLoading = true;
       this.error = null;

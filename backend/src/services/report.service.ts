@@ -73,16 +73,19 @@ export class ReportService {
     const stats: BarberStat[] = barbers.map((barber) => {
       const saleInfo = salesByBarber.find((s) => s.barber_id === barber.id);
       const total_generated = saleInfo ? saleInfo.total_generated : 0;
-      let payment = barber.base_salary;
+      
+      const BASE_SALARY = 1250;
+      const COMMISSION_THRESHOLD = 2500;
+      let payment = BASE_SALARY;
 
-      if (total_generated > barber.base_salary) {
+      if (total_generated > COMMISSION_THRESHOLD) {
         payment = total_generated * 0.5;
       }
 
       return {
         barber_id: barber.id,
         barber_name: barber.name,
-        base_salary: barber.base_salary,
+        base_salary: BASE_SALARY, // Show the base salary used for calculation
         total_generated: total_generated,
         payment: payment,
       };

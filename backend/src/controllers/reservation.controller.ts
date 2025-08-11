@@ -3,8 +3,9 @@ import { reservationService } from '../services/reservation.service';
 
 class ReservationController {
   async getAllReservations(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
     try {
-      const reservations = await reservationService.getAllReservations();
+      const reservations = await reservationService.getAllReservations(startDate as string, endDate as string);
       res.json(reservations);
     } catch (error) {
       console.error('Error getting reservations:', error);

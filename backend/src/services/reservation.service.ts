@@ -28,8 +28,8 @@ export class ReservationService {
     }
   }
 
-  async getAllReservations(): Promise<Reservation[]> {
-    const reservations = await this.db.all(`
+  async getAllReservations(startDate?: string, endDate?: string): Promise<Reservation[]> {
+    let query = `
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
           r.station_id, st.name as station_name,
@@ -37,8 +37,17 @@ export class ReservationService {
       FROM reservations r
       JOIN barbers b ON r.barber_id = b.id
       JOIN stations st ON r.station_id = st.id
-      ORDER BY r.start_time DESC
-    `);
+    `;
+    const params: any[] = [];
+
+    if (startDate && endDate) {
+      query += ' WHERE date(r.start_time) BETWEEN ? AND ?';
+      params.push(startDate, endDate);
+    }
+
+    query += ' ORDER BY r.start_time DESC';
+
+    const reservations = await this.db.all(query, params);
     return reservations;
   }
 
