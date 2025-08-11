@@ -84,10 +84,65 @@ describe('ReservationService', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  it('debería obtener las reservaciones completadas en un rango de fechas', async () => {
+    it('debería obtener las reservaciones completadas en un rango de fechas', async () => {
     const completedReservations = await reservationService.getCompletedReservations(testStartDate, testEndDate);
     expect(Array.isArray(completedReservations)).toBe(true);
     expect(completedReservations.length).toBeGreaterThan(0);
     expect(completedReservations[0].status).toBe('completed');
   });
+
+  describe('completeReservationAndCreateSale', () => {
+    it('debería completar una reserva y crear una venta', async () => {
+      // Crear una reserva para completar
+      const newReservation = {
+        barber_id: 1,
+        station_id: 1,
+        client_name: 'Cliente para Venta',
+        start_time: '2025-09-01T10:00:00.000Z',
+        end_time: '2025-09-01T11:00:00.000Z',
+        service_id: 1,
+        status: 'pending',
+      };
+      const createdReservation = await reservationService.createReservation(newReservation);
+
+      // Completar la reserva y crear la venta
+      const newSale = await reservationService.completeReservationAndCreateSale(createdReservation.id!);
+
+      // Verificar que la reserva se marcó como completada
+      const updatedReservation = await reservationService.getReservationById(createdReservation.id!);
+      expect(updatedReservation?.status).toBe('completed');
+
+      // Verificar que se creó una venta
+      expect(newSale).toBeDefined();
+      expect(newSale).toHaveProperty('id');
+      expect(newSale.reservation_id).toBe(createdReservation.id); // Verificar el vínculo
+
+      // Verificar que la venta existe en la base de datos
+      const sales = await db.all('SELECT * FROM sales WHERE id = ?', newSale.id);
+      expect(sales.length).toBe(1);
+      expect(sales[0].reservation_id).toBe(createdReservation.id);
+    });
+
+    it('debería lanzar un error si la reserva no se encuentra', async () => {
+      await expect(reservationService.completeReservationAndCreateSale(99999)).rejects.toThrow('Reservation not found.');
+    });
+
+    it('debería lanzar un error si la reserva ya está completada', async () => {
+      // Crear una reserva y completarla
+      const newReservation = {
+        barber_id: 1,
+        station_id: 1,
+        client_name: 'Cliente Completado',
+        start_time: '2025-09-02T10:00:00.000Z',
+        end_time: '2025-09-02T11:00:00.000Z',
+        service_id: 1,
+        status: 'completed',
+      };
+      const createdReservation = await reservationService.createReservation(newReservation);
+
+      // Intentar completarla de nuevo
+      await expect(reservationService.completeReservationAndCreateSale(createdReservation.id!)).rejects.toThrow('Reservation is already completed.');
+    });
+  });
+});
 });

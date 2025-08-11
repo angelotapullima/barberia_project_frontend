@@ -165,9 +165,9 @@ export class ReportService {
     const query = `
       SELECT
         st.name as station_name,
-        COUNT(r.id) as usage_count
+        COUNT(s.id) as usage_count
       FROM stations st
-      LEFT JOIN reservations r ON st.id = r.station_id AND date(r.start_time) BETWEEN ? AND ?
+      LEFT JOIN sales s ON st.id = s.station_id AND date(s.sale_date) BETWEEN ? AND ?
       GROUP BY st.name
       ORDER BY usage_count DESC
     `;

@@ -16,6 +16,7 @@ interface Sale {
   total_amount: number;
   customer_name?: string;
   payment_method?: string; // New field
+  reservation_id?: number; // Added optional reservation_id
   services: SaleItem[];
   barber_name?: string;
   station_name?: string;
@@ -41,7 +42,7 @@ export class SaleService {
   async getAllSales(): Promise<Sale[]> {
     const sales = await this.db.all(`
       SELECT 
-          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method,
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method, s.reservation_id,
           b.name as barber_name, st.name as station_name
       FROM sales s
       JOIN barbers b ON s.barber_id = b.id
@@ -58,7 +59,7 @@ export class SaleService {
   async getFilteredSales(filterType: string, filterValue: string | number): Promise<Sale[]> {
     let query = `
       SELECT 
-          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method,
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method, s.reservation_id,
           b.name as barber_name, st.name as station_name
       FROM sales s
       JOIN barbers b ON s.barber_id = b.id
@@ -98,15 +99,15 @@ export class SaleService {
   }
 
   async createSale(sale: Sale): Promise<Sale> {
-    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method } = sale;
+    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method, reservation_id } = sale; // Added reservation_id
 
     let saleId: number;
     try {
       await this.db.run('BEGIN TRANSACTION');
 
       const saleResult = await this.db.run(
-        'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method) VALUES (?, ?, ?, ?, ?, ?)',
-        [sale_date, barber_id, station_id, total_amount, customer_name, payment_method]
+        'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id) VALUES (?, ?, ?, ?, ?, ?, ?)', // Added reservation_id column
+        [sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id || null] // Added reservation_id value
       );
       saleId = saleResult.lastID!;
 

@@ -10,7 +10,7 @@ import ServicesView from '@/views/ServicesView.vue';
 import SalesView from '@/views/SalesView.vue'; // This is now SalesRegistrationView
 import SalesListView from '@/views/SalesListView.vue'; // New component for sales list
 import ReservationsView from '@/views/ReservationsView.vue'; // New component for reservations
-import ScheduleView from '@/views/ScheduleView.vue'; // Vista para el calendario de distribución
+import CalendarView from '@/views/CalendarView.vue'; // Vista para el calendario de distribución
 
 import DashboardView from '@/views/DashboardView.vue';
 
@@ -31,7 +31,7 @@ const routes = [
   { path: '/services', component: ServicesView, name: 'Services' },
   { path: '/products', component: ProductsView, name: 'Products' },
   { path: '/reservations', component: ReservationsView, name: 'Reservations' }, // New route for reservations
-  { path: '/schedule', component: ScheduleView, name: 'Schedule' }, // Nueva ruta para la agenda
+  { path: '/schedule', component: CalendarView, name: 'Schedule' }, // Nueva ruta para la agenda
 
   // Rutas de reportes
   { path: '/reports', component: ReportsView, name: 'Reports' }, // La vista principal de reportes (placeholder)

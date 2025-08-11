@@ -12,6 +12,7 @@ router.get('/:id', reservationController.getReservationById); // This should com
 router.get('/', reservationController.getAllReservations);
 router.post('/', reservationController.createReservation);
 router.put('/:id', reservationController.updateReservation);
+router.post('/:id/complete', reservationController.completeReservation); // New route to complete reservation and create sale
 router.delete('/:id', reservationController.deleteReservation);
 
 export default router;

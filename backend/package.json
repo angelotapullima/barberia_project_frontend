@@ -9,8 +9,7 @@
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "migrate": "knex migrate:latest --knexfile knexfile.js"
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -18,18 +17,12 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "knex": "^3.1.0",
-    "pg": "^8.16.3",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "express": "^5.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
-    "@types/sqlite3": "^3.1.11",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.1.8",

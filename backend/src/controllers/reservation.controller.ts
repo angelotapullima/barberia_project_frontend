@@ -29,21 +29,24 @@ class ReservationController {
   }
 
   async createReservation(req: Request, res: Response): Promise<void> {
-    const { barber_id, station_id, customer_name, customer_phone, start_time, end_time } = req.body;
+    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, notes } = req.body; // Added station_id
 
-    if (!barber_id || !station_id || !customer_name || !start_time || !end_time) {
-      res.status(400).json({ error: 'Missing required fields' });
+    if (!barber_id || !station_id || !client_name || !start_time || !end_time || !service_id) { // Added station_id to validation
+      res.status(400).json({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' }); // Updated error message
       return;
     }
 
     try {
       const newReservation = await reservationService.createReservation({
         barber_id,
-        station_id,
-        customer_name,
-        customer_phone,
+        station_id, // Added station_id
+        client_name,
+        client_phone,
+        client_email,
         start_time,
         end_time,
+        service_id,
+        notes,
       });
       res.status(201).json(newReservation);
     } catch (error) {
@@ -54,17 +57,20 @@ class ReservationController {
 
   async updateReservation(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { barber_id, station_id, customer_name, customer_phone, start_time, end_time, status } = req.body;
+    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes } = req.body; // Added station_id
 
     try {
       await reservationService.updateReservation(Number(id), {
         barber_id,
-        station_id,
-        customer_name,
-        customer_phone,
+        station_id, // Added station_id
+        client_name,
+        client_phone,
+        client_email,
         start_time,
         end_time,
+        service_id,
         status,
+        notes,
       });
       res.status(200).json({ message: 'Reservation updated successfully' });
     } catch (error) {
@@ -126,6 +132,23 @@ class ReservationController {
     } catch (error) {
       console.error('Error getting completed reservations:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async completeReservation(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const newSale = await reservationService.completeReservationAndCreateSale(Number(id));
+      res.status(200).json({ message: 'Reservation completed and sale created successfully', sale: newSale });
+    } catch (error) {
+      console.error('Error completing reservation and creating sale:', error);
+      if (error instanceof Error && (error.message.includes('Reservation not found') || error.message.includes('already completed'))) {
+        res.status(400).json({ error: error.message });
+      } else if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to complete reservation and create sale.' });
+      }
     }
   }
 }

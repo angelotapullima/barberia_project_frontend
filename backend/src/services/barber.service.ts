@@ -24,7 +24,7 @@ export class BarberService {
 
   async getAllBarbers(): Promise<Barber[]> {
     const barbers = await this.db.all(
-      'SELECT b.*, s.name as station_name FROM barbers b LEFT JOIN stations s ON b.station_id = s.id'
+      'SELECT b.* FROM barbers b'
     );
     return barbers;
   }
