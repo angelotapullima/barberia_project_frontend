@@ -41,7 +41,7 @@ export const useProductStore = defineStore('productStore', {
       try {
         const response = await axios.put(`/api/services/products/${id}/stock`, { quantity });
         // Update the product in the store
-        const index = this.products.findIndex(p => p.id === id);
+        const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
           this.products[index] = response.data;
         }
@@ -79,7 +79,7 @@ export const useProductStore = defineStore('productStore', {
       try {
         // Assuming updateService can handle product type
         const response = await axios.put(`/api/services/${id}`, { ...product, type: 'product' });
-        const index = this.products.findIndex(p => p.id === id);
+        const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
           this.products[index] = response.data;
         }
@@ -98,8 +98,8 @@ export const useProductStore = defineStore('productStore', {
       this.error = null;
       try {
         await axios.delete(`/api/services/${id}`);
-        this.products = this.products.filter(p => p.id !== id);
-        this.lowStockProducts = this.lowStockProducts.filter(p => p.id !== id);
+        this.products = this.products.filter((p) => p.id !== id);
+        this.lowStockProducts = this.lowStockProducts.filter((p) => p.id !== id);
       } catch (error) {
         this.error = 'Error al eliminar el producto.';
         console.error('Error deleting product:', error);

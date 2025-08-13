@@ -64,7 +64,8 @@ export const useSalesStore = defineStore('sales', {
         });
         return response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas diarias.';
+        this.error =
+          error.response?.data?.error || 'Error al obtener el resumen de ventas diarias.';
         console.error(error);
         return [];
       } finally {
@@ -96,7 +97,8 @@ export const useSalesStore = defineStore('sales', {
         });
         return response.data.totalPayments;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el total de pagos a barberos.';
+        this.error =
+          error.response?.data?.error || 'Error al obtener el total de pagos a barberos.';
         console.error(error);
         return 0;
       } finally {
@@ -112,7 +114,8 @@ export const useSalesStore = defineStore('sales', {
         });
         return response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas por servicio.';
+        this.error =
+          error.response?.data?.error || 'Error al obtener el resumen de ventas por servicio.';
         console.error(error);
         return [];
       } finally {
@@ -128,7 +131,9 @@ export const useSalesStore = defineStore('sales', {
         });
         return response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el resumen de ventas por método de pago.';
+        this.error =
+          error.response?.data?.error ||
+          'Error al obtener el resumen de ventas por método de pago.';
         console.error(error);
         return [];
       } finally {

@@ -19,7 +19,8 @@ export const useReservationStore = defineStore('reservations', {
         });
         return response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al cargar las reservas por rango de fecha.';
+        this.error =
+          error.response?.data?.error || 'Error al cargar las reservas por rango de fecha.';
         console.error(error);
         return [];
       } finally {
@@ -58,7 +59,7 @@ export const useReservationStore = defineStore('reservations', {
       this.error = null;
       try {
         await axios.put(`${API_URL}/reservations/${id}`, reservationData);
-        const index = this.reservations.findIndex(res => res.id === id);
+        const index = this.reservations.findIndex((res) => res.id === id);
         if (index !== -1) {
           Object.assign(this.reservations[index], reservationData);
         }
@@ -75,7 +76,7 @@ export const useReservationStore = defineStore('reservations', {
       this.error = null;
       try {
         await axios.delete(`${API_URL}/reservations/${id}`);
-        this.reservations = this.reservations.filter(res => res.id !== id);
+        this.reservations = this.reservations.filter((res) => res.id !== id);
       } catch (error) {
         this.error = error.response?.data?.error || 'Error al eliminar la reserva.';
         console.error(error);
@@ -109,7 +110,8 @@ export const useReservationStore = defineStore('reservations', {
         });
         return response.data.count;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el conteo de reservas completadas.';
+        this.error =
+          error.response?.data?.error || 'Error al obtener el conteo de reservas completadas.';
         console.error(error);
         return 0;
       } finally {
