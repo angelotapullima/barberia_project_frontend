@@ -26,10 +26,10 @@
     </div>
 
     <!-- Calendar Grid -->
-    <div class="calendar-grid border border-gray-300 rounded-lg overflow-hidden">
+    <div class="calendar-grid rounded-lg overflow-hidden">
       <!-- Days Header -->
       <div
-        class="calendar-days-header bg-gray-100 border-b border-gray-300"
+        class="calendar-days-header bg-gray-100 border-b border-gray-200"
         :style="{ gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)' }"
       >
         <div class="p-2 font-semibold text-sm text-gray-600"></div>
@@ -49,7 +49,7 @@
         :style="{ gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)' }"
       >
         <!-- Time Slots Column -->
-        <div class="time-slots-column border-r border-gray-300">
+        <div class="time-slots-column border-r border-gray-200">
           <div
             v-for="hour in hours"
             :key="hour"
@@ -63,7 +63,7 @@
         <div
           v-for="day in weekDays"
           :key="day.fullDate"
-          class="schedule-day relative border-l border-gray-200 h-full"
+          class="schedule-day relative border-l border-gray-100 h-full"
         >
           <!-- Time slots for each day -->
           <div
@@ -410,6 +410,8 @@ onMounted(async () => {
 .calendar-grid {
   display: grid;
   grid-template-rows: auto 1fr;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+  border: 1px solid #e5e7eb; /* Very light border */
 }
 
 .calendar-days-header {
@@ -429,7 +431,8 @@ onMounted(async () => {
   z-index: 20;
   color: white;
   border: 1px solid; /* Border color will be dynamic */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem; /* Softer corners (Tailwind's rounded-lg) */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Softer, more modern shadow */
 }
 
 /* Custom button styles */
