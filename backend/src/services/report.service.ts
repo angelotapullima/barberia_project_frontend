@@ -99,8 +99,6 @@ export class ReportService {
   }
 
   async getComprehensiveSales(filters: {
-    barberId?: number;
-    serviceId?: number;
     paymentMethod?: string;
     startDate?: string;
     endDate?: string;
@@ -112,26 +110,13 @@ export class ReportService {
           s.total_amount,
           s.customer_name,
           s.payment_method,
-          b.name AS barber_name,
-          st.name AS station_name,
-          GROUP_CONCAT(svc.name || ' (' || si.price_at_sale || ')', ', ') AS services_sold
+          GROUP_CONCAT(si.item_name || ' (' || si.price_at_sale || ')', ', ') AS items_sold
       FROM sales s
-      JOIN barbers b ON s.barber_id = b.id
-      JOIN stations st ON s.station_id = st.id
       JOIN sale_items si ON s.id = si.sale_id
-      JOIN services svc ON si.service_id = svc.id
       WHERE 1=1
     `;
     const params: any[] = [];
 
-    if (filters.barberId) {
-      query += ` AND s.barber_id = ?`;
-      params.push(filters.barberId);
-    }
-    if (filters.serviceId) {
-      query += ` AND si.service_id = ?`;
-      params.push(filters.serviceId);
-    }
     if (filters.paymentMethod) {
       query += ` AND s.payment_method = ?`;
       params.push(filters.paymentMethod);

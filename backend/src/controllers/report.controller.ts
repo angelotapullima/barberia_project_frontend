@@ -30,8 +30,6 @@ class ReportController {
 
     try {
       const salesData = await reportService.getComprehensiveSales({
-        barberId: filters.barberId ? Number(filters.barberId) : undefined,
-        serviceId: filters.serviceId ? Number(filters.serviceId) : undefined,
         paymentMethod: filters.paymentMethod
           ? String(filters.paymentMethod)
           : undefined,
