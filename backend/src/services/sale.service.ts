@@ -1,5 +1,6 @@
 import setupDatabase from '../database';
 import { Database } from 'sqlite';
+import { draftSaleService } from './draftSale.service'; // New import
 
 interface SaleItem {
   id?: number;
@@ -120,6 +121,11 @@ export class SaleService {
         await stmt.run(saleId, service.service_id, 'service', service.name, service.price_at_sale, service.price_at_sale, 1);
       }
       await stmt.finalize();
+
+      // If this sale originated from a reservation, delete the corresponding draft sale
+      if (reservation_id) {
+        await draftSaleService.deleteDraftSale(reservation_id);
+      }
 
       return { id: saleId, ...sale };
   }

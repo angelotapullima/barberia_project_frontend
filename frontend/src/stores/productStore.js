@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
+const API_URL = 'http://localhost:3000/api';
+
 export const useProductStore = defineStore('productStore', {
   state: () => ({
     products: [],
@@ -13,7 +15,7 @@ export const useProductStore = defineStore('productStore', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get('/api/services/products');
+        const response = await axios.get(`${API_URL}/services/products`);
         this.products = response.data;
       } catch (error) {
         this.error = 'Error al cargar productos.';
@@ -26,7 +28,7 @@ export const useProductStore = defineStore('productStore', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get('/api/services/products/low-stock');
+        const response = await axios.get(`${API_URL}/services/products/low-stock`);
         this.lowStockProducts = response.data;
       } catch (error) {
         this.error = 'Error al cargar productos con bajo stock.';
@@ -39,7 +41,7 @@ export const useProductStore = defineStore('productStore', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.put(`/api/services/products/${id}/stock`, { quantity });
+        const response = await axios.put(`${API_URL}/services/products/${id}/stock`, { quantity });
         // Update the product in the store
         const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
@@ -61,7 +63,7 @@ export const useProductStore = defineStore('productStore', {
       this.error = null;
       try {
         // Assuming createService can handle product type
-        const response = await axios.post('/api/services', { ...product, type: 'product' });
+        const response = await axios.post(`${API_URL}/services`, { ...product, type: 'product' });
         this.products.push(response.data);
         this.fetchLowStockProducts(); // Check if new product is low stock
         return response.data;
@@ -78,7 +80,7 @@ export const useProductStore = defineStore('productStore', {
       this.error = null;
       try {
         // Assuming updateService can handle product type
-        const response = await axios.put(`/api/services/${id}`, { ...product, type: 'product' });
+        const response = await axios.put(`${API_URL}/services/${id}`, { ...product, type: 'product' });
         const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
           this.products[index] = response.data;
@@ -97,7 +99,7 @@ export const useProductStore = defineStore('productStore', {
       this.loading = true;
       this.error = null;
       try {
-        await axios.delete(`/api/services/${id}`);
+        await axios.delete(`${API_URL}/services/${id}`);
         this.products = this.products.filter((p) => p.id !== id);
         this.lowStockProducts = this.lowStockProducts.filter((p) => p.id !== id);
       } catch (error) {
@@ -112,7 +114,7 @@ export const useProductStore = defineStore('productStore', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get('/api/services/products/report/summary');
+        const response = await axios.get(`${API_URL}/services/products/report/summary`);
         return response.data;
       } catch (error) {
         this.error = 'Error al cargar el resumen del inventario.';

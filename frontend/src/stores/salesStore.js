@@ -55,6 +55,37 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
+    async saveDraftSale(draftSaleData) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        await axios.post(`${API_URL}/draft-sales`, draftSaleData);
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al guardar el borrador de venta.';
+        console.error(error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchDraftSale(reservationId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/draft-sales/${reservationId}`);
+        return response.data;
+      } catch (error) {
+        // If draft not found (404), it's not an error, just means no draft exists
+        if (error.response && error.response.status === 404) {
+          return null;
+        }
+        this.error = error.response?.data?.error || 'Error al cargar el borrador de venta.';
+        console.error(error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async getSalesSummaryByDateRange(startDate, endDate) {
       this.isLoading = true;
       this.error = null;

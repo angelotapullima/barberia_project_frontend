@@ -92,6 +92,28 @@ async function createSchema(db: Database) {
       FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE CASCADE,
       FOREIGN KEY (service_id) REFERENCES services (id) ON DELETE SET NULL
     );
+    CREATE TABLE IF NOT EXISTS draft_sales (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reservation_id INTEGER UNSIGNED UNIQUE,
+      client_name TEXT,
+      barber_id INTEGER,
+      total_amount REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE CASCADE,
+      FOREIGN KEY (barber_id) REFERENCES barbers (id)
+    );
+    CREATE TABLE IF NOT EXISTS draft_sale_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      draft_sale_id INTEGER UNSIGNED NOT NULL,
+      item_id INTEGER UNSIGNED NOT NULL,
+      item_type TEXT NOT NULL,
+      quantity INTEGER NOT NULL,
+      price_at_draft REAL NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (draft_sale_id) REFERENCES draft_sales (id) ON DELETE CASCADE
+    );
     CREATE TABLE IF NOT EXISTS stations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
