@@ -13,15 +13,12 @@
 
       <div class="flex items-center space-x-4">
         <!-- Barber/Team Selector -->
-        <select class="form-select" v-model="selectedBarberFilter">
-          <option value="all">Todo el equipo</option>
-          <option value="scheduled">Equipo programado</option>
-          <optgroup label="Barberos Individuales">
-            <option v-for="barber in barberStore.barbers" :key="barber.id" :value="barber.id">
-              {{ barber.name }}
-            </option>
-          </optgroup>
-        </select>
+        <CustomSelect
+          :modelValue="selectedBarberFilter"
+          @update:modelValue="selectedBarberFilter = $event"
+          :options="barberSelectOptions"
+          placeholder="Seleccionar Barbero"
+        />
 
         <!-- Add Button -->
         <button class="btn-primary" @click="openAddAppointmentModal">Añadir</button>
@@ -147,6 +144,50 @@ const reservationStore = useReservationStore();
 const serviceStore = useServiceStore();
 const stationStore = useStationStore();
 const productStore = useProductStore();
+
+import CustomSelect from '../components/CustomSelect.vue'; // Import CustomSelect component
+
+// Define a set of colors for barbers
+const colors = [
+  '#EF4444', // Red-500
+  '#3B82F6', // Blue-500
+  '#10B981', // Green-500
+  '#F59E0B', // Amber-500
+  '#6366F1', // Indigo-500
+  '#EC4899', // Pink-500
+  '#8B5CF6', // Purple-500
+];
+
+// Reactive map to store barber colors
+const barberColors = ref({});
+
+// Function to assign colors to barbers
+const assignBarberColors = () => {
+  barberStore.barbers.forEach((barber, index) => {
+    barberColors.value[barber.id] = {
+      bgColor: colors[index % colors.length],
+      borderColor: colors[index % colors.length].replace('500', '700'), // Darker shade for border
+    };
+  });
+};
+
+const barberSelectOptions = computed(() => {
+  const options = [
+    { label: 'Todo el equipo', value: 'all' },
+    { label: 'Equipo programado', value: 'scheduled' },
+  ];
+  barberStore.barbers.forEach(barber => {
+    options.push({
+      label: barber.name,
+      value: barber.id,
+      style: {
+        backgroundColor: barberColors.value[barber.id]?.bgColor,
+        color: 'white',
+      },
+    });
+  });
+  return options;
+});
 
 const currentWeekStart = ref(dayjs().startOf('week'));
 const selectedBarberFilter = ref('all'); // Keep this
@@ -306,11 +347,15 @@ const getAppointmentStyle = (reservation) => {
   const durationMinutes = end.diff(start, 'minute');
   const height = (durationMinutes / 30) * pixelsPerHalfHour;
 
+  const barberColor = barberColors.value[reservation.barber_id] || { bgColor: '#4299e1', borderColor: '#2b6cb0' }; // Default if color not found
+
   return {
     top: `${top}px`,
     height: `${height}px`,
     left: reservation.calculatedLeft, // Use calculated left
     width: reservation.calculatedWidth, // Use calculated width
+    backgroundColor: barberColor.bgColor,
+    borderColor: barberColor.borderColor,
   };
 };
 
@@ -353,6 +398,7 @@ watch(selectedBarberFilter, fetchReservationsForCurrentWeek); // Watch barber fi
 
 onMounted(async () => {
   await barberStore.fetchBarbers();
+  assignBarberColors(); // Call after barbers are fetched
   await serviceStore.fetchServices();
   await stationStore.fetchStations();
   await productStore.fetchProducts();
@@ -381,22 +427,19 @@ onMounted(async () => {
 
 .appointment {
   z-index: 20;
-  background-color: #4299e1;
   color: white;
-  border: 1px solid #2b6cb0;
+  border: 1px solid; /* Border color will be dynamic */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom button styles */
 .btn-primary {
-  @apply bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50;
+  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50;
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
 }
 
-.form-select {
-  @apply border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent;
-}
+
 </style>
