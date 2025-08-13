@@ -4,7 +4,9 @@
     <template v-if="authStore.isAuthenticated && currentRouteName !== 'Login'">
       <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
 
-      <div class="flex-1 flex flex-col bg-gray-100 transition-all duration-300 ease-in-out min-w-0">
+      <div
+        class="flex-1 flex flex-col bg-gray-100 transition-all duration-300 ease-in-out min-w-0"
+      >
         <!-- Nuevo Header Moderno -->
         <header class="bg-white border-b border-gray-200 shadow-sm z-10">
           <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,14 +36,22 @@
               </div>
 
               <!-- Centro: Barra de Búsqueda -->
-              <div class="flex-1 flex justify-center px-2 lg:ml-6 lg:justify-end">
+              <div
+                class="flex-1 flex justify-center px-2 lg:ml-6 lg:justify-end"
+              >
                 <div class="max-w-lg w-full lg:max-w-xs">
                   <label for="search" class="sr-only">Buscar</label>
-                  <div class="relative text-gray-400 focus-within:text-gray-600">
+                  <div
+                    class="relative text-gray-400 focus-within:text-gray-600"
+                  >
                     <div
                       class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
                     >
-                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        class="h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fill-rule="evenodd"
                           d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -132,7 +142,9 @@
           </div>
         </header>
 
-        <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main
+          class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8"
+        >
           <RouterView />
         </main>
       </div>

@@ -21,7 +21,9 @@
         />
 
         <!-- Add Button -->
-        <button class="btn-primary" @click="openAddAppointmentModal">Añadir</button>
+        <button class="btn-primary" @click="openAddAppointmentModal">
+          Añadir
+        </button>
       </div>
     </div>
 
@@ -30,7 +32,9 @@
       <!-- Days Header -->
       <div
         class="calendar-days-header bg-gray-100 border-b border-gray-200"
-        :style="{ gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)' }"
+        :style="{
+          gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)',
+        }"
       >
         <div class="p-2 font-semibold text-sm text-gray-600"></div>
         <!-- Empty corner for time -->
@@ -46,7 +50,9 @@
 
       <div
         class="calendar-body"
-        :style="{ gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)' }"
+        :style="{
+          gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)',
+        }"
       >
         <!-- Time Slots Column -->
         <div class="time-slots-column border-r border-gray-200">
@@ -72,11 +78,12 @@
             class="h-20 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-blue-50"
             @click="
               openAddAppointmentModalWithTime(
-                selectedBarberFilter === 'all' || selectedBarberFilter === 'scheduled'
+                selectedBarberFilter === 'all' ||
+                  selectedBarberFilter === 'scheduled'
                   ? null
                   : selectedBarberFilter,
                 day.fullDate,
-                hour
+                hour,
               )
             "
           ></div>
@@ -93,7 +100,9 @@
               {{ formatTime(reservation.end_time) }}
             </div>
             <div>{{ reservation.client_name }}</div>
-            <div class="text-gray-200">{{ getBarberName(reservation.barber_id) }}</div>
+            <div class="text-gray-200">
+              {{ getBarberName(reservation.barber_id) }}
+            </div>
             <div class="absolute bottom-1 right-1 text-blue-600">▶</div>
           </div>
         </div>
@@ -183,7 +192,7 @@ const barberSelectOptions = computed(() => {
     { label: 'Todo el equipo', value: 'all' },
     { label: 'Equipo programado', value: 'scheduled' },
   ];
-  barberStore.barbers.forEach(barber => {
+  barberStore.barbers.forEach((barber) => {
     options.push({
       label: barber.name,
       value: barber.id,
@@ -272,7 +281,7 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   const processedReservations = [];
   const columns = []; // Stores the end time of the last reservation in each column
 
-  reservations.forEach(res => {
+  reservations.forEach((res) => {
     const start = dayjs(res.start_time);
     const end = dayjs(res.end_time);
 
@@ -300,18 +309,19 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   });
 
   // Now calculate max columns needed for each overlap group and assign final left/width
-  processedReservations.forEach(res => {
-    const overlappingGroup = processedReservations.filter(otherRes => {
+  processedReservations.forEach((res) => {
+    const overlappingGroup = processedReservations.filter((otherRes) => {
       const resStart = dayjs(res.start_time);
       const resEnd = dayjs(res.end_time);
       const otherResStart = dayjs(otherRes.start_time);
       const otherResEnd = dayjs(otherRes.end_time);
 
       // Check for overlap
-      return (resStart.isBefore(otherResEnd) && otherResStart.isBefore(resEnd));
+      return resStart.isBefore(otherResEnd) && otherResStart.isBefore(resEnd);
     });
 
-    const maxColumnsInGroup = Math.max(...overlappingGroup.map(o => o.column)) + 1;
+    const maxColumnsInGroup =
+      Math.max(...overlappingGroup.map((o) => o.column)) + 1;
     const baseColumnWidth = 100 / maxColumnsInGroup;
     const effectiveWidth = baseColumnWidth * 0.98; // Each event takes 98% of its allocated column space
     const margin = baseColumnWidth * 0.01; // 1% margin on each side within its column
@@ -326,12 +336,15 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
 
 const getFilteredReservationsForDay = (date) => {
   let reservationsForDay = reservationStore.reservations.filter(
-    (res) => dayjs(res.start_time).local().format('YYYY-MM-DD') === date
+    (res) => dayjs(res.start_time).local().format('YYYY-MM-DD') === date,
   );
 
-  if (selectedBarberFilter.value !== 'all' && selectedBarberFilter.value !== 'scheduled') {
+  if (
+    selectedBarberFilter.value !== 'all' &&
+    selectedBarberFilter.value !== 'scheduled'
+  ) {
     reservationsForDay = reservationsForDay.filter(
-      (res) => res.barber_id === selectedBarberFilter.value
+      (res) => res.barber_id === selectedBarberFilter.value,
     );
   } else if (selectedBarberFilter.value === 'scheduled') {
     // This logic needs to be implemented if 'scheduled' means something specific
@@ -356,7 +369,10 @@ const getAppointmentStyle = (reservation) => {
   const durationMinutes = end.diff(start, 'minute');
   const height = (durationMinutes / 30) * pixelsPerHalfHour;
 
-  const barberColor = barberColors.value[reservation.barber_id] || { bgColor: '#4299e1', borderColor: '#2b6cb0' }; // Default if color not found
+  const barberColor = barberColors.value[reservation.barber_id] || {
+    bgColor: '#4299e1',
+    borderColor: '#2b6cb0',
+  }; // Default if color not found
 
   let statusStyle = {};
   if (reservation.status === 'completed') {
@@ -415,7 +431,10 @@ const viewAppointmentDetails = (reservation) => {
 
 const fetchReservationsForCurrentWeek = async () => {
   const startDate = currentWeekStart.value.startOf('day').toISOString();
-  const endDate = currentWeekStart.value.endOf('week').endOf('day').toISOString();
+  const endDate = currentWeekStart.value
+    .endOf('week')
+    .endOf('day')
+    .toISOString();
   await reservationStore.fetchReservationsByDateRange(startDate, endDate);
 };
 
@@ -436,7 +455,9 @@ onMounted(async () => {
 .calendar-grid {
   display: grid;
   grid-template-rows: auto 1fr;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
   border: 1px solid #e5e7eb; /* Very light border */
 }
 
@@ -469,6 +490,4 @@ onMounted(async () => {
 .btn-secondary {
   @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
 }
-
-
 </style>

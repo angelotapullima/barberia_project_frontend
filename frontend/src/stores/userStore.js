@@ -24,7 +24,8 @@ export const useUserStore = defineStore('users', {
         });
         this.users = response.data;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al cargar los usuarios.';
+        this.error =
+          error.response?.data?.message || 'Error al cargar los usuarios.';
         console.error('Error fetching users:', error);
       } finally {
         this.isLoading = false;
@@ -44,7 +45,8 @@ export const useUserStore = defineStore('users', {
         this.users.push(response.data);
         return true;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al crear el usuario.';
+        this.error =
+          error.response?.data?.message || 'Error al crear el usuario.';
         console.error('Error creating user:', error);
         throw error;
       } finally {
@@ -69,7 +71,8 @@ export const useUserStore = defineStore('users', {
         }
         return true;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al actualizar el usuario.';
+        this.error =
+          error.response?.data?.message || 'Error al actualizar el usuario.';
         console.error('Error updating user:', error);
         throw error;
       } finally {
@@ -90,7 +93,8 @@ export const useUserStore = defineStore('users', {
         this.users = this.users.filter((user) => user.id !== id);
         return true;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al eliminar el usuario.';
+        this.error =
+          error.response?.data?.message || 'Error al eliminar el usuario.';
         console.error('Error deleting user:', error);
         throw error;
       } finally {

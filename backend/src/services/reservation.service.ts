@@ -51,7 +51,10 @@ export class ReservationService {
     }
   }
 
-  async getAllReservations(startDate?: string, endDate?: string): Promise<Reservation[]> {
+  async getAllReservations(
+    startDate?: string,
+    endDate?: string,
+  ): Promise<Reservation[]> {
     let query = `
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
@@ -97,12 +100,14 @@ export class ReservationService {
           notes: row.notes,
           created_at: row.created_at,
           station_id: row.station_id,
-          sale: row.sale_id ? {
-            id: row.sale_id,
-            total_amount: row.sale_total,
-            payment_method: row.sale_payment_method,
-            sale_items: [],
-          } : undefined,
+          sale: row.sale_id
+            ? {
+                id: row.sale_id,
+                total_amount: row.sale_total,
+                payment_method: row.sale_payment_method,
+                sale_items: [],
+              }
+            : undefined,
         });
       }
 
@@ -125,7 +130,8 @@ export class ReservationService {
   }
 
   async getReservationById(id: number): Promise<Reservation | undefined> {
-    const reservation = await this.db.get(`
+    const reservation = await this.db.get(
+      `
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
           r.station_id,
@@ -136,20 +142,47 @@ export class ReservationService {
       JOIN barbers b ON r.barber_id = b.id
       JOIN services s ON r.service_id = s.id
       WHERE r.id = ?
-    `, id);
+    `,
+      id,
+    );
     return reservation;
   }
 
   async createReservation(reservation: Reservation): Promise<Reservation> {
-    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes } = reservation; // Added station_id
+    const {
+      barber_id,
+      station_id,
+      client_name,
+      client_phone,
+      client_email,
+      start_time,
+      end_time,
+      service_id,
+      status,
+      notes,
+    } = reservation; // Added station_id
     const result = await this.db.run(
       'INSERT INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', // Added station_id column
-      [barber_id, station_id, client_name, client_phone || null, client_email || null, start_time, end_time, service_id, status || 'pending', notes || null] // Added station_id value
+      [
+        barber_id,
+        station_id,
+        client_name,
+        client_phone || null,
+        client_email || null,
+        start_time,
+        end_time,
+        service_id,
+        status || 'pending',
+        notes || null,
+      ], // Added station_id value
     );
     return { id: result.lastID, ...reservation };
   }
 
-  async updateReservation(id: number, reservation: Partial<Reservation>): Promise<void> {
+  async updateReservation(
+    id: number,
+    reservation: Partial<Reservation>,
+  ): Promise<void> {
     const fields = [];
     const params = [];
 
@@ -189,7 +222,8 @@ export class ReservationService {
       fields.push('notes = ?');
       params.push(reservation.notes);
     }
-    if (reservation.station_id !== undefined) { // Added station_id to update
+    if (reservation.station_id !== undefined) {
+      // Added station_id to update
       fields.push('station_id = ?');
       params.push(reservation.station_id);
     }
@@ -207,25 +241,40 @@ export class ReservationService {
     await this.db.run('DELETE FROM reservations WHERE id = ?', id);
   }
 
-  async getReservationCount(startDate: string, endDate: string): Promise<number> {
-    const result = await this.db.get(`
+  async getReservationCount(
+    startDate: string,
+    endDate: string,
+  ): Promise<number> {
+    const result = await this.db.get(
+      `
       SELECT COUNT(*) as count
       FROM reservations
       WHERE start_time BETWEEN ? AND ?
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
     return result.count;
   }
 
-  async getCompletedReservationCount(startDate: string, endDate: string): Promise<number> {
-    const result = await this.db.get(`
+  async getCompletedReservationCount(
+    startDate: string,
+    endDate: string,
+  ): Promise<number> {
+    const result = await this.db.get(
+      `
       SELECT COUNT(*) as count
       FROM reservations
       WHERE start_time BETWEEN ? AND ? AND status = 'completed'
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
     return result.count;
   }
 
-  async getCompletedReservations(startDate: string, endDate: string): Promise<Reservation[]> {
+  async getCompletedReservations(
+    startDate: string,
+    endDate: string,
+  ): Promise<Reservation[]> {
     const query = `
       SELECT 
           r.id, r.barber_id, b.name as barber_name,
@@ -259,7 +308,10 @@ export class ReservationService {
 
       // 2. Create a sale from the reservation
       // Fetch service details to get price for sale_items
-      const service = await this.db.get('SELECT id, name, price, type FROM services WHERE id = ?', reservation.service_id);
+      const service = await this.db.get(
+        'SELECT id, name, price, type FROM services WHERE id = ?',
+        reservation.service_id,
+      );
       if (!service) {
         throw new Error('Service not found for reservation.');
       }
@@ -273,14 +325,16 @@ export class ReservationService {
         customer_name: reservation.client_name,
         payment_method: 'cash', // Default payment method for now
         reservation_id: reservation.id, // Link sale to reservation
-        sale_items: [{
-          item_id: service.id,
-          price: service.price,
-          quantity: 1,
-          price_at_sale: service.price,
-          item_name: service.name,
-          type: service.type,
-        }],
+        sale_items: [
+          {
+            item_id: service.id,
+            price: service.price,
+            quantity: 1,
+            price_at_sale: service.price,
+            item_name: service.name,
+            type: service.type,
+          },
+        ],
       });
 
       await this.db.run('COMMIT');

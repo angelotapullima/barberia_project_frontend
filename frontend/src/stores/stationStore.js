@@ -29,7 +29,8 @@ export const useStationStore = defineStore('stations', {
         await axios.post(`${API_URL}/stations`, station);
         await this.fetchStations();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al añadir la estación.';
+        this.error =
+          error.response?.data?.error || 'Error al añadir la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }
@@ -40,7 +41,8 @@ export const useStationStore = defineStore('stations', {
         await axios.put(`${API_URL}/stations/${station.id}`, station);
         await this.fetchStations();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al actualizar la estación.';
+        this.error =
+          error.response?.data?.error || 'Error al actualizar la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }
@@ -51,7 +53,8 @@ export const useStationStore = defineStore('stations', {
         await axios.delete(`${API_URL}/stations/${id}`);
         await this.fetchStations();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al eliminar la estación.';
+        this.error =
+          error.response?.data?.error || 'Error al eliminar la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }

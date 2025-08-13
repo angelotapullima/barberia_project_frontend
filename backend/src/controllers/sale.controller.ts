@@ -16,12 +16,17 @@ class SaleController {
     const { filterType, filterValue } = req.query;
 
     if (!filterType || !filterValue) {
-      res.status(400).json({ error: 'Missing filterType or filterValue query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing filterType or filterValue query parameters' });
       return;
     }
 
     try {
-      const sales = await saleService.getFilteredSales(filterType as string, filterValue as string);
+      const sales = await saleService.getFilteredSales(
+        filterType as string,
+        filterValue as string,
+      );
       res.json(sales);
     } catch (error) {
       console.error('Error getting filtered sales:', error);
@@ -30,7 +35,14 @@ class SaleController {
   }
 
   async createSale(req: Request, res: Response): Promise<void> {
-    const { sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id } = req.body;
+    const {
+      sale_date,
+      sale_items,
+      total_amount,
+      customer_name,
+      payment_method,
+      reservation_id,
+    } = req.body;
 
     // Validation for always required fields
     if (
@@ -46,7 +58,14 @@ class SaleController {
     }
 
     try {
-      const newSale = await saleService.createSale({ sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id });
+      const newSale = await saleService.createSale({
+        sale_date,
+        sale_items,
+        total_amount,
+        customer_name,
+        payment_method,
+        reservation_id,
+      });
       res.status(201).json({ id: newSale.id });
     } catch (error) {
       console.error('Error creating sale:', error);
@@ -63,11 +82,15 @@ class SaleController {
     }
 
     try {
-      const sale = await saleService.getSaleByReservationId(Number(reservationId));
+      const sale = await saleService.getSaleByReservationId(
+        Number(reservationId),
+      );
       if (sale) {
         res.json(sale);
       } else {
-        res.status(404).json({ error: 'Sale not found for this reservation ID' });
+        res
+          .status(404)
+          .json({ error: 'Sale not found for this reservation ID' });
       }
     } catch (error) {
       console.error('Error getting sale by reservation ID:', error);
@@ -79,12 +102,17 @@ class SaleController {
     const { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
 
     try {
-      const salesSummary = await saleService.getSalesSummaryByDateRange(startDate as string, endDate as string);
+      const salesSummary = await saleService.getSalesSummaryByDateRange(
+        startDate as string,
+        endDate as string,
+      );
       res.json(salesSummary);
     } catch (error) {
       console.error('Error getting daily sales summary:', error);
@@ -136,12 +164,17 @@ class SaleController {
     const { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
 
     try {
-      const summary = await saleService.getSalesSummaryByService(startDate as string, endDate as string);
+      const summary = await saleService.getSalesSummaryByService(
+        startDate as string,
+        endDate as string,
+      );
       res.json(summary);
     } catch (error) {
       console.error('Error getting sales summary by service:', error);
@@ -149,16 +182,24 @@ class SaleController {
     }
   }
 
-  async getSalesSummaryByPaymentMethod(req: Request, res: Response): Promise<void> {
+  async getSalesSummaryByPaymentMethod(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     const { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
 
     try {
-      const summary = await saleService.getSalesSummaryByPaymentMethod(startDate as string, endDate as string);
+      const summary = await saleService.getSalesSummaryByPaymentMethod(
+        startDate as string,
+        endDate as string,
+      );
       res.json(summary);
     } catch (error) {
       console.error('Error getting sales summary by payment method:', error);

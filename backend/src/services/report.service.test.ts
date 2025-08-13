@@ -30,7 +30,10 @@ describe('ReportService', () => {
   });
 
   it('debería calcular correctamente la utilización de estaciones', async () => {
-    const stationUsage = await reportService.getStationUsage(testStartDate, testEndDate);
+    const stationUsage = await reportService.getStationUsage(
+      testStartDate,
+      testEndDate,
+    );
 
     expect(Array.isArray(stationUsage)).toBe(true);
     expect(stationUsage.length).toBeGreaterThan(0);
@@ -40,7 +43,10 @@ describe('ReportService', () => {
   });
 
   it('debería calcular correctamente la frecuencia de clientes', async () => {
-    const customerFrequency = await reportService.getCustomerFrequency(testStartDate, testEndDate);
+    const customerFrequency = await reportService.getCustomerFrequency(
+      testStartDate,
+      testEndDate,
+    );
 
     expect(Array.isArray(customerFrequency)).toBe(true);
     expect(customerFrequency.length).toBeGreaterThan(0);
@@ -50,7 +56,10 @@ describe('ReportService', () => {
   });
 
   it('debería calcular correctamente las horas pico', async () => {
-    const peakHours = await reportService.getPeakHours(testStartDate, testEndDate);
+    const peakHours = await reportService.getPeakHours(
+      testStartDate,
+      testEndDate,
+    );
 
     expect(Array.isArray(peakHours)).toBe(true);
     expect(peakHours.length).toBeGreaterThan(0);
@@ -63,7 +72,10 @@ describe('ReportService', () => {
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth() + 1; // Mes actual (1-12)
 
-      const report = await reportService.generateReport(currentYear, currentMonth);
+      const report = await reportService.generateReport(
+        currentYear,
+        currentMonth,
+      );
 
       expect(report).toBeDefined();
       expect(report).toHaveProperty('events');
@@ -84,9 +96,14 @@ describe('ReportService', () => {
       expect(report.stats[0]).toHaveProperty('payment');
 
       // Verificar que el pago se calcula correctamente (ejemplo simple)
-      const barberWithSales = report.stats.find(stat => stat.total_generated > 0);
+      const barberWithSales = report.stats.find(
+        (stat) => stat.total_generated > 0,
+      );
       if (barberWithSales) {
-        const expectedPayment = barberWithSales.total_generated > 2500 ? barberWithSales.total_generated * 0.5 : 1250;
+        const expectedPayment =
+          barberWithSales.total_generated > 2500
+            ? barberWithSales.total_generated * 0.5
+            : 1250;
         expect(barberWithSales.payment).toBeCloseTo(expectedPayment);
       }
     });
@@ -100,7 +117,7 @@ describe('ReportService', () => {
       expect(report).toBeDefined();
       expect(report.events).toEqual([]); // No debería haber eventos de venta
       expect(report.stats.length).toBeGreaterThan(0); // Debería haber barberos, pero con total_generated en 0
-      report.stats.forEach(stat => {
+      report.stats.forEach((stat) => {
         expect(stat.total_generated).toBe(0);
         expect(stat.payment).toBe(1250); // Solo salario base
       });
@@ -119,28 +136,35 @@ describe('ReportService', () => {
 
     it('debería filtrar ventas por barberId', async () => {
       // Asumiendo que el barbero con ID 1 (Juan Pérez) tiene ventas
-      const filteredSales = await reportService.getComprehensiveSales({ barberId: 1 });
+      const filteredSales = await reportService.getComprehensiveSales({
+        barberId: 1,
+      });
       expect(Array.isArray(filteredSales)).toBe(true);
       expect(filteredSales.length).toBeGreaterThan(0);
-      filteredSales.forEach(sale => {
+      filteredSales.forEach((sale) => {
         expect(sale.barber_name).toBe('Juan Pérez');
       });
     });
 
     it('debería filtrar ventas por paymentMethod', async () => {
-      const filteredSales = await reportService.getComprehensiveSales({ paymentMethod: 'cash' });
+      const filteredSales = await reportService.getComprehensiveSales({
+        paymentMethod: 'cash',
+      });
       expect(Array.isArray(filteredSales)).toBe(true);
       expect(filteredSales.length).toBeGreaterThan(0);
-      filteredSales.forEach(sale => {
+      filteredSales.forEach((sale) => {
         expect(sale.payment_method).toBe('cash');
       });
     });
 
     it('debería filtrar ventas por rango de fechas', async () => {
-      const sales = await reportService.getComprehensiveSales({ startDate: testStartDate, endDate: testEndDate });
+      const sales = await reportService.getComprehensiveSales({
+        startDate: testStartDate,
+        endDate: testEndDate,
+      });
       expect(Array.isArray(sales)).toBe(true);
       expect(sales.length).toBeGreaterThan(0);
-      sales.forEach(sale => {
+      sales.forEach((sale) => {
         expect(sale.sale_date >= testStartDate).toBe(true);
         expect(sale.sale_date <= testEndDate).toBe(true);
       });
@@ -148,10 +172,12 @@ describe('ReportService', () => {
 
     it('debería filtrar ventas por serviceId', async () => {
       // Asumiendo que el servicio con ID 1 (Corte de Cabello) tiene ventas
-      const filteredSales = await reportService.getComprehensiveSales({ serviceId: 1 });
+      const filteredSales = await reportService.getComprehensiveSales({
+        serviceId: 1,
+      });
       expect(Array.isArray(filteredSales)).toBe(true);
       expect(filteredSales.length).toBeGreaterThan(0);
-      filteredSales.forEach(sale => {
+      filteredSales.forEach((sale) => {
         expect(sale.services_sold).toContain('Corte de Cabello');
       });
     });
@@ -165,7 +191,7 @@ describe('ReportService', () => {
       });
       expect(Array.isArray(filteredSales)).toBe(true);
       expect(filteredSales.length).toBeGreaterThan(0);
-      filteredSales.forEach(sale => {
+      filteredSales.forEach((sale) => {
         expect(sale.barber_name).toBe('Juan Pérez');
         expect(sale.payment_method).toBe('cash');
         expect(sale.sale_date >= testStartDate).toBe(true);
@@ -176,15 +202,18 @@ describe('ReportService', () => {
 
   describe('getServicesProductsSales', () => {
     it('debería obtener el resumen de ventas por tipo de servicio/producto', async () => {
-      const summary = await reportService.getServicesProductsSales(testStartDate, testEndDate);
+      const summary = await reportService.getServicesProductsSales(
+        testStartDate,
+        testEndDate,
+      );
       expect(Array.isArray(summary)).toBe(true);
       expect(summary.length).toBeGreaterThan(0);
       expect(summary[0]).toHaveProperty('type');
       expect(summary[0]).toHaveProperty('total_sales_by_type');
 
       // Verificar que haya al menos 'service' y 'product'
-      const serviceType = summary.find(item => item.type === 'service');
-      const productType = summary.find(item => item.type === 'product');
+      const serviceType = summary.find((item) => item.type === 'service');
+      const productType = summary.find((item) => item.type === 'product');
       expect(serviceType).toBeDefined();
       expect(productType).toBeDefined();
       expect(serviceType.total_sales_by_type).toBeGreaterThan(0);
@@ -192,7 +221,10 @@ describe('ReportService', () => {
     });
 
     it('debería manejar un rango de fechas sin ventas', async () => {
-      const summary = await reportService.getServicesProductsSales('2000-01-01', '2000-01-31');
+      const summary = await reportService.getServicesProductsSales(
+        '2000-01-01',
+        '2000-01-31',
+      );
       expect(Array.isArray(summary)).toBe(true);
       expect(summary.length).toBe(0);
     });

@@ -6,7 +6,9 @@ class DraftSaleController {
     const { reservation_id, client_name, barber_id, sale_items } = req.body;
 
     if (!reservation_id || !sale_items || !Array.isArray(sale_items)) {
-      res.status(400).json({ error: 'Missing or invalid required fields for draft sale.' });
+      res
+        .status(400)
+        .json({ error: 'Missing or invalid required fields for draft sale.' });
       return;
     }
 
@@ -33,11 +35,15 @@ class DraftSaleController {
     }
 
     try {
-      const draft = await draftSaleService.fetchDraftSale(Number(reservationId));
+      const draft = await draftSaleService.fetchDraftSale(
+        Number(reservationId),
+      );
       if (draft) {
         res.json(draft);
       } else {
-        res.status(404).json({ message: 'Draft sale not found for this reservation.' });
+        res
+          .status(404)
+          .json({ message: 'Draft sale not found for this reservation.' });
       }
     } catch (error) {
       console.error('Error fetching draft sale:', error);

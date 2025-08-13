@@ -18,12 +18,21 @@ class BarberController {
       res.status(400).json({ error: 'Name is required' });
       return;
     }
-    if (base_salary !== undefined && (typeof base_salary !== 'number' || base_salary < 0)) {
-      res.status(400).json({ error: 'Base salary must be a non-negative number' });
+    if (
+      base_salary !== undefined &&
+      (typeof base_salary !== 'number' || base_salary < 0)
+    ) {
+      res
+        .status(400)
+        .json({ error: 'Base salary must be a non-negative number' });
       return;
     }
     try {
-      const newBarber = await barberService.createBarber({ name, station_id, base_salary });
+      const newBarber = await barberService.createBarber({
+        name,
+        station_id,
+        base_salary,
+      });
       res.status(201).json(newBarber);
     } catch (error) {
       console.error('Error creating barber:', error);
@@ -38,12 +47,21 @@ class BarberController {
       res.status(400).json({ error: 'Name is required' });
       return;
     }
-    if (base_salary !== undefined && (typeof base_salary !== 'number' || base_salary < 0)) {
-      res.status(400).json({ error: 'Base salary must be a non-negative number' });
+    if (
+      base_salary !== undefined &&
+      (typeof base_salary !== 'number' || base_salary < 0)
+    ) {
+      res
+        .status(400)
+        .json({ error: 'Base salary must be a non-negative number' });
       return;
     }
     try {
-      const updatedBarber = await barberService.updateBarber(Number(id), { name, station_id, base_salary });
+      const updatedBarber = await barberService.updateBarber(Number(id), {
+        name,
+        station_id,
+        base_salary,
+      });
       if (!updatedBarber) {
         res.status(404).json({ error: 'Barber not found' });
         return;

@@ -21,7 +21,8 @@ export const useReservationStore = defineStore('reservations', {
         return response.data;
       } catch (error) {
         this.error =
-          error.response?.data?.error || 'Error al cargar las reservas por rango de fecha.';
+          error.response?.data?.error ||
+          'Error al cargar las reservas por rango de fecha.';
         console.error(error);
         return [];
       } finally {
@@ -35,7 +36,8 @@ export const useReservationStore = defineStore('reservations', {
         const response = await axios.get(`${API_URL}/reservations`);
         this.reservations = response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al cargar las reservas.';
+        this.error =
+          error.response?.data?.error || 'Error al cargar las reservas.';
         console.error(error);
       } finally {
         this.isLoading = false;
@@ -45,10 +47,14 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(`${API_URL}/reservations`, reservationData);
+        const response = await axios.post(
+          `${API_URL}/reservations`,
+          reservationData,
+        );
         this.reservations.push(response.data);
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al registrar la reserva.';
+        this.error =
+          error.response?.data?.error || 'Error al registrar la reserva.';
         console.error(error);
         throw error;
       } finally {
@@ -65,7 +71,8 @@ export const useReservationStore = defineStore('reservations', {
           Object.assign(this.reservations[index], reservationData);
         }
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al actualizar la reserva.';
+        this.error =
+          error.response?.data?.error || 'Error al actualizar la reserva.';
         console.error(error);
         throw error;
       } finally {
@@ -79,7 +86,8 @@ export const useReservationStore = defineStore('reservations', {
         await axios.delete(`${API_URL}/reservations/${id}`);
         this.reservations = this.reservations.filter((res) => res.id !== id);
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al eliminar la reserva.';
+        this.error =
+          error.response?.data?.error || 'Error al eliminar la reserva.';
         console.error(error);
         throw error;
       } finally {
@@ -95,7 +103,9 @@ export const useReservationStore = defineStore('reservations', {
         });
         return response.data.count;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener el conteo de reservas.';
+        this.error =
+          error.response?.data?.error ||
+          'Error al obtener el conteo de reservas.';
         console.error(error);
         return 0;
       } finally {
@@ -106,13 +116,17 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reservations/count-completed`, {
-          params: { startDate, endDate },
-        });
+        const response = await axios.get(
+          `${API_URL}/reservations/count-completed`,
+          {
+            params: { startDate, endDate },
+          },
+        );
         return response.data.count;
       } catch (error) {
         this.error =
-          error.response?.data?.error || 'Error al obtener el conteo de reservas completadas.';
+          error.response?.data?.error ||
+          'Error al obtener el conteo de reservas completadas.';
         console.error(error);
         return 0;
       } finally {
@@ -128,7 +142,9 @@ export const useReservationStore = defineStore('reservations', {
         });
         return response.data; // Assuming response.data is an array of completed reservations
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener las reservas completadas.';
+        this.error =
+          error.response?.data?.error ||
+          'Error al obtener las reservas completadas.';
         console.error(error);
         return [];
       } finally {

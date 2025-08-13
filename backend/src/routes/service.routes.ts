@@ -12,6 +12,9 @@ router.delete('/:id', serviceController.deleteService);
 router.get('/products', serviceController.getProducts);
 router.put('/products/:id/stock', serviceController.updateProductStock);
 router.get('/products/low-stock', serviceController.getLowStockProducts);
-router.get('/products/report/summary', serviceController.getInventoryReportSummary);
+router.get(
+  '/products/report/summary',
+  serviceController.getInventoryReportSummary,
+);
 
 export default router;

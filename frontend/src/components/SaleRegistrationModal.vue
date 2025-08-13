@@ -13,10 +13,20 @@
           <div v-if="reservation" class="mb-4 p-4 border rounded-lg bg-gray-50">
             <h4 class="font-semibold mb-2">Detalles de la Reserva:</h4>
             <p><strong>Cliente:</strong> {{ reservation.client_name }}</p>
-            <p><strong>Barbero:</strong> {{ getBarberName(reservation.barber_id) }}</p>
-            <p><strong>Servicio Principal:</strong> {{ getServiceName(reservation.service_id) }}</p>
-            <p><strong>Fecha:</strong> {{ formatDate(reservation.start_time) }}</p>
-            <p><strong>Hora:</strong> {{ formatTime(reservation.start_time) }}</p>
+            <p>
+              <strong>Barbero:</strong>
+              {{ getBarberName(reservation.barber_id) }}
+            </p>
+            <p>
+              <strong>Servicio Principal:</strong>
+              {{ getServiceName(reservation.service_id) }}
+            </p>
+            <p>
+              <strong>Fecha:</strong> {{ formatDate(reservation.start_time) }}
+            </p>
+            <p>
+              <strong>Hora:</strong> {{ formatTime(reservation.start_time) }}
+            </p>
             <p><strong>Estado:</strong> {{ reservation.status }}</p>
           </div>
 
@@ -25,14 +35,30 @@
             <h4 class="font-semibold mb-2">Añadir Productos/Servicios:</h4>
             <div class="flex space-x-2 mb-2">
               <select v-model="selectedItemToAdd" class="form-select flex-grow">
-                <option :value="null" disabled>Seleccionar producto o servicio</option>
-                <optgroup label="Servicios">
-                  <option v-for="service in serviceStore.services" :key="'s-'+service.id" :value="{ type: 'service', item: service }">
+                <option :value="null" disabled>
+                  Seleccionar producto o servicio
+                </option>
+                <optgroup
+                  label="Servicios"
+                  v-if="saleType === 'both' || saleType === 'service'"
+                >
+                  <option
+                    v-for="service in serviceStore.services"
+                    :key="'s-' + service.id"
+                    :value="{ type: 'service', item: service }"
+                  >
                     {{ service.name }} ({{ service.price }}€)
                   </option>
                 </optgroup>
-                <optgroup label="Productos">
-                  <option v-for="product in productStore.products" :key="'p-'+product.id" :value="{ type: 'product', item: product }">
+                <optgroup
+                  label="Productos"
+                  v-if="saleType === 'both' || saleType === 'product'"
+                >
+                  <option
+                    v-for="product in productStore.products"
+                    :key="'p-' + product.id"
+                    :value="{ type: 'product', item: product }"
+                  >
                     {{ product.name }} ({{ product.price }}€)
                   </option>
                 </optgroup>
@@ -56,13 +82,28 @@
               <tbody>
                 <tr v-for="(item, index) in saleItems" :key="item.id">
                   <td class="py-2 px-4 border-b">{{ item.name }}</td>
-                  <td class="py-2 px-4 border-b">{{ item.price.toFixed(2) }}€</td>
                   <td class="py-2 px-4 border-b">
-                    <input type="number" v-model.number="item.quantity" min="1" class="w-16 text-center border rounded" @change="updateItemQuantity(index, item.quantity)">
+                    {{ item.price.toFixed(2) }}€
                   </td>
-                  <td class="py-2 px-4 border-b">{{ (item.price * item.quantity).toFixed(2) }}€</td>
                   <td class="py-2 px-4 border-b">
-                    <button @click="removeItemFromSale(index)" class="text-red-500 hover:text-red-700">X</button>
+                    <input
+                      type="number"
+                      v-model.number="item.quantity"
+                      min="1"
+                      class="w-16 text-center border rounded"
+                      @change="updateItemQuantity(index, item.quantity)"
+                    />
+                  </td>
+                  <td class="py-2 px-4 border-b">
+                    {{ (item.price * item.quantity).toFixed(2) }}€
+                  </td>
+                  <td class="py-2 px-4 border-b">
+                    <button
+                      @click="removeItemFromSale(index)"
+                      class="text-red-500 hover:text-red-700"
+                    >
+                      X
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -70,13 +111,21 @@
           </div>
 
           <!-- Total and Payment -->
-          <div class="flex flex-col md:flex-row justify-end items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
-            
-
+          <div
+            class="flex flex-col md:flex-row justify-end items-center mb-4 space-y-4 md:space-y-0 md:space-x-4"
+          >
             <!-- Payment Method Selection -->
             <div class="w-full md:w-1/3">
-              <label for="payment-method-select" class="block text-sm font-medium text-gray-700 mb-1">Método de Pago:</label>
-              <select id="payment-method-select" v-model="paymentMethod" class="form-select w-full">
+              <label
+                for="payment-method-select"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Método de Pago:</label
+              >
+              <select
+                id="payment-method-select"
+                v-model="paymentMethod"
+                class="form-select w-full"
+              >
                 <option value="">Selecciona un método</option>
                 <option value="Efectivo">Efectivo</option>
                 <option value="Tarjeta">Tarjeta</option>
@@ -85,13 +134,19 @@
               </select>
             </div>
 
-            <h3 class="text-xl font-bold mr-4">Total: {{ saleTotal.toFixed(2) }}€</h3>
-            <button @click="processSale" class="btn-primary">Pagar Venta</button>
+            <h3 class="text-xl font-bold mr-4">
+              Total: {{ saleTotal.toFixed(2) }}€
+            </h3>
+            <button @click="processSale" class="btn-primary">
+              Pagar Venta
+            </button>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button class="modal-default-button" @click="$emit('close')">Cerrar</button>
+          <button class="modal-default-button" @click="$emit('close')">
+            Cerrar
+          </button>
         </div>
       </div>
     </div>
@@ -110,6 +165,10 @@ import dayjs from 'dayjs';
 const props = defineProps({
   show: Boolean,
   reservation: Object, // Optional: reservation object if converting from one
+  saleType: {
+    type: String,
+    default: 'both', // 'product', 'service', or 'both'
+  },
 });
 
 const emit = defineEmits(['close', 'saleProcessed']);
@@ -125,70 +184,90 @@ const paymentMethod = ref(''); // Re-adding the missing declaration
 const saleItems = ref([]); // { id, name, price, quantity, type }
 
 // Initialize saleItems with the primary service from reservation if provided
-watch(() => props.reservation, async (newReservation) => { // Added 'async'
-  console.log('SaleRegistrationModal received reservation:', newReservation);
-  // Always reset saleItems when the reservation prop changes
-  saleItems.value = [];
+watch(
+  () => props.reservation,
+  async (newReservation) => {
+    // Added 'async'
+    console.log('SaleRegistrationModal received reservation:', newReservation);
+    // Always reset saleItems when the reservation prop changes
+    saleItems.value = [];
 
-  if (newReservation && newReservation.id) { // Check for newReservation.id
-    // Attempt to load draft sale
-    const draft = await salesStore.fetchDraftSale(newReservation.id);
-    if (draft && draft.sale_items && draft.sale_items.length > 0) {
-      saleItems.value = draft.sale_items.map(item => ({
-        id: item.item_id,
-        name: item.item_type === 'service' ? (serviceStore.services.find(s => s.id === item.item_id)?.name || 'Servicio Desconocido') : (productStore.products.find(p => p.id === item.item_id)?.name || 'Producto Desconocido'),
-        price: item.price_at_draft,
-        quantity: item.quantity,
-        type: item.item_type,
-      }));
-      console.log('Loaded draft sale:', saleItems.value);
-    } else if (newReservation.service_id) { // If no draft, but there's a primary service, add it
-      const primaryService = serviceStore.services.find(s => s.id === newReservation.service_id);
-      if (primaryService) {
-        saleItems.value.push({
-          id: primaryService.id,
-          name: primaryService.name,
-          price: primaryService.price,
-          quantity: 1,
-          type: 'service',
-        });
+    if (newReservation && newReservation.id) {
+      // Check for newReservation.id
+      // Attempt to load draft sale
+      const draft = await salesStore.fetchDraftSale(newReservation.id);
+      if (draft && draft.sale_items && draft.sale_items.length > 0) {
+        saleItems.value = draft.sale_items.map((item) => ({
+          id: item.item_id,
+          name:
+            item.item_type === 'service'
+              ? serviceStore.services.find((s) => s.id === item.item_id)
+                  ?.name || 'Servicio Desconocido'
+              : productStore.products.find((p) => p.id === item.item_id)
+                  ?.name || 'Producto Desconocido',
+          price: item.price_at_draft,
+          quantity: item.quantity,
+          type: item.item_type,
+        }));
+        console.log('Loaded draft sale:', saleItems.value);
+      } else if (newReservation.service_id) {
+        // If no draft, but there's a primary service, add it
+        const primaryService = serviceStore.services.find(
+          (s) => s.id === newReservation.service_id,
+        );
+        if (primaryService) {
+          saleItems.value.push({
+            id: primaryService.id,
+            name: primaryService.name,
+            price: primaryService.price,
+            quantity: 1,
+            type: 'service',
+          });
+        }
       }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true },
+);
 
 let saveDraftDebounceTimer = null;
-watch(saleItems, (newSaleItems) => {
-  if (!props.reservation || !props.reservation.id) {
-    return; // Only save draft if there's a reservation to link it to
-  }
-
-  clearTimeout(saveDraftDebounceTimer);
-  saveDraftDebounceTimer = setTimeout(async () => {
-    const draftSaleData = {
-      reservation_id: props.reservation.id,
-      client_name: props.reservation.client_name,
-      // barber_id: props.reservation.barber_id, // Removed as barber_id is not in sales table
-      sale_items: newSaleItems.map(item => ({
-        item_id: item.id,
-        item_type: item.type,
-        quantity: item.quantity,
-        price_at_draft: item.price,
-      })),
-    };
-    try {
-      await salesStore.saveDraftSale(draftSaleData);
-      console.log('Draft sale saved successfully.');
-    } catch (error) {
-      console.error('Failed to save draft sale:', error);
+watch(
+  saleItems,
+  (newSaleItems) => {
+    if (!props.reservation || !props.reservation.id) {
+      return; // Only save draft if there's a reservation to link it to
     }
-  }, 500); // Debounce by 500ms
-}, { deep: true });
+
+    clearTimeout(saveDraftDebounceTimer);
+    saveDraftDebounceTimer = setTimeout(async () => {
+      const draftSaleData = {
+        reservation_id: props.reservation.id,
+        client_name: props.reservation.client_name,
+        // barber_id: props.reservation.barber_id, // Removed as barber_id is not in sales table
+        sale_items: newSaleItems.map((item) => ({
+          item_id: item.id,
+          item_type: item.type,
+          quantity: item.quantity,
+          price_at_draft: item.price,
+        })),
+      };
+      try {
+        await salesStore.saveDraftSale(draftSaleData);
+        console.log('Draft sale saved successfully.');
+      } catch (error) {
+        console.error('Failed to save draft sale:', error);
+      }
+    }, 500); // Debounce by 500ms
+  },
+  { deep: true },
+);
 
 const addItemToSale = () => {
   if (selectedItemToAdd.value) {
     const { type, item } = selectedItemToAdd.value;
-    const existingItem = saleItems.value.find(i => i.id === item.id && i.type === type);
+    const existingItem = saleItems.value.find(
+      (i) => i.id === item.id && i.type === type,
+    );
 
     if (existingItem) {
       existingItem.quantity++;
@@ -218,7 +297,10 @@ const updateItemQuantity = (index, newQuantity) => {
 };
 
 const saleTotal = computed(() => {
-  return saleItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return saleItems.value.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
 });
 
 const processSale = async () => {
@@ -238,7 +320,7 @@ const processSale = async () => {
       reservation_id: props.reservation ? props.reservation.id : null,
       client_name: props.reservation?.client_name || 'Cliente Varios',
       total_amount: saleTotal.value,
-      sale_items: saleItems.value.map(item => ({
+      sale_items: saleItems.value.map((item) => ({
         item_id: item.id,
         quantity: item.quantity,
         item_type: item.type,
@@ -253,7 +335,9 @@ const processSale = async () => {
 
     // If it was a reservation, update its status to 'completado' or 'pagado'
     if (props.reservation) {
-      await reservationStore.updateReservation(props.reservation.id, { status: 'completed' });
+      await reservationStore.updateReservation(props.reservation.id, {
+        status: 'completed',
+      });
     }
 
     alert('Venta registrada exitosamente!');
@@ -272,11 +356,15 @@ const resetSaleForm = () => {
 
 // Helper functions for display
 const getBarberName = (barberId) => {
-  return barberStore.barbers.find(b => b.id === barberId)?.name || 'Desconocido';
+  return (
+    barberStore.barbers.find((b) => b.id === barberId)?.name || 'Desconocido'
+  );
 };
 
 const getServiceName = (serviceId) => {
-  return serviceStore.services.find(s => s.id === serviceId)?.name || 'Desconocido';
+  return (
+    serviceStore.services.find((s) => s.id === serviceId)?.name || 'Desconocido'
+  );
 };
 
 const formatDate = (isoString) => {

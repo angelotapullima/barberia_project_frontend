@@ -21,7 +21,10 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+        const response = await axios.post(`${API_URL}/auth/login`, {
+          email,
+          password,
+        });
         this.token = response.data.token;
         this.user = response.data.user;
         localStorage.setItem('userToken', this.token);
@@ -31,7 +34,8 @@ export const useAuthStore = defineStore('auth', {
         if (error.response && error.response.status === 401) {
           this.error = 'Credenciales inválidas. Por favor, inténtalo de nuevo.';
         } else {
-          this.error = 'Error al iniciar sesión. Por favor, inténtalo más tarde.';
+          this.error =
+            'Error al iniciar sesión. Por favor, inténtalo más tarde.';
         }
         console.error('Login error:', error);
         return false;

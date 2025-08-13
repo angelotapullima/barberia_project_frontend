@@ -11,7 +11,9 @@
         <div class="modal-body">
           <form @submit.prevent="submitReservation">
             <div class="mb-4">
-              <label for="clientName" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="clientName"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Nombre del Cliente:</label
               >
               <input
@@ -24,7 +26,11 @@
             </div>
 
             <div class="mb-4">
-              <label for="barber" class="block text-gray-700 text-sm font-bold mb-2">Barbero:</label>
+              <label
+                for="barber"
+                class="block text-gray-700 text-sm font-bold mb-2"
+                >Barbero:</label
+              >
               <select
                 id="barber"
                 v-model="newReservation.barber_id"
@@ -32,14 +38,20 @@
                 required
               >
                 <option :value="null" disabled>Seleccionar Barbero</option>
-                <option v-for="barber in barberStore.barbers" :key="barber.id" :value="barber.id">
+                <option
+                  v-for="barber in barberStore.barbers"
+                  :key="barber.id"
+                  :value="barber.id"
+                >
                   {{ barber.name }}
                 </option>
               </select>
             </div>
 
             <div class="mb-4">
-              <label for="station" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="station"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Estación:</label
               >
               <select
@@ -60,7 +72,9 @@
             </div>
 
             <div class="mb-4">
-              <label for="service" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="service"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Servicio:</label
               >
               <select
@@ -70,16 +84,22 @@
                 required
               >
                 <option :value="null" disabled>Seleccionar Servicio</option>
-                <option v-for="service in serviceStore.services" :key="service.id" :value="service.id">
+                <option
+                  v-for="service in serviceStore.services"
+                  :key="service.id"
+                  :value="service.id"
+                >
                   {{ service.name }} ({{ service.duration_minutes }} min)
                 </option>
               </select>
             </div>
 
-            
-
             <div class="mb-4">
-              <label for="date" class="block text-gray-700 text-sm font-bold mb-2">Fecha:</label>
+              <label
+                for="date"
+                class="block text-gray-700 text-sm font-bold mb-2"
+                >Fecha:</label
+              >
               <input
                 type="date"
                 id="date"
@@ -90,7 +110,11 @@
             </div>
 
             <div class="mb-4">
-              <label for="time" class="block text-gray-700 text-sm font-bold mb-2">Hora:</label>
+              <label
+                for="time"
+                class="block text-gray-700 text-sm font-bold mb-2"
+                >Hora:</label
+              >
               <input
                 type="time"
                 id="time"
@@ -101,7 +125,9 @@
             </div>
 
             <div class="mb-4">
-              <label for="clientPhone" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="clientPhone"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Teléfono del Cliente (Opcional):</label
               >
               <input
@@ -113,7 +139,9 @@
             </div>
 
             <div class="mb-4">
-              <label for="clientEmail" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="clientEmail"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Email del Cliente (Opcional):</label
               >
               <input
@@ -125,7 +153,9 @@
             </div>
 
             <div class="mb-4">
-              <label for="notes" class="block text-gray-700 text-sm font-bold mb-2"
+              <label
+                for="notes"
+                class="block text-gray-700 text-sm font-bold mb-2"
                 >Notas (Opcional):</label
               >
               <textarea
@@ -137,7 +167,11 @@
 
             <div class="flex items-center justify-between">
               <button type="submit" class="btn-primary">Guardar Cita</button>
-              <button type="button" class="btn-secondary" @click="$emit('close')">
+              <button
+                type="button"
+                class="btn-secondary"
+                @click="$emit('close')"
+              >
                 Cancelar
               </button>
             </div>
@@ -183,31 +217,47 @@ const newReservation = ref({
 });
 
 // Watch for initial props to pre-fill the form
-watch(() => props.initialBarberId, (newVal) => {
-  if (newVal) newReservation.value.barber_id = newVal;
-}, { immediate: true });
+watch(
+  () => props.initialBarberId,
+  (newVal) => {
+    if (newVal) newReservation.value.barber_id = newVal;
+  },
+  { immediate: true },
+);
 
-watch(() => props.initialDate, (newVal) => {
-  if (newVal) newReservation.value.date = newVal;
-}, { immediate: true });
+watch(
+  () => props.initialDate,
+  (newVal) => {
+    if (newVal) newReservation.value.date = newVal;
+  },
+  { immediate: true },
+);
 
-watch(() => props.initialHour, (newVal) => {
-  if (newVal) newReservation.value.time = newVal;
-}, { immediate: true });
-
+watch(
+  () => props.initialHour,
+  (newVal) => {
+    if (newVal) newReservation.value.time = newVal;
+  },
+  { immediate: true },
+);
 
 const submitReservation = async () => {
   try {
-    const startDateTime = dayjs(`${newReservation.value.date} ${newReservation.value.time}`).local();
+    const startDateTime = dayjs(
+      `${newReservation.value.date} ${newReservation.value.time}`,
+    ).local();
 
     const selectedService = serviceStore.services.find(
-      (s) => s.id === newReservation.value.service_id
+      (s) => s.id === newReservation.value.service_id,
     );
     if (!selectedService) {
       alert('Por favor, selecciona un servicio válido.');
       return;
     }
-    const endDateTime = startDateTime.add(selectedService.duration_minutes, 'minute');
+    const endDateTime = startDateTime.add(
+      selectedService.duration_minutes,
+      'minute',
+    );
 
     const reservationData = {
       client_name: newReservation.value.client_name,

@@ -9,7 +9,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between p-4 border-b border-gray-200">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
+        <div
+          class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md"
+        >
           <svg
             class="w-6 h-6 text-white"
             viewBox="0 0 24 24"
@@ -17,10 +19,17 @@
             stroke="currentColor"
             stroke-width="2"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
           </svg>
         </div>
-        <h1 v-if="!isCollapsed" class="text-lg font-bold tracking-wide text-gray-800">
+        <h1
+          v-if="!isCollapsed"
+          class="text-lg font-bold tracking-wide text-gray-800"
+        >
           BARBERSHOP
         </h1>
       </div>
@@ -41,7 +50,11 @@
           stroke="currentColor"
           stroke-width="2"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </button>
     </div>
@@ -70,7 +83,9 @@
               ]"
               :title="isCollapsed ? item.label : null"
             >
-              <span class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+              <span
+                class="flex items-center justify-center w-8 h-8 flex-shrink-0"
+              >
                 <svg
                   v-if="item.icon === 'home'"
                   class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
@@ -168,17 +183,20 @@
                   <path d="M12 20V10M18 20V4M6 20v-6" />
                 </svg>
 
-                <svg 
-                  v-else-if="item.icon === 'clipboard-list'" 
+                <svg
+                  v-else-if="item.icon === 'clipboard-list'"
                   class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  stroke-width="2">
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                    <line x1="12" y1="11" x2="12" y2="17"></line>
-                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path
+                    d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                  ></path>
+                  <line x1="12" y1="11" x2="12" y2="17"></line>
+                  <line x1="9" y1="14" x2="15" y2="14"></line>
                 </svg>
 
                 <svg
@@ -189,16 +207,36 @@
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7L12 4L4 7L12 10L20 7Z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 17L12 20L20 17" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V17" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10V20" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7V17" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M20 7L12 4L4 7L12 10L20 7Z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 17L12 20L20 17"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 7V17"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 10V20"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M20 7V17"
+                  />
                 </svg>
               </span>
 
               <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
-              
+
               <!-- Flecha de despliegue -->
               <svg
                 v-if="!isCollapsed"
@@ -219,7 +257,10 @@
                 ></path>
               </svg>
             </div>
-            <ul v-if="openSubmenu === item.label && !isCollapsed" class="ml-8 mt-1 space-y-1">
+            <ul
+              v-if="openSubmenu === item.label && !isCollapsed"
+              class="ml-8 mt-1 space-y-1"
+            >
               <li v-for="subItem in item.children" :key="subItem.label">
                 <router-link :to="subItem.to" v-slot="{ isActive }">
                   <div
@@ -230,7 +271,9 @@
                         : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700 hover:shadow-sm',
                     ]"
                   >
-                    <span class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+                    <span
+                      class="flex items-center justify-center w-8 h-8 flex-shrink-0"
+                    >
                       <!-- Puedes usar un icono diferente para sub-items o dejarlo vacío -->
                       <svg
                         v-if="subItem.icon === 'chart-bar'"
@@ -250,11 +293,31 @@
                         stroke="currentColor"
                         stroke-width="2"
                       >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7L12 4L4 7L12 10L20 7Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 17L12 20L20 17" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V17" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10V20" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7V17" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M20 7L12 4L4 7L12 10L20 7Z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4 17L12 20L20 17"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4 7V17"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M12 10V20"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M20 7V17"
+                        />
                       </svg>
                       <svg
                         v-else-if="subItem.icon === 'credit-card'"
@@ -286,7 +349,9 @@
                 ]"
                 :title="isCollapsed ? item.label : null"
               >
-                <span class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+                <span
+                  class="flex items-center justify-center w-8 h-8 flex-shrink-0"
+                >
                   <svg
                     v-if="item.icon === 'home'"
                     class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
@@ -367,7 +432,14 @@
                     stroke="currentColor"
                     stroke-width="2"
                   >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -384,17 +456,20 @@
                     <path d="M12 20V10M18 20V4M6 20v-6" />
                   </svg>
 
-                  <svg 
-                    v-else-if="item.icon === 'clipboard-list'" 
+                  <svg
+                    v-else-if="item.icon === 'clipboard-list'"
                     class="w-5 h-5 text-gray-500 group-hover:text-blue-700 transition-colors duration-200"
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    stroke-width="2">
-                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                      <line x1="12" y1="11" x2="12" y2="17"></line>
-                      <line x1="9" y1="14" x2="15" y2="14"></line>
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path
+                      d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                    ></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
                   </svg>
 
                   <svg
@@ -405,11 +480,31 @@
                     stroke="currentColor"
                     stroke-width="2"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7L12 4L4 7L12 10L20 7Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 17L12 20L20 17" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V17" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10V20" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7V17" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M20 7L12 4L4 7L12 10L20 7Z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4 17L12 20L20 17"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4 7V17"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 10V20"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M20 7V17"
+                    />
                   </svg>
                 </span>
 
@@ -447,18 +542,34 @@ const items = [
   { to: '/', label: 'Dashboard', icon: 'home' },
   { to: '/schedule', label: 'Distribución', icon: 'clipboard-list' },
   {
-    label: 'Reportes', 
-    icon: 'chart-bar', 
+    label: 'Reportes',
+    icon: 'chart-bar',
     hasChildren: true,
     children: [
       { to: '/reports', label: 'General', icon: 'chart-bar' },
       { to: '/reports/inventory', label: 'Inventario', icon: 'box' },
-      { to: '/reports/station-usage', label: 'Uso de Estaciones', icon: 'chart-bar' },
-      { to: '/reports/customer-frequency', label: 'Frecuencia Clientes', icon: 'chart-bar' },
+      {
+        to: '/reports/station-usage',
+        label: 'Uso de Estaciones',
+        icon: 'chart-bar',
+      },
+      {
+        to: '/reports/customer-frequency',
+        label: 'Frecuencia Clientes',
+        icon: 'chart-bar',
+      },
       { to: '/reports/peak-hours', label: 'Horas Pico', icon: 'chart-bar' },
-      { to: '/reports/sales/comprehensive', label: 'Ventas Detallado', icon: 'credit-card' },
-      { to: '/reports/sales/by-type', label: 'Ventas por Tipo', icon: 'credit-card' },
-    ]
+      {
+        to: '/reports/sales/comprehensive',
+        label: 'Ventas Detallado',
+        icon: 'credit-card',
+      },
+      {
+        to: '/reports/sales/by-type',
+        label: 'Ventas por Tipo',
+        icon: 'credit-card',
+      },
+    ],
   },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },

@@ -19,7 +19,10 @@ class AuthController {
         return;
       }
 
-      const isPasswordValid = await authService.comparePassword(password, user.password || '');
+      const isPasswordValid = await authService.comparePassword(
+        password,
+        user.password || '',
+      );
 
       if (!isPasswordValid) {
         res.status(401).json({ message: 'Credenciales inválidas.' });
@@ -27,9 +30,23 @@ class AuthController {
       }
 
       // Generar token JWT
-      const token = authService.generateToken({ id: user.id, email: user.email, role: user.role });
+      const token = authService.generateToken({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      });
 
-      res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+      res
+        .status(200)
+        .json({
+          token,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        });
     } catch (error) {
       console.error('Error en el login:', error);
       res.status(500).json({ message: 'Error interno del servidor.' });
@@ -63,30 +80,48 @@ class AuthController {
       return;
     }
     if (!oldPassword || !newPassword) {
-      res.status(400).json({ message: 'Contraseña actual y nueva contraseña son requeridas.' });
+      res
+        .status(400)
+        .json({
+          message: 'Contraseña actual y nueva contraseña son requeridas.',
+        });
       return;
     }
 
     try {
       const user = await userService.findById(req.user.id);
       if (!user || !user.password) {
-        res.status(404).json({ message: 'Usuario no encontrado o contraseña no establecida.' });
+        res
+          .status(404)
+          .json({
+            message: 'Usuario no encontrado o contraseña no establecida.',
+          });
         return;
       }
 
-      const isOldPasswordValid = await authService.comparePassword(oldPassword, user.password);
+      const isOldPasswordValid = await authService.comparePassword(
+        oldPassword,
+        user.password,
+      );
       if (!isOldPasswordValid) {
         res.status(401).json({ message: 'Contraseña actual incorrecta.' });
         return;
       }
 
       const newPasswordHash = await authService.hashPassword(newPassword);
-      const updated = await userService.updatePassword(req.user.id, newPasswordHash);
+      const updated = await userService.updatePassword(
+        req.user.id,
+        newPasswordHash,
+      );
 
       if (updated) {
-        res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
+        res
+          .status(200)
+          .json({ message: 'Contraseña actualizada exitosamente.' });
       } else {
-        res.status(500).json({ message: 'No se pudo actualizar la contraseña.' });
+        res
+          .status(500)
+          .json({ message: 'No se pudo actualizar la contraseña.' });
       }
     } catch (error) {
       console.error('Error al cambiar contraseña:', error);
@@ -110,7 +145,9 @@ class AuthController {
     const { name, email, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
-      res.status(400).json({ message: 'Nombre, email, contraseña y rol son requeridos.' });
+      res
+        .status(400)
+        .json({ message: 'Nombre, email, contraseña y rol son requeridos.' });
       return;
     }
 
@@ -122,8 +159,20 @@ class AuthController {
       }
 
       const hashedPassword = await authService.hashPassword(password);
-      const newUser = await userService.createUser({ name, email, password_hash: hashedPassword, role });
-      res.status(201).json({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role });
+      const newUser = await userService.createUser({
+        name,
+        email,
+        password_hash: hashedPassword,
+        role,
+      });
+      res
+        .status(201)
+        .json({
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+        });
     } catch (error) {
       console.error('Error al crear usuario:', error);
       res.status(500).json({ message: 'Error interno del servidor.' });
@@ -135,12 +184,21 @@ class AuthController {
     const { name, email, role } = req.body;
 
     if (!name && !email && !role) {
-      res.status(400).json({ message: 'Al menos un campo (nombre, email, rol) es requerido para actualizar.' });
+      res
+        .status(400)
+        .json({
+          message:
+            'Al menos un campo (nombre, email, rol) es requerido para actualizar.',
+        });
       return;
     }
 
     try {
-      const updated = await userService.updateUser(Number(id), { name, email, role });
+      const updated = await userService.updateUser(Number(id), {
+        name,
+        email,
+        role,
+      });
       if (updated) {
         res.status(200).json({ message: 'Usuario actualizado exitosamente.' });
       } else {

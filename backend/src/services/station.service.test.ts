@@ -33,24 +33,33 @@ describe('StationService', () => {
   });
 
   it('debería actualizar una estación existente', async () => {
-    const updatedStation = await stationService.updateStation(1, { name: 'Central Actualizada' });
+    const updatedStation = await stationService.updateStation(1, {
+      name: 'Central Actualizada',
+    });
     expect(updatedStation).not.toBeNull();
-    expect((updatedStation as { name: string })?.name).toBe('Central Actualizada');
+    expect((updatedStation as { name: string })?.name).toBe(
+      'Central Actualizada',
+    );
 
-    const station = (await stationService.getAllStations()).find(s => s.id === 1);
+    const station = (await stationService.getAllStations()).find(
+      (s) => s.id === 1,
+    );
     expect(station?.name).toBe('Central Actualizada');
   });
 
   it('debería eliminar una estación', async () => {
     // Primero, asegurémonos de que no haya barberos asignados a la estación 3
-    await db.run('UPDATE barbers SET station_id = ? WHERE station_id = ?', [1, 3]);
+    await db.run(
+      'UPDATE barbers SET station_id = ? WHERE station_id = ?',
+      [1, 3],
+    );
 
     const isDeleted = await stationService.deleteStation(3);
     expect(isDeleted).toBe(true);
 
     const allStations = await stationService.getAllStations();
     expect(allStations.length).toBe(2); // 3 iniciales - 1 eliminado
-    expect(allStations.some(s => s.id === 3)).toBe(false);
+    expect(allStations.some((s) => s.id === 3)).toBe(false);
   });
 
   it('no debería crear más de 10 estaciones', async () => {
@@ -60,30 +69,44 @@ describe('StationService', () => {
     }
     const result = await stationService.createStation({ name: 'Estación 11' });
     expect(result).toHaveProperty('error');
-    expect((result as { error: string }).error).toBe('No se pueden crear más de 10 estaciones.');
+    expect((result as { error: string }).error).toBe(
+      'No se pueden crear más de 10 estaciones.',
+    );
   });
 
   it('no debería crear una estación con nombre duplicado', async () => {
-    const result = await stationService.createStation({ name: 'Estación Central' });
+    const result = await stationService.createStation({
+      name: 'Estación Central',
+    });
     expect(result).toHaveProperty('error');
-    expect((result as { error: string }).error).toBe('El nombre de la estación ya existe.');
+    expect((result as { error: string }).error).toBe(
+      'El nombre de la estación ya existe.',
+    );
   });
 
   it('no debería actualizar una estación con nombre duplicado', async () => {
-    const result = await stationService.updateStation(2, { name: 'Estación Central' });
+    const result = await stationService.updateStation(2, {
+      name: 'Estación Central',
+    });
     expect(result).toHaveProperty('error');
-    expect((result as { error: string }).error).toBe('El nombre de la estación ya existe.');
+    expect((result as { error: string }).error).toBe(
+      'El nombre de la estación ya existe.',
+    );
   });
 
   it('no debería eliminar una estación si tiene barberos asignados', async () => {
     // La estación 1 tiene un barbero asignado por defecto (Juan Pérez)
     const result = await stationService.deleteStation(1);
     expect(result).toHaveProperty('error');
-    expect((result as { error: string }).error).toBe('No se puede eliminar la estación porque está asignada a un barbero.');
+    expect((result as { error: string }).error).toBe(
+      'No se puede eliminar la estación porque está asignada a un barbero.',
+    );
   });
 
   it('no debería actualizar una estación que no existe', async () => {
-    const updatedStation = await stationService.updateStation(999, { name: 'No Existe' });
+    const updatedStation = await stationService.updateStation(999, {
+      name: 'No Existe',
+    });
     expect(updatedStation).toBeNull();
   });
 

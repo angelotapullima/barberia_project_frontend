@@ -36,35 +36,50 @@ export class DraftSaleService {
     const { reservation_id, client_name, barber_id, sale_items } = draftSale;
 
     // Calculate total_amount from sale_items
-    const total_amount = sale_items.reduce((sum, item) => sum + (item.price_at_draft * item.quantity), 0);
+    const total_amount = sale_items.reduce(
+      (sum, item) => sum + item.price_at_draft * item.quantity,
+      0,
+    );
 
     let draftSaleId: number;
-    const existingDraft = await this.db.get('SELECT id FROM draft_sales WHERE reservation_id = ?', reservation_id);
+    const existingDraft = await this.db.get(
+      'SELECT id FROM draft_sales WHERE reservation_id = ?',
+      reservation_id,
+    );
 
     if (existingDraft) {
       // Update existing draft sale
       await this.db.run(
         'UPDATE draft_sales SET client_name = ?, barber_id = ?, total_amount = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [client_name, barber_id, total_amount, existingDraft.id]
+        [client_name, barber_id, total_amount, existingDraft.id],
       );
       draftSaleId = existingDraft.id;
       // Delete old items and insert new ones
-      await this.db.run('DELETE FROM draft_sale_items WHERE draft_sale_id = ?', draftSaleId);
+      await this.db.run(
+        'DELETE FROM draft_sale_items WHERE draft_sale_id = ?',
+        draftSaleId,
+      );
     } else {
       // Insert new draft sale
       const result = await this.db.run(
         'INSERT INTO draft_sales (reservation_id, client_name, barber_id, total_amount) VALUES (?, ?, ?, ?)',
-        [reservation_id, client_name, barber_id, total_amount]
+        [reservation_id, client_name, barber_id, total_amount],
       );
       draftSaleId = result.lastID!;
     }
 
     // Insert draft sale items
     const stmt = await this.db.prepare(
-      'INSERT INTO draft_sale_items (draft_sale_id, item_id, item_type, quantity, price_at_draft) VALUES (?, ?, ?, ?, ?)'
+      'INSERT INTO draft_sale_items (draft_sale_id, item_id, item_type, quantity, price_at_draft) VALUES (?, ?, ?, ?, ?)',
     );
     for (const item of sale_items) {
-      await stmt.run(draftSaleId, item.item_id, item.item_type, item.quantity, item.price_at_draft);
+      await stmt.run(
+        draftSaleId,
+        item.item_id,
+        item.item_type,
+        item.quantity,
+        item.price_at_draft,
+      );
     }
     await stmt.finalize();
 
@@ -72,16 +87,25 @@ export class DraftSaleService {
   }
 
   async fetchDraftSale(reservationId: number): Promise<DraftSale | undefined> {
-    const draft = await this.db.get('SELECT * FROM draft_sales WHERE reservation_id = ?', reservationId);
+    const draft = await this.db.get(
+      'SELECT * FROM draft_sales WHERE reservation_id = ?',
+      reservationId,
+    );
     if (draft) {
-      const items = await this.db.all('SELECT item_id, item_type, quantity, price_at_draft FROM draft_sale_items WHERE draft_sale_id = ?', draft.id);
+      const items = await this.db.all(
+        'SELECT item_id, item_type, quantity, price_at_draft FROM draft_sale_items WHERE draft_sale_id = ?',
+        draft.id,
+      );
       return { ...draft, sale_items: items };
     }
     return undefined;
   }
 
   async deleteDraftSale(reservationId: number): Promise<void> {
-    await this.db.run('DELETE FROM draft_sales WHERE reservation_id = ?', reservationId);
+    await this.db.run(
+      'DELETE FROM draft_sales WHERE reservation_id = ?',
+      reservationId,
+    );
     // ON DELETE CASCADE in schema handles draft_sale_items deletion
   }
 }

@@ -2,20 +2,20 @@
   <div class="custom-select-wrapper">
     <div
       class="custom-select"
-      :class="{ 'open': isOpen }"
+      :class="{ open: isOpen }"
       @click="toggleDropdown"
     >
       <div class="selected-option">
         {{ selectedOptionLabel }}
       </div>
-      <div class="arrow" :class="{ 'rotated': isOpen }"></div>
+      <div class="arrow" :class="{ rotated: isOpen }"></div>
     </div>
-    <ul class="options-list" :class="{ 'show': isOpen }">
+    <ul class="options-list" :class="{ show: isOpen }">
       <li
         v-for="option in options"
         :key="option.value"
         @click="selectOption(option)"
-        :class="{ 'selected': option.value === modelValue }"
+        :class="{ selected: option.value === modelValue }"
       >
         {{ option.label }}
       </li>
@@ -34,7 +34,8 @@ const props = defineProps({
   options: {
     type: Array,
     required: true,
-    validator: (value) => value.every(option => 'value' in option && 'label' in option),
+    validator: (value) =>
+      value.every((option) => 'value' in option && 'label' in option),
   },
   placeholder: {
     type: String,
@@ -47,7 +48,9 @@ const emit = defineEmits(['update:modelValue']);
 const isOpen = ref(false);
 
 const selectedOptionLabel = computed(() => {
-  const selected = props.options.find(option => option.value === props.modelValue);
+  const selected = props.options.find(
+    (option) => option.value === props.modelValue,
+  );
   return selected ? selected.label : props.placeholder;
 });
 
@@ -93,11 +96,13 @@ watch(isOpen, (newVal) => {
   cursor: pointer;
   font-size: 1rem;
   line-height: 1.5;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 
 .custom-select.open {
-  border-color: #8B5CF6; /* Example focus color */
+  border-color: #8b5cf6; /* Example focus color */
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); /* Example focus ring */
 }
 
@@ -113,7 +118,7 @@ watch(isOpen, (newVal) => {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #6B7280; /* Gray arrow */
+  border-top: 5px solid #6b7280; /* Gray arrow */
   transition: transform 0.2s;
 }
 

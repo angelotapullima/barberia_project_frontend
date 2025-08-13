@@ -27,13 +27,18 @@ export class StationService {
   async createStation(station: Station): Promise<Station | { error: string }> {
     const { name } = station;
 
-    const stationCount = await this.db.get<{ count: number }>('SELECT COUNT(*) as count FROM stations');
+    const stationCount = await this.db.get<{ count: number }>(
+      'SELECT COUNT(*) as count FROM stations',
+    );
     if (stationCount && stationCount.count >= 10) {
       return { error: 'No se pueden crear más de 10 estaciones.' };
     }
 
     try {
-      const result = await this.db.run('INSERT INTO stations (name) VALUES (?)', name);
+      const result = await this.db.run(
+        'INSERT INTO stations (name) VALUES (?)',
+        name,
+      );
       return { id: result.lastID, name };
     } catch (error: any) {
       if (error.code === 'SQLITE_CONSTRAINT') {
@@ -43,10 +48,16 @@ export class StationService {
     }
   }
 
-  async updateStation(id: number, station: Station): Promise<Station | null | { error: string }> {
+  async updateStation(
+    id: number,
+    station: Station,
+  ): Promise<Station | null | { error: string }> {
     const { name } = station;
     try {
-      const result = await this.db.run('UPDATE stations SET name = ? WHERE id = ?', [name, id]);
+      const result = await this.db.run(
+        'UPDATE stations SET name = ? WHERE id = ?',
+        [name, id],
+      );
       if (result.changes === 0) {
         return null; // Station not found
       }
@@ -61,9 +72,15 @@ export class StationService {
 
   async deleteStation(id: number): Promise<boolean | { error: string }> {
     // Check if any barber is assigned to this station
-    const barber = await this.db.get('SELECT id FROM barbers WHERE station_id = ?', id);
+    const barber = await this.db.get(
+      'SELECT id FROM barbers WHERE station_id = ?',
+      id,
+    );
     if (barber) {
-      return { error: 'No se puede eliminar la estación porque está asignada a un barbero.' };
+      return {
+        error:
+          'No se puede eliminar la estación porque está asignada a un barbero.',
+      };
     }
 
     const result = await this.db.run('DELETE FROM stations WHERE id = ?', id);

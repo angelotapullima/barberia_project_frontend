@@ -63,7 +63,10 @@ describe('SaleController', () => {
     ];
     mockedSaleService.getAllSales.mockResolvedValue(sales);
 
-    await saleController.getAllSales(mockRequest as Request, mockResponse as Response);
+    await saleController.getAllSales(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockedSaleService.getAllSales).toHaveBeenCalledTimes(1);
     expect(mockResponse.json).toHaveBeenCalledWith(sales);
@@ -83,7 +86,10 @@ describe('SaleController', () => {
 
     mockRequest.body = newSale;
 
-    await saleController.createSale(mockRequest as Request, mockResponse as Response);
+    await saleController.createSale(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockedSaleService.createSale).toHaveBeenCalledWith(newSale);
     expect(mockResponse.status).toHaveBeenCalledWith(201);
@@ -96,9 +102,15 @@ describe('SaleController', () => {
 
     mockRequest.query = { startDate: '2025-08-01', endDate: '2025-08-31' };
 
-    await saleController.getDailySalesSummary(mockRequest as Request, mockResponse as Response);
+    await saleController.getDailySalesSummary(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(mockedSaleService.getSalesSummaryByDateRange).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
+    expect(mockedSaleService.getSalesSummaryByDateRange).toHaveBeenCalledWith(
+      '2025-08-01',
+      '2025-08-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(summary);
   });
 
@@ -108,9 +120,15 @@ describe('SaleController', () => {
 
     mockRequest.query = { startDate: '2025-08-01', endDate: '2025-08-31' };
 
-    await saleController.getBarberRanking(mockRequest as Request, mockResponse as Response);
+    await saleController.getBarberRanking(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(mockedSaleService.getBarberSalesRanking).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
+    expect(mockedSaleService.getBarberSalesRanking).toHaveBeenCalledWith(
+      '2025-08-01',
+      '2025-08-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(ranking);
   });
 
@@ -119,9 +137,15 @@ describe('SaleController', () => {
 
     mockRequest.query = { startDate: '2025-08-01', endDate: '2025-08-31' };
 
-    await saleController.getTotalBarberPayments(mockRequest as Request, mockResponse as Response);
+    await saleController.getTotalBarberPayments(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(mockedSaleService.getTotalPaymentsToBarbers).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
+    expect(mockedSaleService.getTotalPaymentsToBarbers).toHaveBeenCalledWith(
+      '2025-08-01',
+      '2025-08-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith({ totalPayments: 1500 });
   });
 
@@ -131,9 +155,15 @@ describe('SaleController', () => {
 
     mockRequest.query = { startDate: '2025-08-01', endDate: '2025-08-31' };
 
-    await saleController.getSalesSummaryByService(mockRequest as Request, mockResponse as Response);
+    await saleController.getSalesSummaryByService(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(mockedSaleService.getSalesSummaryByService).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
+    expect(mockedSaleService.getSalesSummaryByService).toHaveBeenCalledWith(
+      '2025-08-01',
+      '2025-08-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(summary);
   });
 
@@ -143,9 +173,14 @@ describe('SaleController', () => {
 
     mockRequest.query = { startDate: '2025-08-01', endDate: '2025-08-31' };
 
-    await saleController.getSalesSummaryByPaymentMethod(mockRequest as Request, mockResponse as Response);
+    await saleController.getSalesSummaryByPaymentMethod(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(mockedSaleService.getSalesSummaryByPaymentMethod).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
+    expect(
+      mockedSaleService.getSalesSummaryByPaymentMethod,
+    ).toHaveBeenCalledWith('2025-08-01', '2025-08-31');
     expect(mockResponse.json).toHaveBeenCalledWith(summary);
   });
 
@@ -153,9 +188,14 @@ describe('SaleController', () => {
   it('debería manejar errores al obtener todas las ventas', async () => {
     mockedSaleService.getAllSales.mockRejectedValue(new Error('Error de DB'));
 
-    await saleController.getAllSales(mockRequest as Request, mockResponse as Response);
+    await saleController.getAllSales(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: 'Internal server error',
+    });
   });
 });

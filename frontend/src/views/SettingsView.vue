@@ -1,23 +1,38 @@
 <template>
   <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Configuración del Sistema</h1>
+    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
+      Configuración del Sistema
+    </h1>
 
-    <div v-if="settingStore.isLoading || userStore.isLoading" class="text-center text-gray-500">
+    <div
+      v-if="settingStore.isLoading || userStore.isLoading"
+      class="text-center text-gray-500"
+    >
       Cargando configuraciones...
     </div>
-    <div v-if="settingStore.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+    <div
+      v-if="settingStore.error"
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
+    >
       {{ settingStore.error }}
     </div>
-    <div v-if="userStore.error" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+    <div
+      v-if="userStore.error"
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
+    >
       {{ userStore.error }}
     </div>
 
     <!-- Sección de Reglas de Pago a Barberos -->
     <div class="bg-white shadow-lg rounded-xl p-8 mb-8">
-      <h2 class="text-2xl font-bold mb-4 text-gray-800">Reglas de Pago a Barberos</h2>
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">
+        Reglas de Pago a Barberos
+      </h2>
       <form @submit.prevent="handleSavePaymentSettings">
         <div class="mb-4">
-          <label for="baseSalaryThreshold" class="block text-sm font-semibold text-gray-700 mb-1"
+          <label
+            for="baseSalaryThreshold"
+            class="block text-sm font-semibold text-gray-700 mb-1"
             >Umbral de Salario Base (S/):</label
           >
           <input
@@ -29,7 +44,9 @@
           />
         </div>
         <div class="mb-4">
-          <label for="commissionPercentage" class="block text-sm font-semibold text-gray-700 mb-1"
+          <label
+            for="commissionPercentage"
+            class="block text-sm font-semibold text-gray-700 mb-1"
             >Porcentaje de Comisión (0.0 - 1.0):</label
           >
           <input
@@ -44,7 +61,9 @@
           />
         </div>
         <div class="mb-6">
-          <label for="defaultBaseSalary" class="block text-sm font-semibold text-gray-700 mb-1"
+          <label
+            for="defaultBaseSalary"
+            class="block text-sm font-semibold text-gray-700 mb-1"
             >Sueldo Base por Defecto (S/):</label
           >
           <input
@@ -56,11 +75,18 @@
           />
         </div>
 
-        <div v-if="saveSuccess" class="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+        <div
+          v-if="saveSuccess"
+          class="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg"
+        >
           {{ saveSuccess }}
         </div>
 
-        <button type="submit" class="btn-primary" :disabled="settingStore.isLoading">
+        <button
+          type="submit"
+          class="btn-primary"
+          :disabled="settingStore.isLoading"
+        >
           {{ settingStore.isLoading ? 'Guardando...' : 'Guardar Cambios' }}
         </button>
       </form>
@@ -69,15 +95,31 @@
     <!-- Sección de Gestión de Usuarios -->
     <div class="bg-white shadow-lg rounded-xl p-8">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">Gestión de Usuarios</h2>
-      <button @click="openUserModal()" class="btn-primary mb-4">Añadir Usuario</button>
+      <button @click="openUserModal()" class="btn-primary mb-4">
+        Añadir Usuario
+      </button>
 
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Nombre
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Email
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Rol
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
               Acciones
             </th>
           </tr>
@@ -94,7 +136,10 @@
               >
                 Editar
               </button>
-              <button @click="confirmDeleteUser(user.id)" class="text-red-600 hover:text-red-900">
+              <button
+                @click="confirmDeleteUser(user.id)"
+                class="text-red-600 hover:text-red-900"
+              >
                 Eliminar
               </button>
             </td>
@@ -113,7 +158,9 @@
       <template #body>
         <form @submit.prevent="handleSaveUser">
           <div class="mb-4">
-            <label for="userName" class="block text-sm font-semibold text-gray-700 mb-1"
+            <label
+              for="userName"
+              class="block text-sm font-semibold text-gray-700 mb-1"
               >Nombre:</label
             >
             <input
@@ -125,7 +172,9 @@
             />
           </div>
           <div class="mb-4">
-            <label for="userEmail" class="block text-sm font-semibold text-gray-700 mb-1"
+            <label
+              for="userEmail"
+              class="block text-sm font-semibold text-gray-700 mb-1"
               >Email:</label
             >
             <input
@@ -138,7 +187,9 @@
           </div>
           <div class="mb-4" v-if="!isEditingUser">
             <!-- Contraseña solo al crear -->
-            <label for="userPassword" class="block text-sm font-semibold text-gray-700 mb-1"
+            <label
+              for="userPassword"
+              class="block text-sm font-semibold text-gray-700 mb-1"
               >Contraseña:</label
             >
             <input
@@ -150,17 +201,30 @@
             />
           </div>
           <div class="mb-4">
-            <label for="userRole" class="block text-sm font-semibold text-gray-700 mb-1"
+            <label
+              for="userRole"
+              class="block text-sm font-semibold text-gray-700 mb-1"
               >Rol:</label
             >
-            <select id="userRole" v-model="currentUser.role" class="form-input" required>
+            <select
+              id="userRole"
+              v-model="currentUser.role"
+              class="form-input"
+              required
+            >
               <option value="administrador">Administrador</option>
               <option value="cajero">Cajero</option>
             </select>
           </div>
           <div class="mt-6 flex justify-end space-x-4">
-            <button type="button" @click="closeUserModal" class="btn-secondary">Cancelar</button>
-            <button type="submit" class="btn-primary" :disabled="userStore.isLoading">
+            <button type="button" @click="closeUserModal" class="btn-secondary">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn-primary"
+              :disabled="userStore.isLoading"
+            >
               {{ userStore.isLoading ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -277,15 +341,15 @@ const handleSavePaymentSettings = async () => {
   try {
     await settingStore.updateSetting(
       'base_salary_threshold',
-      localSettings.base_salary_threshold.toString()
+      localSettings.base_salary_threshold.toString(),
     );
     await settingStore.updateSetting(
       'commission_percentage',
-      localSettings.commission_percentage.toString()
+      localSettings.commission_percentage.toString(),
     );
     await settingStore.updateSetting(
       'default_base_salary',
-      localSettings.default_base_salary.toString()
+      localSettings.default_base_salary.toString(),
     );
     saveSuccess.value = 'Configuraciones de pago guardadas exitosamente.';
   } catch (error) {

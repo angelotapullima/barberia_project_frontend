@@ -11,15 +11,25 @@
         <div class="modal-body">
           <div v-if="sale">
             <p><strong>ID de Venta:</strong> {{ sale.id }}</p>
-            <p><strong>Fecha de Venta:</strong> {{ formatDate(sale.sale_date) }}</p>
+            <p>
+              <strong>Fecha de Venta:</strong> {{ formatDate(sale.sale_date) }}
+            </p>
             <p><strong>Cliente:</strong> {{ sale.customer_name }}</p>
             <p><strong>Método de Pago:</strong> {{ sale.payment_method }}</p>
-            <p><strong>Monto Total:</strong> {{ sale.total_amount.toFixed(2) }}€</p>
+            <p>
+              <strong>Monto Total:</strong> {{ sale.total_amount.toFixed(2) }}€
+            </p>
 
             <h4 class="font-semibold mt-4 mb-2">Items de la Venta:</h4>
             <ul class="list-disc pl-5">
               <li v-for="item in sale.sale_items" :key="item.id">
-                {{ item.item_name }} ({{ Number(item.quantity) || 0 }} x {{ (Number(item.price) || 0).toFixed(2) }}€) - {{ ((Number(item.quantity) || 0) * (Number(item.price) || 0)).toFixed(2) }}€
+                {{ item.item_name }} ({{ Number(item.quantity) || 0 }} x
+                {{ (Number(item.price) || 0).toFixed(2) }}€) -
+                {{
+                  (
+                    (Number(item.quantity) || 0) * (Number(item.price) || 0)
+                  ).toFixed(2)
+                }}€
               </li>
             </ul>
           </div>
@@ -29,7 +39,9 @@
         </div>
 
         <div class="modal-footer">
-          <button class="modal-default-button" @click="$emit('close')">Cerrar</button>
+          <button class="modal-default-button" @click="$emit('close')">
+            Cerrar
+          </button>
         </div>
       </div>
     </div>
@@ -51,18 +63,25 @@ const emit = defineEmits(['close']);
 const salesStore = useSalesStore();
 const sale = ref(null);
 
-watch(() => props.show, async (newVal) => {
-  if (newVal && props.reservationId) {
-    sale.value = null; // Clear previous sale data
-    try {
-      // Assuming you have a method in salesStore to fetch sale by reservationId
-      sale.value = await salesStore.fetchSaleByReservationId(props.reservationId);
-    } catch (error) {
-      console.error('Error fetching sale details:', error);
-      sale.value = { error: 'No se pudieron cargar los detalles de la venta.' };
+watch(
+  () => props.show,
+  async (newVal) => {
+    if (newVal && props.reservationId) {
+      sale.value = null; // Clear previous sale data
+      try {
+        // Assuming you have a method in salesStore to fetch sale by reservationId
+        sale.value = await salesStore.fetchSaleByReservationId(
+          props.reservationId,
+        );
+      } catch (error) {
+        console.error('Error fetching sale details:', error);
+        sale.value = {
+          error: 'No se pudieron cargar los detalles de la venta.',
+        };
+      }
     }
-  }
-});
+  },
+);
 
 const formatDate = (isoString) => {
   return dayjs(isoString).format('DD/MM/YYYY HH:mm');

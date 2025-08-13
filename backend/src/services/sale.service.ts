@@ -37,7 +37,10 @@ export class SaleService {
   }
 
   private async getSaleItems(saleId: number): Promise<SaleItem[]> {
-    return this.db.all('SELECT id, service_id, item_type, item_name, price, price_at_sale, quantity FROM sale_items WHERE sale_id = ?', saleId);
+    return this.db.all(
+      'SELECT id, service_id, item_type, item_name, price, price_at_sale, quantity FROM sale_items WHERE sale_id = ?',
+      saleId,
+    );
   }
 
   async getAllSales(): Promise<Sale[]> {
@@ -54,7 +57,10 @@ export class SaleService {
     return sales;
   }
 
-  async getFilteredSales(filterType: string, filterValue: string | number): Promise<Sale[]> {
+  async getFilteredSales(
+    filterType: string,
+    filterValue: string | number,
+  ): Promise<Sale[]> {
     let query = `
       SELECT 
           s.id, s.sale_date, s.total_amount, s.customer_name, s.payment_method, s.reservation_id
@@ -90,28 +96,52 @@ export class SaleService {
   }
 
   async createSale(sale: Sale): Promise<Sale> {
-    const { sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id } = sale;
+    const {
+      sale_date,
+      sale_items,
+      total_amount,
+      customer_name,
+      payment_method,
+      reservation_id,
+    } = sale;
 
     await this.db.run('BEGIN TRANSACTION');
 
     try {
       const saleResult = await this.db.run(
         'INSERT INTO sales (sale_date, total_amount, customer_name, payment_method, reservation_id) VALUES (?, ?, ?, ?, ?)',
-        [sale_date, total_amount, customer_name || 'Cliente Varios', payment_method, reservation_id || null]
+        [
+          sale_date,
+          total_amount,
+          customer_name || 'Cliente Varios',
+          payment_method,
+          reservation_id || null,
+        ],
       );
       const saleId = saleResult.lastID!;
 
       const stmt = await this.db.prepare(
-        'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)',
       );
       for (const item of sale_items) {
         const serviceId = item.type === 'service' ? item.id : null;
-        await stmt.run(saleId, serviceId, item.type, item.item_name, item.price_at_sale, item.price_at_sale, item.quantity);
+        await stmt.run(
+          saleId,
+          serviceId,
+          item.type,
+          item.item_name,
+          item.price_at_sale,
+          item.price_at_sale,
+          item.quantity,
+        );
       }
       await stmt.finalize();
 
       if (reservation_id) {
-        await this.db.run('UPDATE reservations SET status = ? WHERE id = ?', ['completed', reservation_id]);
+        await this.db.run('UPDATE reservations SET status = ? WHERE id = ?', [
+          'completed',
+          reservation_id,
+        ]);
         await draftSaleService.deleteDraftSale(reservation_id);
       }
 
@@ -125,13 +155,18 @@ export class SaleService {
     }
   }
 
-  async getSaleByReservationId(reservationId: number): Promise<Sale | undefined> {
-    const sale = await this.db.get(`
+  async getSaleByReservationId(
+    reservationId: number,
+  ): Promise<Sale | undefined> {
+    const sale = await this.db.get(
+      `
       SELECT 
           s.id, s.sale_date, s.total_amount, s.customer_name, s.payment_method, s.reservation_id
       FROM sales s
       WHERE s.reservation_id = ?
-    `, reservationId);
+    `,
+      reservationId,
+    );
 
     if (sale) {
       sale.sale_items = await this.getSaleItems(sale.id!); // Assuming getSaleItems fetches sale_items
@@ -139,7 +174,10 @@ export class SaleService {
     return sale;
   }
 
-  async getSalesSummaryByDateRange(startDate: string, endDate: string): Promise<{ date: string; total: number }[]> {
+  async getSalesSummaryByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<{ date: string; total: number }[]> {
     const query = `
       SELECT
           strftime('%Y-%m-%d', sale_date) as date,
@@ -172,7 +210,10 @@ export class SaleService {
   }
   */
 
-  async getSalesSummaryByService(startDate: string, endDate: string): Promise<{ service_name: string; total_sales: number }[]> {
+  async getSalesSummaryByService(
+    startDate: string,
+    endDate: string,
+  ): Promise<{ service_name: string; total_sales: number }[]> {
     const query = `
       SELECT
           s.name as service_name,
@@ -187,7 +228,10 @@ export class SaleService {
     return this.db.all(query, [startDate, endDate]);
   }
 
-  async getSalesSummaryByPaymentMethod(startDate: string, endDate: string): Promise<{ payment_method: string; total_sales: number }[]> {
+  async getSalesSummaryByPaymentMethod(
+    startDate: string,
+    endDate: string,
+  ): Promise<{ payment_method: string; total_sales: number }[]> {
     const query = `
       SELECT
           payment_method,

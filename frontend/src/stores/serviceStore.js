@@ -29,7 +29,8 @@ export const useServiceStore = defineStore('services', {
         await axios.post(`${API_URL}/services`, service);
         await this.fetchServices();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al añadir el servicio.';
+        this.error =
+          error.response?.data?.error || 'Error al añadir el servicio.';
         throw error;
       }
     },
@@ -39,7 +40,8 @@ export const useServiceStore = defineStore('services', {
         await axios.put(`${API_URL}/services/${service.id}`, service);
         await this.fetchServices();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al actualizar el servicio.';
+        this.error =
+          error.response?.data?.error || 'Error al actualizar el servicio.';
         throw error;
       }
     },
@@ -49,7 +51,8 @@ export const useServiceStore = defineStore('services', {
         await axios.delete(`${API_URL}/services/${id}`);
         await this.fetchServices();
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al eliminar el servicio.';
+        this.error =
+          error.response?.data?.error || 'Error al eliminar el servicio.';
         throw error;
       }
     },

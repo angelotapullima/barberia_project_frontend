@@ -14,7 +14,9 @@
       class="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-2xl z-10 transform transition-all duration-300 hover:scale-105"
     >
       <div>
-        <h2 class="mt-6 text-center text-4xl font-extrabold text-gray-900">Bienvenido</h2>
+        <h2 class="mt-6 text-center text-4xl font-extrabold text-gray-900">
+          Bienvenido
+        </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
           Inicia sesión para acceder al panel de administración.
         </p>
@@ -22,7 +24,9 @@
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="email-address" class="sr-only">Correo Electrónico</label>
+            <label for="email-address" class="sr-only"
+              >Correo Electrónico</label
+            >
             <input
               id="email-address"
               name="email"
@@ -49,7 +53,10 @@
           </div>
         </div>
 
-        <div v-if="authStore.error" class="text-red-600 text-sm text-center font-medium">
+        <div
+          v-if="authStore.error"
+          class="text-red-600 text-sm text-center font-medium"
+        >
           {{ authStore.error }}
         </div>
 

@@ -23,20 +23,22 @@ app.get('/', (req, res) => {
 });
 
 // Initialize database and then set up routes
-setupDatabase().then(() => {
-  console.log('Database initialized.');
-  app.use('/api/barbers', barberRoutes);
-  app.use('/api/stations', stationRoutes);
-  app.use('/api/services', serviceRoutes);
-  app.use('/api/sales', saleRoutes);
-  app.use('/api/reports', reportRoutes);
-  app.use('/api/reservations', reservationRoutes); // Use reservation routes
-  app.use('/api/auth', authRoutes); // Use auth routes
-  app.use('/api/settings', settingRoutes); // Use settings routes
-  app.use('/api/draft-sales', draftSaleRoutes); // New: Use draft sale routes
-}).catch((err: any) => {
-  console.error('Failed to initialize database:', err);
-  process.exit(1);
-});
+setupDatabase()
+  .then(() => {
+    console.log('Database initialized.');
+    app.use('/api/barbers', barberRoutes);
+    app.use('/api/stations', stationRoutes);
+    app.use('/api/services', serviceRoutes);
+    app.use('/api/sales', saleRoutes);
+    app.use('/api/reports', reportRoutes);
+    app.use('/api/reservations', reservationRoutes); // Use reservation routes
+    app.use('/api/auth', authRoutes); // Use auth routes
+    app.use('/api/settings', settingRoutes); // Use settings routes
+    app.use('/api/draft-sales', draftSaleRoutes); // New: Use draft sale routes
+  })
+  .catch((err: any) => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });
 
 export default app;

@@ -7,7 +7,6 @@ import InventoryReportView from '@/views/InventoryReportView.vue';
 import StationsView from '@/views/StationsView.vue';
 import ServicesView from '@/views/ServicesView.vue';
 import SalesView from '@/views/SalesView.vue';
-import SalesListView from '@/views/SalesListView.vue';
 import ReservationsView from '@/views/ReservationsView.vue';
 import CalendarView from '@/views/CalendarView.vue';
 import DashboardView from '@/views/DashboardView.vue';
@@ -24,8 +23,7 @@ import ServicesProductsSalesReportView from '@/views/ServicesProductsSalesReport
 
 const routes = [
   { path: '/', component: DashboardView, name: 'Dashboard' },
-  { path: '/sales/register', component: SalesView, name: 'SalesRegistration' },
-  { path: '/sales', component: SalesListView, name: 'SalesList' },
+  { path: '/sales', component: SalesView, name: 'SalesRegistration' }, // Changed component to SalesView
   { path: '/barbers', component: BarbersView, name: 'Barbers' },
   { path: '/stations', component: StationsView, name: 'Stations' },
   { path: '/services', component: ServicesView, name: 'Services' },
@@ -38,14 +36,26 @@ const routes = [
 
   // Rutas de reportes
   { path: '/reports', component: ReportsView, name: 'Reports' },
-  { path: '/reports/inventory', component: InventoryReportView, name: 'InventoryReport' },
-  { path: '/reports/station-usage', component: StationUsageReportView, name: 'StationUsageReport' },
+  {
+    path: '/reports/inventory',
+    component: InventoryReportView,
+    name: 'InventoryReport',
+  },
+  {
+    path: '/reports/station-usage',
+    component: StationUsageReportView,
+    name: 'StationUsageReport',
+  },
   {
     path: '/reports/customer-frequency',
     component: CustomerFrequencyReportView,
     name: 'CustomerFrequencyReport',
   },
-  { path: '/reports/peak-hours', component: PeakHoursReportView, name: 'PeakHoursReport' },
+  {
+    path: '/reports/peak-hours',
+    component: PeakHoursReportView,
+    name: 'PeakHoursReport',
+  },
   {
     path: '/reports/sales/comprehensive',
     component: ComprehensiveSalesReportView,

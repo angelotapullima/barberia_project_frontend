@@ -13,7 +13,11 @@ class AuthService {
     return bcrypt.compare(password, hash);
   }
 
-  public generateToken(user: { id: number; email: string; role: string }): string {
+  public generateToken(user: {
+    id: number;
+    email: string;
+    role: string;
+  }): string {
     const payload = {
       id: user.id,
       email: user.email,

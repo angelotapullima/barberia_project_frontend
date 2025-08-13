@@ -127,38 +127,124 @@ export async function seedDatabase(db: Database) {
   const adminPassword = await bcrypt.hash('admin123', 10);
   await db.run(
     'INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-    ['Admin User', 'admin@example.com', adminPassword, 'administrador']
+    ['Admin User', 'admin@example.com', adminPassword, 'administrador'],
   );
 
   // Seed default settings
-  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['base_salary_threshold', '2500']);
-  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['commission_percentage', '0.5']);
-  await db.run('INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)', ['default_base_salary', '1250']);
+  await db.run(
+    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    ['base_salary_threshold', '2500'],
+  );
+  await db.run(
+    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    ['commission_percentage', '0.5'],
+  );
+  await db.run(
+    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    ['default_base_salary', '1250'],
+  );
 
-  await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', ['Estación Central', 'Estación VIP', 'Estación Rápida']);
+  await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
+    'Estación Central',
+    'Estación VIP',
+    'Estación Rápida',
+  ]);
   const stations = await db.all('SELECT id FROM stations');
   await db.run(
     'INSERT INTO barbers (name, email, phone, specialty, photo_url, station_id) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
     [
-      'Juan Pérez', 'juan.perez@example.com', '+51987654321', 'Cortes Modernos', 'https://example.com/juan.jpg', stations[0].id,
-      'Luis Gómez', 'luis.gomez@example.com', '+51912345678', 'Barbas Clásicas', 'https://example.com/luis.jpg', stations[1].id,
-      'Carlos Ruiz', 'carlos.ruiz@example.com', '+51998877665', 'Coloración', 'https://example.com/carlos.jpg', stations[2].id
-    ]
+      'Juan Pérez',
+      'juan.perez@example.com',
+      '+51987654321',
+      'Cortes Modernos',
+      'https://example.com/juan.jpg',
+      stations[0].id,
+      'Luis Gómez',
+      'luis.gomez@example.com',
+      '+51912345678',
+      'Barbas Clásicas',
+      'https://example.com/luis.jpg',
+      stations[1].id,
+      'Carlos Ruiz',
+      'carlos.ruiz@example.com',
+      '+51998877665',
+      'Coloración',
+      'https://example.com/carlos.jpg',
+      stations[2].id,
+    ],
   );
   const barbers = await db.all('SELECT id FROM barbers');
-  await db.run('INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)', [
-    'Corte de Cabello', 30, 30, 'service', 0, 0,
-    'Afeitado Clásico', 25, 45, 'service', 0, 0,
-    'Corte y Barba', 50, 60, 'service', 0, 0,
-    'Cera para Peinar', 15, 0, 'product', 100, 10,
-    'Aceite para Barba', 20, 0, 'product', 50, 5,
-    'Shampoo Especializado', 35, 0, 'product', 20, 25, // Low stock
-    'Acondicionador Premium', 30, 0, 'product', 15, 10,
-    'Gel Fijador Fuerte', 12, 0, 'product', 5, 10, // Low stock
-    'Navajas Desechables (pack)', 8, 0, 'product', 30, 5
-  ]);
-  const services = await db.all('SELECT id, name, price, type, duration_minutes FROM services');
-  const customers = ['Pedro Pascal', 'Ana de Armas', 'Ricardo Arjona', 'Shakira Mebarak', 'Lionel Messi', 'Karol G', 'Bad Bunny'];
+  await db.run(
+    'INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
+    [
+      'Corte de Cabello',
+      30,
+      30,
+      'service',
+      0,
+      0,
+      'Afeitado Clásico',
+      25,
+      45,
+      'service',
+      0,
+      0,
+      'Corte y Barba',
+      50,
+      60,
+      'service',
+      0,
+      0,
+      'Cera para Peinar',
+      15,
+      0,
+      'product',
+      100,
+      10,
+      'Aceite para Barba',
+      20,
+      0,
+      'product',
+      50,
+      5,
+      'Shampoo Especializado',
+      35,
+      0,
+      'product',
+      20,
+      25, // Low stock
+      'Acondicionador Premium',
+      30,
+      0,
+      'product',
+      15,
+      10,
+      'Gel Fijador Fuerte',
+      12,
+      0,
+      'product',
+      5,
+      10, // Low stock
+      'Navajas Desechables (pack)',
+      8,
+      0,
+      'product',
+      30,
+      5,
+    ],
+  );
+  const services = await db.all(
+    'SELECT id, name, price, type, duration_minutes FROM services',
+  );
+  const customers = [
+    'Pedro Pascal',
+    'Ana de Armas',
+    'Ricardo Arjona',
+    'Shakira Mebarak',
+    'Lionel Messi',
+    'Karol G',
+    'Bad Bunny',
+  ];
   const paymentMethods = ['cash', 'card', 'yape', 'plin'];
   const today = new Date();
   for (let i = 45; i >= 0; i--) {
@@ -179,10 +265,16 @@ export async function seedDatabase(db: Database) {
         itemsSold.push(service);
         totalAmount += service.price;
       }
-      const saleResult = await db.run('INSERT INTO sales (sale_date, total_amount, customer_name) VALUES (?, ?, ?)', [dateString, totalAmount, customer]); // Removed barber_id and station_id
+      const saleResult = await db.run(
+        'INSERT INTO sales (sale_date, total_amount, customer_name) VALUES (?, ?, ?)',
+        [dateString, totalAmount, customer],
+      ); // Removed barber_id and station_id
       const saleId = saleResult.lastID;
       for (const item of itemsSold) {
-        await db.run('INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)', [saleId, item.id, item.type, item.name, item.price, item.price, 1]); // Assuming quantity 1 for now
+        await db.run(
+          'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [saleId, item.id, item.type, item.name, item.price, item.price, 1],
+        ); // Assuming quantity 1 for now
       }
     }
   }
@@ -192,8 +284,12 @@ export async function seedDatabase(db: Database) {
   const todayString = todayForReservations.toISOString().split('T')[0];
 
   // Test Case 1: Pending Reservation for today
-  const pendingStartTime = new Date(todayForReservations.setHours(10, 0, 0, 0)).toISOString();
-  const pendingEndTime = new Date(todayForReservations.setHours(10, 30, 0, 0)).toISOString();
+  const pendingStartTime = new Date(
+    todayForReservations.setHours(10, 0, 0, 0),
+  ).toISOString();
+  const pendingEndTime = new Date(
+    todayForReservations.setHours(10, 30, 0, 0),
+  ).toISOString();
   await db.run(
     `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -205,15 +301,19 @@ export async function seedDatabase(db: Database) {
       'pendiente.hoy@example.com',
       pendingStartTime,
       pendingEndTime,
-      services.find(s => s.name === 'Corte de Cabello')!.id,
+      services.find((s) => s.name === 'Corte de Cabello')!.id,
       'pending',
-      'Reserva pendiente para depuración.'
-    ]
+      'Reserva pendiente para depuración.',
+    ],
   );
 
   // Test Case 2: Completed Reservation for today
-  const completedStartTime = new Date(todayForReservations.setHours(11, 0, 0, 0)).toISOString();
-  const completedEndTime = new Date(todayForReservations.setHours(11, 45, 0, 0)).toISOString();
+  const completedStartTime = new Date(
+    todayForReservations.setHours(11, 0, 0, 0),
+  ).toISOString();
+  const completedEndTime = new Date(
+    todayForReservations.setHours(11, 45, 0, 0),
+  ).toISOString();
   const completedReservation = await db.run(
     `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -225,10 +325,10 @@ export async function seedDatabase(db: Database) {
       'pagado.hoy@example.com',
       completedStartTime,
       completedEndTime,
-      services.find(s => s.name === 'Afeitado Clásico')!.id,
+      services.find((s) => s.name === 'Afeitado Clásico')!.id,
       'completed',
-      'Reserva completada para depuración.'
-    ]
+      'Reserva completada para depuración.',
+    ],
   );
   const reservationId = completedReservation.lastID;
 
@@ -241,41 +341,69 @@ export async function seedDatabase(db: Database) {
         60.0, // 25 (service) + 15 (product) + 20 (product)
         'Cliente Pagado Hoy',
         'credit_card',
-        reservationId
-      ]
+        reservationId,
+      ],
     );
     const saleId = sale.lastID;
 
     if (saleId) {
-      const afeitadoClasico = services.find(s => s.name === 'Afeitado Clásico')!;
-      const ceraPeinar = services.find(s => s.name === 'Cera para Peinar')!;
-      const aceiteBarba = services.find(s => s.name === 'Aceite para Barba')!;
+      const afeitadoClasico = services.find(
+        (s) => s.name === 'Afeitado Clásico',
+      )!;
+      const ceraPeinar = services.find((s) => s.name === 'Cera para Peinar')!;
+      const aceiteBarba = services.find((s) => s.name === 'Aceite para Barba')!;
 
       await db.run(
         `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [saleId, afeitadoClasico.id, 'service', afeitadoClasico.name, afeitadoClasico.price, afeitadoClasico.price, 1]
+        [
+          saleId,
+          afeitadoClasico.id,
+          'service',
+          afeitadoClasico.name,
+          afeitadoClasico.price,
+          afeitadoClasico.price,
+          1,
+        ],
       );
       await db.run(
         `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [saleId, ceraPeinar.id, 'product', ceraPeinar.name, ceraPeinar.price, ceraPeinar.price, 1]
+        [
+          saleId,
+          ceraPeinar.id,
+          'product',
+          ceraPeinar.name,
+          ceraPeinar.price,
+          ceraPeinar.price,
+          1,
+        ],
       );
       await db.run(
         `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [saleId, aceiteBarba.id, 'product', aceiteBarba.name, aceiteBarba.price, aceiteBarba.price, 1]
+        [
+          saleId,
+          aceiteBarba.id,
+          'product',
+          aceiteBarba.name,
+          aceiteBarba.price,
+          aceiteBarba.price,
+          1,
+        ],
       );
     }
   }
 
   console.log('Datos de prueba insertados.');
-
-
 }
 
 async function initializeDatabase(isTest = false): Promise<Database> {
-  const db = await open(isTest ? { filename: ':memory:', driver: sqlite3.Database } : { filename: './barberia.sqlite', driver: sqlite3.Database });
+  const db = await open(
+    isTest
+      ? { filename: ':memory:', driver: sqlite3.Database }
+      : { filename: './barberia.sqlite', driver: sqlite3.Database },
+  );
   await createSchema(db);
 
   if (!isTest) {

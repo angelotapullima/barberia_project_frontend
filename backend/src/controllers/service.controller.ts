@@ -15,7 +15,9 @@ class ServiceController {
   async createService(req: Request, res: Response): Promise<void> {
     const { name, price, duration_minutes } = req.body;
     if (!name || price === undefined || duration_minutes === undefined) {
-      res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
+      res
+        .status(400)
+        .json({ error: 'Name, price, and duration_minutes are required' });
       return;
     }
     if (typeof price !== 'number' || price < 0) {
@@ -23,11 +25,17 @@ class ServiceController {
       return;
     }
     if (typeof duration_minutes !== 'number' || duration_minutes < 0) {
-      res.status(400).json({ error: 'Duration minutes must be a non-negative number' });
+      res
+        .status(400)
+        .json({ error: 'Duration minutes must be a non-negative number' });
       return;
     }
     try {
-      const newService = await serviceService.createService({ name, price, duration_minutes });
+      const newService = await serviceService.createService({
+        name,
+        price,
+        duration_minutes,
+      });
       res.status(201).json(newService);
     } catch (error) {
       console.error('Error creating service:', error);
@@ -39,7 +47,9 @@ class ServiceController {
     const { name, price, duration_minutes } = req.body;
     const { id } = req.params;
     if (!name || price === undefined || duration_minutes === undefined) {
-      res.status(400).json({ error: 'Name, price, and duration_minutes are required' });
+      res
+        .status(400)
+        .json({ error: 'Name, price, and duration_minutes are required' });
       return;
     }
     if (typeof price !== 'number' || price < 0) {
@@ -47,11 +57,17 @@ class ServiceController {
       return;
     }
     if (typeof duration_minutes !== 'number' || duration_minutes < 0) {
-      res.status(400).json({ error: 'Duration minutes must be a non-negative number' });
+      res
+        .status(400)
+        .json({ error: 'Duration minutes must be a non-negative number' });
       return;
     }
     try {
-      const updatedService = await serviceService.updateService(Number(id), { name, price, duration_minutes });
+      const updatedService = await serviceService.updateService(Number(id), {
+        name,
+        price,
+        duration_minutes,
+      });
       if (!updatedService) {
         res.status(404).json({ error: 'Service not found' });
         return;
@@ -96,15 +112,24 @@ class ServiceController {
     const { id } = req.params;
     const { quantity } = req.body;
 
-    if (quantity === undefined || typeof quantity !== 'number' || quantity < 0) {
+    if (
+      quantity === undefined ||
+      typeof quantity !== 'number' ||
+      quantity < 0
+    ) {
       res.status(400).json({ error: 'Quantity must be a non-negative number' });
       return;
     }
 
     try {
-      const updatedProduct = await serviceService.updateProductStock(Number(id), quantity);
+      const updatedProduct = await serviceService.updateProductStock(
+        Number(id),
+        quantity,
+      );
       if (!updatedProduct) {
-        res.status(404).json({ error: 'Product not found or not a product type' });
+        res
+          .status(404)
+          .json({ error: 'Product not found or not a product type' });
         return;
       }
       res.status(200).json(updatedProduct);

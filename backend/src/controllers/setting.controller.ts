@@ -22,16 +22,22 @@ class SettingController {
     const { value } = req.body;
 
     if (value === undefined) {
-      res.status(400).json({ message: 'El valor de la configuración es requerido.' });
+      res
+        .status(400)
+        .json({ message: 'El valor de la configuración es requerido.' });
       return;
     }
 
     try {
       const updated = await settingService.setSetting(key, value);
       if (updated) {
-        res.status(200).json({ message: 'Configuración actualizada exitosamente.' });
+        res
+          .status(200)
+          .json({ message: 'Configuración actualizada exitosamente.' });
       } else {
-        res.status(500).json({ message: 'No se pudo actualizar la configuración.' });
+        res
+          .status(500)
+          .json({ message: 'No se pudo actualizar la configuración.' });
       }
     } catch (error) {
       console.error('Error al actualizar configuración:', error);

@@ -44,16 +44,18 @@ select {
   -webkit-appearance: none !important; /* Remove default browser styling for Webkit */
   -moz-appearance: none !important; /* Remove default browser styling for Mozilla */
   appearance: none !important; /* Remove default browser styling */
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"%236B7280\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"%3E%3Cpath d=\"M6 9l4 4 4-4\"%2F%3E%3C%2Fsvg%3E") !important; /* Custom SVG arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="%236B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M6 9l4 4 4-4"%2F%3E%3C%2Fsvg%3E') !important; /* Custom SVG arrow */
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 1.5em 1.5em; /* Size of the custom arrow */
   cursor: pointer;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 
 select:focus {
-  border-color: #8B5CF6; /* Purple-500 on focus */
+  border-color: #8b5cf6; /* Purple-500 on focus */
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); /* Focus ring */
   outline: none;
 }

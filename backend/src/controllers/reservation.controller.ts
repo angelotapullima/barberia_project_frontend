@@ -5,7 +5,10 @@ class ReservationController {
   async getAllReservations(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
     try {
-      const reservations = await reservationService.getAllReservations(startDate as string, endDate as string);
+      const reservations = await reservationService.getAllReservations(
+        startDate as string,
+        endDate as string,
+      );
       res.json(reservations);
     } catch (error) {
       console.error('Error getting reservations:', error);
@@ -16,7 +19,9 @@ class ReservationController {
   async getReservationById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const reservation = await reservationService.getReservationById(Number(id));
+      const reservation = await reservationService.getReservationById(
+        Number(id),
+      );
       if (reservation) {
         res.json(reservation);
       } else {
@@ -29,10 +34,33 @@ class ReservationController {
   }
 
   async createReservation(req: Request, res: Response): Promise<void> {
-    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, notes } = req.body; // Added station_id
+    const {
+      barber_id,
+      station_id,
+      client_name,
+      client_phone,
+      client_email,
+      start_time,
+      end_time,
+      service_id,
+      notes,
+    } = req.body; // Added station_id
 
-    if (!barber_id || !station_id || !client_name || !start_time || !end_time || !service_id) { // Added station_id to validation
-      res.status(400).json({ error: 'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id' }); // Updated error message
+    if (
+      !barber_id ||
+      !station_id ||
+      !client_name ||
+      !start_time ||
+      !end_time ||
+      !service_id
+    ) {
+      // Added station_id to validation
+      res
+        .status(400)
+        .json({
+          error:
+            'Missing required fields: barber_id, station_id, client_name, start_time, end_time, service_id',
+        }); // Updated error message
       return;
     }
 
@@ -57,7 +85,18 @@ class ReservationController {
 
   async updateReservation(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes } = req.body;
+    const {
+      barber_id,
+      station_id,
+      client_name,
+      client_phone,
+      client_email,
+      start_time,
+      end_time,
+      service_id,
+      status,
+      notes,
+    } = req.body;
 
     // Basic validation for required fields if they are being updated
     if (barber_id !== undefined && typeof barber_id !== 'number') {
@@ -73,11 +112,15 @@ class ReservationController {
       return;
     }
     if (start_time !== undefined && typeof start_time !== 'string') {
-      res.status(400).json({ error: 'start_time must be a string (ISO date format)' });
+      res
+        .status(400)
+        .json({ error: 'start_time must be a string (ISO date format)' });
       return;
     }
     if (end_time !== undefined && typeof end_time !== 'string') {
-      res.status(400).json({ error: 'end_time must be a string (ISO date format)' });
+      res
+        .status(400)
+        .json({ error: 'end_time must be a string (ISO date format)' });
       return;
     }
     if (service_id !== undefined && typeof service_id !== 'number') {
@@ -123,11 +166,16 @@ class ReservationController {
   async getReservationCount(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
     try {
-      const count = await reservationService.getReservationCount(startDate as string, endDate as string);
+      const count = await reservationService.getReservationCount(
+        startDate as string,
+        endDate as string,
+      );
       res.json({ count });
     } catch (error) {
       console.error('Error getting reservation count:', error);
@@ -135,14 +183,22 @@ class ReservationController {
     }
   }
 
-  async getCompletedReservationCount(req: Request, res: Response): Promise<void> {
+  async getCompletedReservationCount(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
     try {
-      const count = await reservationService.getCompletedReservationCount(startDate as string, endDate as string);
+      const count = await reservationService.getCompletedReservationCount(
+        startDate as string,
+        endDate as string,
+      );
       res.json({ count });
     } catch (error) {
       console.error('Error getting completed reservation count:', error);
@@ -153,11 +209,16 @@ class ReservationController {
   async getCompletedReservations(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
       return;
     }
     try {
-      const reservations = await reservationService.getCompletedReservations(startDate as string, endDate as string);
+      const reservations = await reservationService.getCompletedReservations(
+        startDate as string,
+        endDate as string,
+      );
       res.json(reservations);
     } catch (error) {
       console.error('Error getting completed reservations:', error);
@@ -168,16 +229,29 @@ class ReservationController {
   async completeReservation(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const newSale = await reservationService.completeReservationAndCreateSale(Number(id));
-      res.status(200).json({ message: 'Reservation completed and sale created successfully', sale: newSale });
+      const newSale = await reservationService.completeReservationAndCreateSale(
+        Number(id),
+      );
+      res
+        .status(200)
+        .json({
+          message: 'Reservation completed and sale created successfully',
+          sale: newSale,
+        });
     } catch (error) {
       console.error('Error completing reservation and creating sale:', error);
-      if (error instanceof Error && (error.message.includes('Reservation not found') || error.message.includes('already completed'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('Reservation not found') ||
+          error.message.includes('already completed'))
+      ) {
         res.status(400).json({ error: error.message });
       } else if (error instanceof Error) {
         res.status(500).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Failed to complete reservation and create sale.' });
+        res
+          .status(500)
+          .json({ error: 'Failed to complete reservation and create sale.' });
       }
     }
   }

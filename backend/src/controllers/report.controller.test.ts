@@ -40,7 +40,10 @@ describe('ReportController', () => {
 
     mockRequest.query = { year: '2025', month: '8' };
 
-    await reportController.getReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(reportService.generateReport).toHaveBeenCalledWith(2025, 8);
     expect(mockResponse.json).toHaveBeenCalledWith(reportData);
@@ -48,11 +51,16 @@ describe('ReportController', () => {
 
   it('debería obtener el reporte de ventas completo', async () => {
     const salesData = [{ id: 1, total: 100 }];
-    (reportService.getComprehensiveSales as jest.Mock).mockResolvedValue(salesData);
+    (reportService.getComprehensiveSales as jest.Mock).mockResolvedValue(
+      salesData,
+    );
 
     mockRequest.query = { startDate: '2025-01-01', endDate: '2025-01-31' };
 
-    await reportController.getComprehensiveSalesReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getComprehensiveSalesReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(reportService.getComprehensiveSales).toHaveBeenCalledWith({
       startDate: '2025-01-01',
@@ -63,13 +71,21 @@ describe('ReportController', () => {
 
   it('debería obtener el reporte de ventas por servicios/productos', async () => {
     const salesData = [{ type: 'service', total: 50 }];
-    (reportService.getServicesProductsSales as jest.Mock).mockResolvedValue(salesData);
+    (reportService.getServicesProductsSales as jest.Mock).mockResolvedValue(
+      salesData,
+    );
 
     mockRequest.query = { startDate: '2025-01-01', endDate: '2025-01-31' };
 
-    await reportController.getServicesProductsSalesReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getServicesProductsSalesReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(reportService.getServicesProductsSales).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
+    expect(reportService.getServicesProductsSales).toHaveBeenCalledWith(
+      '2025-01-01',
+      '2025-01-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith({
       currentPeriod: salesData,
       comparisonPeriod: undefined, // Since compareStartDate and compareEndDate are not provided in the test
@@ -82,9 +98,15 @@ describe('ReportController', () => {
 
     mockRequest.query = { startDate: '2025-01-01', endDate: '2025-01-31' };
 
-    await reportController.getStationUsageReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getStationUsageReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(reportService.getStationUsage).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
+    expect(reportService.getStationUsage).toHaveBeenCalledWith(
+      '2025-01-01',
+      '2025-01-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(data);
   });
 
@@ -94,9 +116,15 @@ describe('ReportController', () => {
 
     mockRequest.query = { startDate: '2025-01-01', endDate: '2025-01-31' };
 
-    await reportController.getCustomerFrequencyReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getCustomerFrequencyReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(reportService.getCustomerFrequency).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
+    expect(reportService.getCustomerFrequency).toHaveBeenCalledWith(
+      '2025-01-01',
+      '2025-01-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(data);
   });
 
@@ -106,21 +134,34 @@ describe('ReportController', () => {
 
     mockRequest.query = { startDate: '2025-01-01', endDate: '2025-01-31' };
 
-    await reportController.getPeakHoursReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getPeakHoursReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
-    expect(reportService.getPeakHours).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
+    expect(reportService.getPeakHours).toHaveBeenCalledWith(
+      '2025-01-01',
+      '2025-01-31',
+    );
     expect(mockResponse.json).toHaveBeenCalledWith(data);
   });
 
   // Manejo de errores (ejemplo para un método)
   it('debería manejar errores al generar un reporte general', async () => {
-    (reportService.generateReport as jest.Mock).mockRejectedValue(new Error('Error de DB'));
+    (reportService.generateReport as jest.Mock).mockRejectedValue(
+      new Error('Error de DB'),
+    );
 
     mockRequest.query = { year: '2025', month: '8' };
 
-    await reportController.getReport(mockRequest as Request, mockResponse as Response);
+    await reportController.getReport(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Failed to generate report.' });
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: 'Failed to generate report.',
+    });
   });
 });

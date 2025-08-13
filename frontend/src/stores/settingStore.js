@@ -31,7 +31,9 @@ export const useSettingStore = defineStore('settings', {
         });
         this.settings = response.data;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al cargar las configuraciones.';
+        this.error =
+          error.response?.data?.message ||
+          'Error al cargar las configuraciones.';
         console.error('Error fetching settings:', error);
       } finally {
         this.isLoading = false;
@@ -50,7 +52,7 @@ export const useSettingStore = defineStore('settings', {
             headers: {
               Authorization: `Bearer ${authStore.token}`,
             },
-          }
+          },
         );
         // Actualizar el valor en el store localmente
         const index = this.settings.findIndex((s) => s.setting_key === key);
@@ -61,7 +63,9 @@ export const useSettingStore = defineStore('settings', {
         }
         return true;
       } catch (error) {
-        this.error = error.response?.data?.message || 'Error al actualizar la configuración.';
+        this.error =
+          error.response?.data?.message ||
+          'Error al actualizar la configuración.';
         console.error(`Error updating setting ${key}:`, error);
         throw error; // Re-throw to allow component to handle success/failure messages
       } finally {

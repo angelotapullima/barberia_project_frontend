@@ -39,7 +39,9 @@ class StationController {
       return;
     }
     try {
-      const updatedStation = await stationService.updateStation(Number(id), { name });
+      const updatedStation = await stationService.updateStation(Number(id), {
+        name,
+      });
       if (!updatedStation) {
         res.status(404).json({ error: 'Station not found' });
         return;

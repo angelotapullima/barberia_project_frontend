@@ -39,8 +39,18 @@ describe('SaleService', () => {
       customer_name: 'Nuevo Cliente',
       payment_method: 'cash',
       services: [
-        { service_id: 1, price_at_sale: 30, name: 'Service 1', type: 'service' },
-        { service_id: 2, price_at_sale: 20, name: 'Service 2', type: 'service' }
+        {
+          service_id: 1,
+          price_at_sale: 30,
+          name: 'Service 1',
+          type: 'service',
+        },
+        {
+          service_id: 2,
+          price_at_sale: 20,
+          name: 'Service 2',
+          type: 'service',
+        },
       ],
     };
     const createdSale = await saleService.createSale(newSale);
@@ -58,7 +68,10 @@ describe('SaleService', () => {
   });
 
   it('debería obtener el resumen de ventas por rango de fechas', async () => {
-    const summary = await saleService.getSalesSummaryByDateRange(testStartDate, testEndDate);
+    const summary = await saleService.getSalesSummaryByDateRange(
+      testStartDate,
+      testEndDate,
+    );
     expect(Array.isArray(summary)).toBe(true);
     expect(summary.length).toBeGreaterThan(0);
     expect(summary[0]).toHaveProperty('date');
@@ -66,7 +79,10 @@ describe('SaleService', () => {
   });
 
   it('debería obtener el ranking de ventas por barbero', async () => {
-    const ranking = await saleService.getBarberSalesRanking(testStartDate, testEndDate);
+    const ranking = await saleService.getBarberSalesRanking(
+      testStartDate,
+      testEndDate,
+    );
     expect(Array.isArray(ranking)).toBe(true);
     expect(ranking.length).toBeGreaterThan(0);
     expect(ranking[0]).toHaveProperty('barber_name');
@@ -74,13 +90,19 @@ describe('SaleService', () => {
   });
 
   it('debería obtener el total de pagos a barberos', async () => {
-    const totalPayments = await saleService.getTotalPaymentsToBarbers(testStartDate, testEndDate);
+    const totalPayments = await saleService.getTotalPaymentsToBarbers(
+      testStartDate,
+      testEndDate,
+    );
     expect(typeof totalPayments).toBe('number');
     expect(totalPayments).toBeGreaterThan(0);
   });
 
   it('debería obtener el resumen de ventas por servicio', async () => {
-    const summary = await saleService.getSalesSummaryByService(testStartDate, testEndDate);
+    const summary = await saleService.getSalesSummaryByService(
+      testStartDate,
+      testEndDate,
+    );
     expect(Array.isArray(summary)).toBe(true);
     expect(summary.length).toBeGreaterThan(0);
     expect(summary[0]).toHaveProperty('service_name');
@@ -88,7 +110,10 @@ describe('SaleService', () => {
   });
 
   it('debería obtener el resumen de ventas por método de pago', async () => {
-    const summary = await saleService.getSalesSummaryByPaymentMethod(testStartDate, testEndDate);
+    const summary = await saleService.getSalesSummaryByPaymentMethod(
+      testStartDate,
+      testEndDate,
+    );
     expect(Array.isArray(summary)).toBe(true);
     expect(summary.length).toBeGreaterThan(0);
     expect(summary[0]).toHaveProperty('payment_method');

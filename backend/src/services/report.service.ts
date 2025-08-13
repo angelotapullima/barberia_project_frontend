@@ -48,7 +48,7 @@ export class ReportService {
             GROUP BY date
         `,
       startDate,
-      endDate
+      endDate,
     );
 
     const events: CalendarEvent[] = calendarEvents.map((e: any) => ({
@@ -58,8 +58,12 @@ export class ReportService {
     }));
 
     // 2. Get barber payment stats
-    const barbers = await this.db.all<{ id: number; name: string; base_salary: number }[]>( 'SELECT id, name, base_salary FROM barbers');
-    const salesByBarber = await this.db.all<{ barber_id: number; total_generated: number }[]>(
+    const barbers = await this.db.all<
+      { id: number; name: string; base_salary: number }[]
+    >('SELECT id, name, base_salary FROM barbers');
+    const salesByBarber = await this.db.all<
+      { barber_id: number; total_generated: number }[]
+    >(
       `
             SELECT barber_id, SUM(total_amount) as total_generated
             FROM sales
@@ -67,13 +71,13 @@ export class ReportService {
             GROUP BY barber_id
         `,
       startDate,
-      endDate
+      endDate,
     );
 
     const stats: BarberStat[] = barbers.map((barber) => {
       const saleInfo = salesByBarber.find((s) => s.barber_id === barber.id);
       const total_generated = saleInfo ? saleInfo.total_generated : 0;
-      
+
       const BASE_SALARY = 1250;
       const COMMISSION_THRESHOLD = 2500;
       let payment = BASE_SALARY;
@@ -146,7 +150,10 @@ export class ReportService {
     return await this.db.all(query, params);
   }
 
-  async getServicesProductsSales(startDate: string, endDate: string): Promise<any[]> {
+  async getServicesProductsSales(
+    startDate: string,
+    endDate: string,
+  ): Promise<any[]> {
     const query = `
       SELECT
           s.type,
@@ -174,7 +181,10 @@ export class ReportService {
     return await this.db.all(query, [startDate, endDate]);
   }
 
-  async getCustomerFrequency(startDate: string, endDate: string): Promise<any[]> {
+  async getCustomerFrequency(
+    startDate: string,
+    endDate: string,
+  ): Promise<any[]> {
     // Este reporte cuenta cuántas veces ha venido cada cliente.
     const query = `
       SELECT
