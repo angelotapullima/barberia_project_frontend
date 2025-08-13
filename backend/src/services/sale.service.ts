@@ -105,6 +105,12 @@ export class SaleService {
       reservation_id,
     } = sale;
 
+    // Check if any service is being sold without a reservation_id
+    const hasServiceItems = sale_items.some(item => item.type === 'service');
+    if (hasServiceItems && !reservation_id) {
+      throw new Error('Sales containing services must be linked to a reservation.');
+    }
+
     await this.db.run('BEGIN TRANSACTION');
 
     try {
@@ -190,25 +196,25 @@ export class SaleService {
     return this.db.all(query, [startDate, endDate]);
   }
 
-  /*
-  // Temporarily commented out: This method relies on barber_id being in the sales table, which has been removed.
-  // To re-enable, sales data needs to be linked to barbers via reservations or a new mechanism.
-  async getBarberSalesRanking(startDate: string, endDate: string): Promise<{ barber_id: number; barber_name: string; total_sales: number }[]> {
-    // Placeholder or re-implementation needed
-    console.warn("getBarberSalesRanking is temporarily disabled as sales no longer store barber_id directly.");
-    return [];
+  async getDailySalesByType(
+    startDate: string,
+    endDate: string,
+  ): Promise<{ date: string; type: string; total: number }[]> {
+    const query = `
+      SELECT
+          strftime('%Y-%m-%d', sa.sale_date) as date,
+          si.item_type as type,
+          SUM(si.price_at_sale) as total
+      FROM sales sa
+      JOIN sale_items si ON sa.id = si.sale_id
+      WHERE sa.sale_date BETWEEN ? AND ?
+      GROUP BY date, type
+      ORDER BY date ASC, type ASC
+    `;
+    return this.db.all(query, [startDate, endDate]);
   }
-  */
 
-  /*
-  // Temporarily commented out: This method relies on barber_id being in the sales table, which has been removed.
-  // To re-enable, sales data needs to be linked to barbers via reservations or a new mechanism for payment calculation.
-  async getTotalPaymentsToBarbers(startDate: string, endDate: string): Promise<number> {
-    // Placeholder or re-implementation needed
-    console.warn("getTotalPaymentsToBarbers is temporarily disabled as sales no longer store barber_id directly.");
-    return 0;
-  }
-  */
+  
 
   async getSalesSummaryByService(
     startDate: string,

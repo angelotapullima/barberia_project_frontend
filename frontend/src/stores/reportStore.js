@@ -151,5 +151,41 @@ export const useReportStore = defineStore('reports', {
         this.isLoading = false;
       }
     },
+    async getBarberPayments(startDate, endDate) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/reports/barber-payments`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      } catch (error) {
+        this.error =
+          error.response?.data?.error ||
+          'Error al cargar los pagos de barberos.';
+        console.error(error);
+        return []; // Return empty array on error
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getDetailedBarberServiceSales(filters) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/reports/detailed-barber-service-sales`, {
+          params: filters,
+        });
+        return response.data;
+      } catch (error) {
+        this.error =
+          error.response?.data?.error ||
+          'Error al cargar el reporte detallado de servicios de barberos.';
+        console.error(error);
+        return []; // Return empty array on error
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 });

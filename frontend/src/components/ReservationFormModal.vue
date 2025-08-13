@@ -297,7 +297,7 @@ const resetNewReservationForm = () => {
 };
 
 onMounted(async () => {
-  await barberStore.fetchBarbers();
+  await barberStore.getAllBarbers();
   await serviceStore.fetchServices();
   await stationStore.fetchStations();
 });

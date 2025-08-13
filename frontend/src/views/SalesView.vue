@@ -215,7 +215,7 @@ async function applyFilter() {
 
 onMounted(() => {
   applyFilter(); // Fetch sales when component mounts
-  barberStore.fetchBarbers(); // Fetch barbers for the filter dropdown
+  barberStore.getAllBarbers(); // Fetch barbers for the filter dropdown
 });
 </script>
 

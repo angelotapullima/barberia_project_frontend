@@ -150,67 +150,143 @@ export class ReportService {
     return await this.db.all(query, params);
   }
 
-  async getServicesProductsSales(
+  public async getServicesProductsSales(
     startDate: string,
-    endDate: string,
-  ): Promise<any[]> {
+    endDate: string
+  ): Promise<{ type: string; total_sales_by_type: number }[]> {
     const query = `
       SELECT
-          s.type,
-          SUM(si.price_at_sale) as total_sales_by_type
+        si.item_type as type,
+        SUM(si.price_at_sale) as total_sales_by_type
       FROM sale_items si
       JOIN services s ON si.service_id = s.id
       JOIN sales sa ON si.sale_id = sa.id
       WHERE sa.sale_date BETWEEN ? AND ?
-      GROUP BY s.type
+      GROUP BY si.item_type
+      ORDER BY type;
     `;
-    return await this.db.all(query, [startDate, endDate]);
+    const params = [startDate, endDate];
+    return this.db.all(query, params);
   }
 
-  async getStationUsage(startDate: string, endDate: string): Promise<any[]> {
-    // Este reporte calcula cuántas veces se usó cada estación en un período.
+  public async getBarberPayments(
+    startDate: string,
+    endDate: string
+  ): Promise<{ barber_id: number; barber_name: string; total_service_sales: number; payment: number }[]> {
     const query = `
       SELECT
-        st.name as station_name,
-        COUNT(s.id) as usage_count
-      FROM stations st
-      LEFT JOIN sales s ON st.id = s.station_id AND date(s.sale_date) BETWEEN ? AND ?
-      GROUP BY st.name
-      ORDER BY usage_count DESC
+        b.id AS barber_id,
+        b.name AS barber_name,
+        COALESCE(SUM(si.price_at_sale), 0) AS total_service_sales
+      FROM barbers b
+      LEFT JOIN reservations r ON b.id = r.barber_id
+      LEFT JOIN sales s ON r.id = s.reservation_id AND s.sale_date BETWEEN ? AND ?
+      LEFT JOIN sale_items si ON s.id = si.sale_id AND si.item_type = 'service'
+      GROUP BY
+        b.id, b.name
+      ORDER BY
+        total_service_sales DESC;
     `;
-    return await this.db.all(query, [startDate, endDate]);
+    const params = [startDate, endDate]; // Parameters for s.sale_date BETWEEN ? AND ?
+    const results = await this.db.all(query, params);
+
+    return results.map(row => {
+      const total_service_sales = row.total_service_sales; // COALESCE already handles 0
+      let payment = 0;
+      if (total_service_sales > 2500) {
+        payment = total_service_sales / 2;
+      } else {
+        payment = 1250;
+      }
+      return {
+        barber_id: row.barber_id,
+        barber_name: row.barber_name,
+        total_service_sales: total_service_sales,
+        payment: payment,
+      };
+    });
   }
 
-  async getCustomerFrequency(
-    startDate: string,
-    endDate: string,
-  ): Promise<any[]> {
-    // Este reporte cuenta cuántas veces ha venido cada cliente.
+  public async getDetailedBarberServiceSales(filters: {
+    barberId?: number;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any[]> {
+    let query = `
+      SELECT
+        b.name AS barber_name,
+        svc.name AS service_name,
+        sa.sale_date,
+        si.price_at_sale AS service_price
+      FROM sales sa
+      JOIN sale_items si ON sa.id = si.sale_id
+      JOIN services svc ON si.service_id = svc.id
+      LEFT JOIN reservations r ON sa.reservation_id = r.id
+      LEFT JOIN barbers b ON r.barber_id = b.id
+      WHERE si.item_type = 'service'
+    `;
+    const params: (string | number)[] = [];
+
+    if (filters.barberId) {
+      query += ` AND b.id = ?`;
+      params.push(filters.barberId);
+    }
+    if (filters.startDate && filters.endDate) {
+      query += ` AND sa.sale_date BETWEEN ? AND ?`;
+      params.push(filters.startDate, filters.endDate);
+    } else if (filters.startDate) {
+      query += ` AND sa.sale_date >= ?`;
+      params.push(filters.startDate);
+    } else if (filters.endDate) {
+      query += ` AND sa.sale_date <= ?`;
+      params.push(filters.endDate);
+    }
+
+    query += ` ORDER BY sa.sale_date DESC, b.name ASC`;
+
+    return this.db.all(query, params);
+  }
+
+  public async getStationUsage(startDate: string, endDate: string): Promise<any[]> {
+    const query = `
+      SELECT
+        st.name AS station_name,
+        COUNT(s.id) AS total_sales,
+        SUM(s.total_amount) AS total_revenue
+      FROM stations st
+      LEFT JOIN reservations r ON st.id = r.station_id
+      LEFT JOIN sales s ON r.id = s.reservation_id AND date(s.sale_date) BETWEEN ? AND ?
+      GROUP BY st.id, st.name
+      ORDER BY st.name ASC;
+    `;
+    return this.db.all(query, [startDate, endDate]);
+  }
+
+  public async getCustomerFrequency(startDate: string, endDate: string): Promise<any[]> {
     const query = `
       SELECT
         customer_name,
-        COUNT(id) as visit_count
+        COUNT(id) AS visit_count,
+        SUM(total_amount) AS total_spent
       FROM sales
       WHERE sale_date BETWEEN ? AND ? AND customer_name IS NOT NULL AND customer_name != ''
       GROUP BY customer_name
-      ORDER BY visit_count DESC
-      LIMIT 15 -- Limitamos a los 15 clientes más frecuentes
+      ORDER BY visit_count DESC, total_spent DESC;
     `;
-    return await this.db.all(query, [startDate, endDate]);
+    return this.db.all(query, [startDate, endDate]);
   }
 
-  async getPeakHours(startDate: string, endDate: string): Promise<any[]> {
-    // Este reporte encuentra las horas con más reservaciones.
+  public async getPeakHours(startDate: string, endDate: string): Promise<any[]> {
     const query = `
       SELECT
-        strftime('%H:00', start_time) as hour,
-        COUNT(id) as reservation_count
+        strftime('%H', start_time) AS hour,
+        COUNT(id) AS reservation_count
       FROM reservations
-      WHERE date(start_time) BETWEEN ? AND ?
+      WHERE start_time BETWEEN ? AND ?
       GROUP BY hour
-      ORDER BY reservation_count DESC
+      ORDER BY hour ASC;
     `;
-    return await this.db.all(query, [startDate, endDate]);
+    return this.db.all(query, [`${startDate} 00:00:00`, `${endDate} 23:59:59`]);
   }
 }
 

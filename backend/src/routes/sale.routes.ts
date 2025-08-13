@@ -12,12 +12,15 @@ router.get(
 );
 
 router.get('/summary', saleController.getDailySalesSummary);
-// router.get('/ranking', saleController.getBarberRanking);
-// router.get('/total-payments', saleController.getTotalBarberPayments);
 router.get('/summary-by-service', saleController.getSalesSummaryByService);
 router.get(
   '/summary-by-payment-method',
   saleController.getSalesSummaryByPaymentMethod,
+);
+
+router.get(
+  '/daily-by-type',
+  saleController.getDailySalesByTypeReport,
 );
 
 export default router;

@@ -9,6 +9,7 @@
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <!-- Card 1: Ventas Hoy -->
+      <!-- Card 1: Ventas de Productos (Hoy) -->
       <div
         class="bg-white p-6 rounded-2xl shadow-md flex items-center space-x-4"
       >
@@ -24,14 +25,42 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343-2-3-2m0 8c-1.11 0-2.08-.402-2.599-1"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343 2-3 2m0 8c-1.11 0-2.08-.402-2.599-1"
             ></path>
           </svg>
         </div>
         <div>
-          <p class="text-sm text-gray-500">Ventas de Hoy</p>
+          <p class="text-sm text-gray-500">Ventas de Productos (Hoy)</p>
           <p class="text-2xl font-bold text-gray-800">
-            S/ {{ (salesToday || 0).toFixed(2) }}
+            S/ {{ (productSalesToday || 0).toFixed(2) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Card 2: Ventas de Servicios (Hoy) -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-md flex items-center space-x-4"
+      >
+        <div class="bg-green-100 p-3 rounded-xl">
+          <svg
+            class="w-6 h-6 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343 2-3 2m0 8c-1.11 0-2.08-.402-2.599-1"
+            ></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Ventas de Servicios (Hoy)</p>
+          <p class="text-2xl font-bold text-gray-800">
+            S/ {{ (serviceSalesToday || 0).toFixed(2) }}
           </p>
         </div>
       </div>
@@ -131,16 +160,23 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Left Column -->
       <div class="lg:col-span-2 space-y-8">
-        <!-- Weekly Sales Chart -->
+        <!-- Product Sales Chart -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">
-            Ventas de la Última Semana
-          </h3>
           <apexchart
             type="area"
             height="350"
-            :options="salesChartOptions"
-            :series="salesChartSeries"
+            :options="productSalesChartOptions"
+            :series="productSalesChartSeries"
+          ></apexchart>
+        </div>
+
+        <!-- Service Sales Chart -->
+        <div class="bg-white p-6 rounded-2xl shadow-md">
+          <apexchart
+            type="area"
+            height="350"
+            :options="serviceSalesChartOptions"
+            :series="serviceSalesChartSeries"
           ></apexchart>
         </div>
 
@@ -176,7 +212,7 @@
                     {{ stat.barber_name }}
                   </td>
                   <td class="px-4 py-2 whitespace-nowrap text-right">
-                    S/ {{ (stat.total_generated || 0).toFixed(2) }}
+                    S/ {{ (stat.total_service_sales || 0).toFixed(2) }}
                   </td>
                   <td
                     class="px-4 py-2 whitespace-nowrap text-right font-bold text-green-600"
@@ -192,32 +228,6 @@
 
       <!-- Right Column -->
       <div class="space-y-8">
-        <!-- Barber Ranking -->
-        <div class="bg-white p-6 rounded-2xl shadow-md">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">
-            Ranking de Barberos (Semana)
-          </h3>
-          <ul class="space-y-4">
-            <li
-              v-for="(barber, index) in barberRanking"
-              :key="barber.barber_id"
-              class="flex items-center"
-            >
-              <span class="text-lg font-bold text-gray-400 w-6">{{
-                index + 1
-              }}</span>
-              <div class="ml-3">
-                <p class="font-semibold text-gray-700">
-                  {{ barber.barber_name }}
-                </p>
-                <p class="text-sm text-green-500">
-                  S/ {{ (barber.total_sales || 0).toFixed(2) }}
-                </p>
-              </div>
-            </li>
-          </ul>
-        </div>
-
         <!-- Top Services Chart -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">
@@ -241,23 +251,28 @@ import { useSalesStore } from '@/stores/salesStore';
 import { useReservationStore } from '@/stores/reservationStore';
 import { useReportStore } from '@/stores/reportStore';
 import VueApexCharts from 'vue3-apexcharts';
+import dayjs from 'dayjs'; // Import dayjs for date manipulation
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
+dayjs.extend(isSameOrBefore); // Extend dayjs with the plugin
 
 const salesStore = useSalesStore();
 const reservationStore = useReservationStore();
 const reportStore = useReportStore();
 
 // Data refs
-const salesToday = ref(0);
+const salesToday = ref(0); // This will now be total sales (products + services)
+const productSalesToday = ref(0); // New ref for product sales today
+const serviceSalesToday = ref(0); // New ref for service sales today
 const salesMonth = ref(0);
 const upcomingReservations = ref([]);
 const completedReservationsToday = ref(0);
-const weeklySales = ref([]);
-const barberRanking = ref([]);
+const weeklyProductSales = ref([]); // New ref for product sales
+const weeklyServiceSales = ref([]); // New ref for service sales
 const topServices = ref([]);
 const barberPayouts = ref([]);
 
 // Chart definitions
-const salesChartOptions = computed(() => ({
+const createSalesChartOptions = (title, categories) => ({
   chart: {
     type: 'area',
     height: 350,
@@ -278,7 +293,7 @@ const salesChartOptions = computed(() => ({
   },
   xaxis: {
     type: 'datetime',
-    categories: weeklySales.value.map((d) => d.date),
+    categories: categories,
     labels: {
       format: 'dd MMM',
       style: { colors: '#6B7280' },
@@ -300,12 +315,40 @@ const salesChartOptions = computed(() => ({
     borderColor: '#f1f1f1',
     strokeDashArray: 4,
   },
-}));
+  title: {
+    text: title,
+    align: 'left',
+    style: {
+      fontSize: '16px',
+      fontWeight: 'semibold',
+      color: '#374151',
+    },
+  },
+});
 
-const salesChartSeries = computed(() => [
+const productSalesChartOptions = computed(() =>
+  createSalesChartOptions(
+    'Ventas de Productos (Última Semana)',
+    weeklyProductSales.value.map((d) => d.date),
+  ),
+);
+const productSalesChartSeries = computed(() => [
   {
-    name: 'Ventas',
-    data: weeklySales.value.map((d) => d.total),
+    name: 'Ventas de Productos',
+    data: weeklyProductSales.value.map((d) => d.total),
+  },
+]);
+
+const serviceSalesChartOptions = computed(() =>
+  createSalesChartOptions(
+    'Ventas de Servicios (Última Semana)',
+    weeklyServiceSales.value.map((d) => d.date),
+  ),
+);
+const serviceSalesChartSeries = computed(() => [
+  {
+    name: 'Ventas de Servicios',
+    data: weeklyServiceSales.value.map((d) => d.total),
   },
 ]);
 
@@ -344,34 +387,35 @@ async function fetchData() {
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-  const sevenDaysAgoStr = sevenDaysAgo.toISOString().slice(0, 10);
+  const sevenDaysAgo = dayjs().subtract(7, 'day').format('YYYY-MM-DD'); // Using dayjs
+  const sevenDaysAgoStr = sevenDaysAgo;
 
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const firstDayOfMonthStr = firstDayOfMonth.toISOString().slice(0, 10);
 
   // --- Parallel fetching ---
   const [
-    salesTodayData,
+    dailySalesTodayByTypeData, // Changed from salesTodayData
     salesMonthData,
     reservationsTodayData,
-    weeklySalesData,
-    barberRankingData,
+    dailySalesByTypeDataForWeekly, // Changed from dailySalesByTypeData
     topServicesData,
-    reportData,
+    barberPaymentsData,
   ] = await Promise.all([
-    salesStore.getSalesSummaryByDateRange(todayStr, todayStr),
+    salesStore.getDailySalesByType(todayStr, todayStr), // New call for today's sales
     salesStore.getSalesSummaryByDateRange(firstDayOfMonthStr, todayStr),
     reservationStore.fetchReservationsByDateRange(todayStr, todayStr),
-    salesStore.getSalesSummaryByDateRange(sevenDaysAgoStr, todayStr),
-    salesStore.getBarberSalesRanking(sevenDaysAgoStr, todayStr),
+    salesStore.getDailySalesByType(sevenDaysAgoStr, todayStr),
     salesStore.getSalesSummaryByService(sevenDaysAgoStr, todayStr),
-    reportStore.fetchReport(today.getFullYear(), today.getMonth() + 1),
+    reportStore.getBarberPayments(firstDayOfMonthStr, todayStr),
   ]);
 
   // --- Process data ---
-  salesToday.value = salesTodayData[0]?.total || 0;
+  // Process today's sales by type
+  productSalesToday.value = dailySalesTodayByTypeData.find(item => item.type === 'product')?.total || 0;
+  serviceSalesToday.value = dailySalesTodayByTypeData.find(item => item.type === 'service')?.total || 0;
+  salesToday.value = productSalesToday.value + serviceSalesToday.value; // Total sales today
+
   salesMonth.value = salesMonthData.reduce((sum, day) => sum + day.total, 0);
 
   const now = new Date();
@@ -383,10 +427,36 @@ async function fetchData() {
     (res) => new Date(res.start_time) < now,
   ).length;
 
-  weeklySales.value = weeklySalesData;
-  barberRanking.value = barberRankingData;
+  // Process daily sales by type for weekly charts
+  const productSalesMap = new Map();
+  const serviceSalesMap = new Map();
+
+  // Initialize maps with all dates in the range set to 0
+  let currentDate = dayjs(sevenDaysAgoStr);
+  while (currentDate.isSameOrBefore(dayjs(todayStr), 'day')) {
+    const dateKey = currentDate.format('YYYY-MM-DD');
+    productSalesMap.set(dateKey, 0);
+    serviceSalesMap.set(dateKey, 0);
+    currentDate = currentDate.add(1, 'day');
+  }
+
+  dailySalesByTypeDataForWeekly.forEach((item) => {
+    if (item.type === 'product') {
+      productSalesMap.set(item.date, item.total);
+    } else if (item.type === 'service') {
+      serviceSalesMap.set(item.date, item.total);
+    }
+  });
+
+  weeklyProductSales.value = Array.from(productSalesMap.entries()).map(
+    ([date, total]) => ({ date, total }),
+  );
+  weeklyServiceSales.value = Array.from(serviceSalesMap.entries()).map(
+    ([date, total]) => ({ date, total }),
+  );
+
   topServices.value = topServicesData.slice(0, 5); // Top 5 services
-  barberPayouts.value = reportStore.stats;
+  barberPayouts.value = barberPaymentsData; // Assigned new data
 }
 
 onMounted(fetchData);

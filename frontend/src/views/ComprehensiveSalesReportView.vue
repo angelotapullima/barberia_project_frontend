@@ -276,7 +276,7 @@ function exportToCsv() {
 onMounted(() => {
   setDefaultDates();
   // Fetch data for filters
-  barberStore.fetchBarbers();
+  barberStore.getAllBarbers();
   serviceStore.fetchServices();
   // Fetch initial report data
   fetchComprehensiveSalesData();

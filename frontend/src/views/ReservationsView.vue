@@ -490,7 +490,7 @@ async function handleDelete(id) {
 
 onMounted(() => {
   reservationStore.fetchReservations();
-  barberStore.fetchBarbers();
+  barberStore.getAllBarbers();
   stationStore.fetchStations();
 });
 </script>

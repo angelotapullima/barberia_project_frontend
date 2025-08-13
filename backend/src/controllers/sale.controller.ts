@@ -120,45 +120,7 @@ class SaleController {
     }
   }
 
-  /*
-  // Temporarily commented out: Corresponding method in SaleService has been removed/commented.
-  async getBarberRanking(req: Request, res: Response): Promise<void> {
-    const { startDate, endDate } = req.query;
-
-    if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
-      return;
-    }
-
-    try {
-      // const ranking = await saleService.getBarberSalesRanking(startDate as string, endDate as string);
-      res.status(501).json({ error: 'Not Implemented: Barber ranking is temporarily disabled.' }); // 501 Not Implemented
-    } catch (error) {
-      console.error('Error getting barber ranking:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-  */
-
-  /*
-  // Temporarily commented out: Corresponding method in SaleService has been removed/commented.
-  async getTotalBarberPayments(req: Request, res: Response): Promise<void> {
-    const { startDate, endDate } = req.query;
-
-    if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Missing startDate or endDate query parameters' });
-      return;
-    }
-
-    try {
-      // const totalPayments = await saleService.getTotalPaymentsToBarbers(startDate as string, endDate as string);
-      res.status(501).json({ error: 'Not Implemented: Total barber payments calculation is temporarily disabled.' }); // 501 Not Implemented
-    } catch (error) {
-      console.error('Error getting total barber payments:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-  */
+  
 
   async getSalesSummaryByService(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
@@ -203,6 +165,28 @@ class SaleController {
       res.json(summary);
     } catch (error) {
       console.error('Error getting sales summary by payment method:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDailySalesByTypeReport(req: Request, res: Response): Promise<void> {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      res
+        .status(400)
+        .json({ error: 'Missing startDate or endDate query parameters' });
+      return;
+    }
+
+    try {
+      const sales = await saleService.getDailySalesByType(
+        startDate as string,
+        endDate as string,
+      );
+      res.json(sales);
+    } catch (error) {
+      console.error('Error getting daily sales by type report:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

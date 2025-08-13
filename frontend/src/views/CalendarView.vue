@@ -442,7 +442,7 @@ watch(currentWeekStart, fetchReservationsForCurrentWeek);
 watch(selectedBarberFilter, fetchReservationsForCurrentWeek); // Watch barber filter to refetch
 
 onMounted(async () => {
-  await barberStore.fetchBarbers();
+  await barberStore.getAllBarbers();
   assignBarberColors(); // Call after barbers are fetched
   await serviceStore.fetchServices();
   await stationStore.fetchStations();

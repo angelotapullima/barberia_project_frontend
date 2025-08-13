@@ -569,6 +569,11 @@ const items = [
         label: 'Ventas por Tipo',
         icon: 'credit-card',
       },
+      {
+        to: '/reports/barber-payments-detailed',
+        label: 'Pago a Barberos',
+        icon: 'credit-card',
+      },
     ],
   },
   { to: '/barbers', label: 'Barberos', icon: 'users' },

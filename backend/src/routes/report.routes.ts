@@ -18,4 +18,8 @@ router.get('/station-usage', reportController.getStationUsageReport);
 router.get('/customer-frequency', reportController.getCustomerFrequencyReport);
 router.get('/peak-hours', reportController.getPeakHoursReport);
 
+router.get('/barber-payments', reportController.getBarberPaymentsReport);
+
+router.get('/detailed-barber-service-sales', reportController.getDetailedBarberServiceSales);
+
 export default router;

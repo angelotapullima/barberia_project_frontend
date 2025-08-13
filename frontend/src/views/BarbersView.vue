@@ -204,7 +204,7 @@ function confirmDelete(id) {
 }
 
 onMounted(() => {
-  barberStore.fetchBarbers();
+  barberStore.getAllBarbers();
   stationStore.fetchStations();
 });
 </script>

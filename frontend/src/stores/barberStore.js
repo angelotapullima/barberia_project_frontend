@@ -11,15 +11,18 @@ export const useBarberStore = defineStore('barbers', {
   }),
 
   actions: {
-    async fetchBarbers() {
+    async getAllBarbers() {
+      // Renamed from fetchBarbers
       this.isLoading = true;
       this.error = null;
       try {
         const response = await axios.get(`${API_URL}/barbers`);
         this.barbers = response.data;
+        return response.data; // Return the data
       } catch (error) {
         this.error = 'Error al cargar los barberos.';
         console.error(error);
+        return []; // Return empty array on error
       } finally {
         this.isLoading = false;
       }
@@ -29,7 +32,7 @@ export const useBarberStore = defineStore('barbers', {
       try {
         const response = await axios.post(`${API_URL}/barbers`, barber);
         this.barbers.push(response.data);
-        await this.fetchBarbers(); // Refresh list
+        await this.getAllBarbers(); // Refresh list - updated call
       } catch (error) {
         this.error = 'Error al añadir el barbero.';
         console.error(error);
@@ -39,7 +42,7 @@ export const useBarberStore = defineStore('barbers', {
     async updateBarber(barber) {
       try {
         await axios.put(`${API_URL}/barbers/${barber.id}`, barber);
-        await this.fetchBarbers(); // Refresh list
+        await this.getAllBarbers(); // Refresh list - updated call
       } catch (error) {
         this.error = 'Error al actualizar el barbero.';
         console.error(error);
@@ -49,7 +52,7 @@ export const useBarberStore = defineStore('barbers', {
     async deleteBarber(id) {
       try {
         await axios.delete(`${API_URL}/barbers/${id}`);
-        await this.fetchBarbers(); // Refresh list
+        await this.getAllBarbers(); // Refresh list - updated call
       } catch (error) {
         this.error = 'Error al eliminar el barbero.';
         console.error(error);

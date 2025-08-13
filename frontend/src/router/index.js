@@ -20,6 +20,7 @@ import CustomerFrequencyReportView from '@/views/CustomerFrequencyReportView.vue
 import PeakHoursReportView from '@/views/PeakHoursReportView.vue';
 import ComprehensiveSalesReportView from '@/views/ComprehensiveSalesReportView.vue';
 import ServicesProductsSalesReportView from '@/views/ServicesProductsSalesReportView.vue';
+import BarberPaymentsReportView from '@/views/BarberPaymentsReportView.vue'; // New import
 
 const routes = [
   { path: '/', component: DashboardView, name: 'Dashboard' },
@@ -65,6 +66,11 @@ const routes = [
     path: '/reports/sales/by-type',
     component: ServicesProductsSalesReportView,
     name: 'ServicesProductsSalesReport',
+  },
+  {
+    path: '/reports/barber-payments-detailed', // New route
+    component: BarberPaymentsReportView,
+    name: 'BarberPaymentsReport',
   },
 ];
 

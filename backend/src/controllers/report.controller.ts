@@ -158,6 +158,47 @@ class ReportController {
       res.status(500).json({ error: 'Failed to fetch peak hours report.' });
     }
   }
+
+  public async getBarberPaymentsReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate } = req.query;
+      if (!startDate || !endDate) {
+        res.status(400).json({ error: 'Start date and end date are required.' });
+        return;
+      }
+      const payments = await reportService.getBarberPayments(
+        startDate as string,
+        endDate as string
+      );
+      res.json(payments);
+    } catch (error) {
+      console.error('Error getting barber payments report:', error);
+      res.status(500).json({ error: 'Failed to fetch barber payments report.' });
+    }
+  }
+
+  public async getDetailedBarberServiceSales(req: Request, res: Response): Promise<void> {
+    try {
+      const { barberId, startDate, endDate } = req.query;
+      const filters: { barberId?: number; startDate?: string; endDate?: string } = {};
+
+      if (barberId) {
+        filters.barberId = Number(barberId);
+      }
+      if (startDate) {
+        filters.startDate = startDate as string;
+      }
+      if (endDate) {
+        filters.endDate = endDate as string;
+      }
+
+      const sales = await reportService.getDetailedBarberServiceSales(filters);
+      res.json(sales);
+    } catch (error) {
+      console.error('Error getting detailed barber service sales:', error);
+      res.status(500).json({ error: 'Failed to fetch detailed barber service sales.' });
+    }
+  }
 }
 
 export const reportController = new ReportController();

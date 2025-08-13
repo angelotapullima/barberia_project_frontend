@@ -123,35 +123,50 @@ async function createSchema(db: Database) {
 export async function seedDatabase(db: Database) {
   console.log('Insertando datos de prueba...');
 
+  // Clear existing data for sales and reservations to ensure a clean slate for new seeding
+  await db.exec(`
+    DELETE FROM sale_items;
+    DELETE FROM sales;
+    DELETE FROM reservations;
+    DELETE FROM barbers;
+    DELETE FROM services;
+    DELETE FROM stations;
+    DELETE FROM users;
+    DELETE FROM settings;
+  `);
+
   // Seed Admin User
   const adminPassword = await bcrypt.hash('admin123', 10);
   await db.run(
-    'INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+    'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
     ['Admin User', 'admin@example.com', adminPassword, 'administrador'],
   );
 
   // Seed default settings
   await db.run(
-    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)',
     ['base_salary_threshold', '2500'],
   );
   await db.run(
-    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)',
     ['commission_percentage', '0.5'],
   );
   await db.run(
-    'INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)',
+    'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)',
     ['default_base_salary', '1250'],
   );
 
+  // Seed Stations
   await db.run('INSERT INTO stations (name) VALUES (?), (?), (?)', [
     'Estación Central',
     'Estación VIP',
     'Estación Rápida',
   ]);
-  const stations = await db.all('SELECT id FROM stations');
+  const stations = await db.all('SELECT id, name FROM stations');
+
+  // Seed Barbers
   await db.run(
-    'INSERT INTO barbers (name, email, phone, specialty, photo_url, station_id) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO barbers (name, email, phone, specialty, photo_url, station_id) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
     [
       'Juan Pérez',
       'juan.perez@example.com',
@@ -171,227 +186,158 @@ export async function seedDatabase(db: Database) {
       'Coloración',
       'https://example.com/carlos.jpg',
       stations[2].id,
+      'María López',
+      'maria.lopez@example.com',
+      '+51999888777',
+      'Peinados',
+      'https://example.com/maria.jpg', // Added photo_url
+      stations[0].id,
     ],
   );
-  const barbers = await db.all('SELECT id FROM barbers');
+  const barbers = await db.all('SELECT id, name FROM barbers');
+
+  // Seed Services and Products
   await db.run(
-    'INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)', // Added one more set of placeholders
     [
-      'Corte de Cabello',
-      30,
-      30,
-      'service',
-      0,
-      0,
-      'Afeitado Clásico',
-      25,
-      45,
-      'service',
-      0,
-      0,
-      'Corte y Barba',
-      50,
-      60,
-      'service',
-      0,
-      0,
-      'Cera para Peinar',
-      15,
-      0,
-      'product',
-      100,
-      10,
-      'Aceite para Barba',
-      20,
-      0,
-      'product',
-      50,
-      5,
-      'Shampoo Especializado',
-      35,
-      0,
-      'product',
-      20,
-      25, // Low stock
-      'Acondicionador Premium',
-      30,
-      0,
-      'product',
-      15,
-      10,
-      'Gel Fijador Fuerte',
-      12,
-      0,
-      'product',
-      5,
-      10, // Low stock
-      'Navajas Desechables (pack)',
-      8,
-      0,
-      'product',
-      30,
-      5,
+      'Corte de Cabello', 30, 30, 'service', 0, 0,
+      'Afeitado Clásico', 25, 45, 'service', 0, 0,
+      'Corte y Barba', 50, 60, 'service', 0, 0,
+      'Lavado y Secado', 15, 20, 'service', 0, 0,
+      'Tinte de Cabello', 80, 90, 'service', 0, 0,
+      'Masaje Capilar', 20, 15, 'service', 0, 0,
+      'Cera para Peinar', 15, 0, 'product', 100, 10,
+      'Aceite para Barba', 20, 0, 'product', 50, 5,
+      'Shampoo Especializado', 35, 0, 'product', 20, 25,
+      'Acondicionador Premium', 30, 0, 'product', 15, 10,
+      'Gel Fijador Fuerte', 12, 0, 'product', 5, 10,
+      'Navajas Desechables (pack)', 8, 0, 'product', 30, 5,
     ],
   );
-  const services = await db.all(
-    'SELECT id, name, price, type, duration_minutes FROM services',
-  );
+  const services = await db.all('SELECT id, name, price, type, duration_minutes FROM services WHERE type = \'service\'');
+  const products = await db.all('SELECT id, name, price, type, stock_quantity FROM services WHERE type = \'product\'');
+
   const customers = [
-    'Pedro Pascal',
-    'Ana de Armas',
-    'Ricardo Arjona',
-    'Shakira Mebarak',
-    'Lionel Messi',
-    'Karol G',
-    'Bad Bunny',
+    'Pedro Pascal', 'Ana de Armas', 'Ricardo Arjona', 'Shakira Mebarak',
+    'Lionel Messi', 'Karol G', 'Bad Bunny', 'Sofia Vergara', 'Diego Luna',
+    'Salma Hayek', 'Gael Garcia Bernal', 'Eugenio Derbez',
   ];
   const paymentMethods = ['cash', 'card', 'yape', 'plin'];
+
+  // Generate data for the last 3 months
   const today = new Date();
-  for (let i = 45; i >= 0; i--) {
+  const numDays = 90; // Generate data for the last 90 days
+
+  for (let i = numDays; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     const dateString = date.toISOString().split('T')[0];
-    const salesToday = Math.floor(Math.random() * 8) + 2;
-    for (let s = 0; s < salesToday; s++) {
-      const barber = barbers[s % barbers.length];
-      const station = stations[s % stations.length];
-      const customer = customers[s % customers.length];
-      const paymentMethod = paymentMethods[s % paymentMethods.length];
-      const numServices = Math.random() > 0.7 ? 2 : 1;
+
+    const numTransactions = Math.floor(Math.random() * 10) + 3; // 3 to 12 transactions per day
+
+    for (let t = 0; t < numTransactions; t++) {
+      const randomBarber = barbers[Math.floor(Math.random() * barbers.length)];
+      const randomStation = stations[Math.floor(Math.random() * stations.length)];
+      const randomCustomer = customers[Math.floor(Math.random() * customers.length)];
+      const randomPaymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
       let totalAmount = 0;
-      let itemsSold = [];
-      for (let j = 0; j < numServices; j++) {
-        const service = services[(s + j) % services.length];
-        itemsSold.push(service);
-        totalAmount += service.price;
+      const saleItemsToInsert = [];
+      let reservationId = null;
+
+      // Decide if this transaction includes services
+      const includesServices = Math.random() > 0.3; // 70% chance to include services
+
+      if (includesServices) {
+        // Create a reservation first
+        const randomService = services[Math.floor(Math.random() * services.length)];
+        const startTime = new Date(date);
+        startTime.setHours(Math.floor(Math.random() * 8) + 9, Math.floor(Math.random() * 60), 0, 0); // Between 9 AM and 5 PM
+        const endTime = new Date(startTime.getTime() + randomService.duration_minutes * 60 * 1000);
+
+        const reservationResult = await db.run(
+          `INSERT INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+          [
+            randomBarber.id,
+            randomStation.id,
+            randomCustomer,
+            `+51${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}`,
+            `${randomCustomer.toLowerCase().replace(/\s/g, '.')}@example.com`,
+            startTime.toISOString(),
+            endTime.toISOString(),
+            randomService.id,
+            'completed', // Mark as completed for sales
+            'Generado por script de prueba',
+          ],
+        );
+        reservationId = reservationResult.lastID;
+
+        // Add service to sale items
+        saleItemsToInsert.push({
+          id: randomService.id, // Use service ID as item_id
+          item_type: 'service',
+          item_name: randomService.name,
+          price: randomService.price,
+          price_at_sale: randomService.price,
+          quantity: 1,
+        });
+        totalAmount += randomService.price;
       }
-      const saleResult = await db.run(
-        'INSERT INTO sales (sale_date, total_amount, customer_name) VALUES (?, ?, ?)',
-        [dateString, totalAmount, customer],
-      ); // Removed barber_id and station_id
-      const saleId = saleResult.lastID;
-      for (const item of itemsSold) {
-        await db.run(
-          'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [saleId, item.id, item.type, item.name, item.price, item.price, 1],
-        ); // Assuming quantity 1 for now
+
+      // Decide if this transaction includes products
+      const includesProducts = Math.random() > 0.5 || !includesServices; // 50% chance, or if no services
+      if (includesProducts) {
+        const numProducts = Math.floor(Math.random() * 3) + 1; // 1 to 3 products
+        for (let p = 0; p < numProducts; p++) {
+          const randomProduct = products[Math.floor(Math.random() * products.length)];
+          const quantity = Math.floor(Math.random() * 2) + 1; // 1 or 2 quantity
+          saleItemsToInsert.push({
+            id: randomProduct.id, // Use product ID as item_id
+            item_type: 'product',
+            item_name: randomProduct.name,
+            price: randomProduct.price,
+            price_at_sale: randomProduct.price,
+            quantity: quantity,
+          });
+          totalAmount += randomProduct.price * quantity;
+        }
       }
-    }
-  }
 
-  // Add specific test reservations for today
-  const todayForReservations = new Date();
-  const todayString = todayForReservations.toISOString().split('T')[0];
+      // Only create sale if there are items to sell
+      if (saleItemsToInsert.length > 0) {
+        const saleResult = await db.run(
+          `INSERT INTO sales (sale_date, total_amount, customer_name, payment_method, reservation_id)
+           VALUES (?, ?, ?, ?, ?)`, 
+          [
+            dateString,
+            totalAmount,
+            randomCustomer,
+            randomPaymentMethod,
+            reservationId, // Link to reservation if exists, otherwise null
+          ],
+        );
+        const saleId = saleResult.lastID;
 
-  // Test Case 1: Pending Reservation for today
-  const pendingStartTime = new Date(
-    todayForReservations.setHours(10, 0, 0, 0),
-  ).toISOString();
-  const pendingEndTime = new Date(
-    todayForReservations.setHours(10, 30, 0, 0),
-  ).toISOString();
-  await db.run(
-    `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      barbers[0].id, // Juan Pérez
-      stations[0].id,
-      'Cliente Pendiente Hoy',
-      '111222333',
-      'pendiente.hoy@example.com',
-      pendingStartTime,
-      pendingEndTime,
-      services.find((s) => s.name === 'Corte de Cabello')!.id,
-      'pending',
-      'Reserva pendiente para depuración.',
-    ],
-  );
-
-  // Test Case 2: Completed Reservation for today
-  const completedStartTime = new Date(
-    todayForReservations.setHours(11, 0, 0, 0),
-  ).toISOString();
-  const completedEndTime = new Date(
-    todayForReservations.setHours(11, 45, 0, 0),
-  ).toISOString();
-  const completedReservation = await db.run(
-    `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      barbers[1].id, // Luis Gómez
-      stations[1].id,
-      'Cliente Pagado Hoy',
-      '444555666',
-      'pagado.hoy@example.com',
-      completedStartTime,
-      completedEndTime,
-      services.find((s) => s.name === 'Afeitado Clásico')!.id,
-      'completed',
-      'Reserva completada para depuración.',
-    ],
-  );
-  const reservationId = completedReservation.lastID;
-
-  if (reservationId) {
-    const sale = await db.run(
-      `INSERT OR IGNORE INTO sales (sale_date, total_amount, customer_name, payment_method, reservation_id)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        todayString,
-        60.0, // 25 (service) + 15 (product) + 20 (product)
-        'Cliente Pagado Hoy',
-        'credit_card',
-        reservationId,
-      ],
-    );
-    const saleId = sale.lastID;
-
-    if (saleId) {
-      const afeitadoClasico = services.find(
-        (s) => s.name === 'Afeitado Clásico',
-      )!;
-      const ceraPeinar = services.find((s) => s.name === 'Cera para Peinar')!;
-      const aceiteBarba = services.find((s) => s.name === 'Aceite para Barba')!;
-
-      await db.run(
-        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          saleId,
-          afeitadoClasico.id,
-          'service',
-          afeitadoClasico.name,
-          afeitadoClasico.price,
-          afeitadoClasico.price,
-          1,
-        ],
-      );
-      await db.run(
-        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          saleId,
-          ceraPeinar.id,
-          'product',
-          ceraPeinar.name,
-          ceraPeinar.price,
-          ceraPeinar.price,
-          1,
-        ],
-      );
-      await db.run(
-        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          saleId,
-          aceiteBarba.id,
-          'product',
-          aceiteBarba.name,
-          aceiteBarba.price,
-          aceiteBarba.price,
-          1,
-        ],
-      );
+        if (saleId) {
+          const stmt = await db.prepare(
+            `INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+          );
+          for (const item of saleItemsToInsert) {
+            await stmt.run(
+              saleId,
+              item.item_type === 'service' ? item.id : null, // service_id only for services
+              item.item_type,
+              item.item_name,
+              item.price,
+              item.price_at_sale,
+              item.quantity,
+            );
+          }
+          await stmt.finalize();
+        }
+      }
     }
   }
 

@@ -379,7 +379,7 @@ onMounted(async () => {
   // Ensure stores are populated when modal opens
   await productStore.fetchProducts();
   await serviceStore.fetchServices();
-  await barberStore.fetchBarbers(); // Ensure barbers are fetched for display
+  await barberStore.getAllBarbers(); // Ensure barbers are fetched for display
 });
 
 // Styles for the modal (copied from CalendarView for consistency)

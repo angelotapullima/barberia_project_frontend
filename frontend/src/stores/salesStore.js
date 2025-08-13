@@ -132,42 +132,25 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
-    async getBarberSalesRanking(startDate, endDate) {
+    async getDailySalesByType(startDate, endDate) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/sales/ranking`, {
+        const response = await axios.get(`${API_URL}/sales/daily-by-type`, {
           params: { startDate, endDate },
         });
         return response.data;
       } catch (error) {
         this.error =
           error.response?.data?.error ||
-          'Error al obtener el ranking de barberos.';
+          'Error al obtener las ventas diarias por tipo.';
         console.error(error);
         return [];
       } finally {
         this.isLoading = false;
       }
     },
-    async getTotalPaymentsToBarbers(startDate, endDate) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(`${API_URL}/sales/total-payments`, {
-          params: { startDate, endDate },
-        });
-        return response.data.totalPayments;
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al obtener el total de pagos a barberos.';
-        console.error(error);
-        return 0;
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    
     async getSalesSummaryByService(startDate, endDate) {
       this.isLoading = true;
       this.error = null;
