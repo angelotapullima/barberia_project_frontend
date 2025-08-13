@@ -66,24 +66,20 @@ async function createSchema(db: Database) {
     CREATE TABLE IF NOT EXISTS sales (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       reservation_id INTEGER UNSIGNED,
-      barber_id INTEGER NOT NULL,
-      station_id INTEGER NOT NULL,
       total_amount REAL NOT NULL,
       customer_name TEXT,
       payment_method TEXT DEFAULT 'cash',
       sale_date TEXT DEFAULT CURRENT_TIMESTAMP,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE SET NULL,
-      FOREIGN KEY (barber_id) REFERENCES barbers (id),
-      FOREIGN KEY (station_id) REFERENCES stations (id)
+      FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE SET NULL
     );
     CREATE TABLE IF NOT EXISTS sale_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sale_id INTEGER UNSIGNED NOT NULL,
       service_id INTEGER UNSIGNED,
-      item_type TEXT NOT NULL,
-      item_name TEXT NOT NULL,
+      item_type TEXT,
+      item_name TEXT,
       price REAL NOT NULL,
       price_at_sale REAL NOT NULL,
       quantity INTEGER NOT NULL,
@@ -183,7 +179,7 @@ export async function seedDatabase(db: Database) {
         itemsSold.push(service);
         totalAmount += service.price;
       }
-      const saleResult = await db.run('INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name) VALUES (?, ?, ?, ?, ?)', [dateString, barber.id, station.id, totalAmount, customer]);
+      const saleResult = await db.run('INSERT INTO sales (sale_date, total_amount, customer_name) VALUES (?, ?, ?)', [dateString, totalAmount, customer]); // Removed barber_id and station_id
       const saleId = saleResult.lastID;
       for (const item of itemsSold) {
         await db.run('INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)', [saleId, item.id, item.type, item.name, item.price, item.price, 1]); // Assuming quantity 1 for now
@@ -191,43 +187,84 @@ export async function seedDatabase(db: Database) {
     }
   }
 
-  // Generar Reservas (re-insertado)
-  for (let i = 45; i >= 0; i--) {
-    const date = new Date(today); // Create a new Date object for each day
-    date.setDate(today.getDate() - i);
-    const reservationsToday = Math.floor(Math.random() * 5) + 1; // Al menos 1 reserva por día
-    for (let r = 0; r < reservationsToday; r++) {
-      const hour = 9 + Math.floor(Math.random() * 10); // Horas entre 9 AM y 6 PM
-      const minute = Math.random() > 0.5 ? 30 : 0;
+  // Add specific test reservations for today
+  const todayForReservations = new Date();
+  const todayString = todayForReservations.toISOString().split('T')[0];
 
-      // Create a new Date object for startTime based on the current day's date
-      const startTime = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        hour,
-        minute,
-        0,
-        0
-      );
-      // Select a random service and use its duration
-      const randomService = services[Math.floor(Math.random() * services.length)];
-      const endTime = new Date(startTime.getTime() + randomService.duration_minutes * 60000);
+  // Test Case 1: Pending Reservation for today
+  const pendingStartTime = new Date(todayForReservations.setHours(10, 0, 0, 0)).toISOString();
+  const pendingEndTime = new Date(todayForReservations.setHours(10, 30, 0, 0)).toISOString();
+  await db.run(
+    `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      barbers[0].id, // Juan Pérez
+      stations[0].id,
+      'Cliente Pendiente Hoy',
+      '111222333',
+      'pendiente.hoy@example.com',
+      pendingStartTime,
+      pendingEndTime,
+      services.find(s => s.name === 'Corte de Cabello')!.id,
+      'pending',
+      'Reserva pendiente para depuración.'
+    ]
+  );
+
+  // Test Case 2: Completed Reservation for today
+  const completedStartTime = new Date(todayForReservations.setHours(11, 0, 0, 0)).toISOString();
+  const completedEndTime = new Date(todayForReservations.setHours(11, 45, 0, 0)).toISOString();
+  const completedReservation = await db.run(
+    `INSERT OR IGNORE INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      barbers[1].id, // Luis Gómez
+      stations[1].id,
+      'Cliente Pagado Hoy',
+      '444555666',
+      'pagado.hoy@example.com',
+      completedStartTime,
+      completedEndTime,
+      services.find(s => s.name === 'Afeitado Clásico')!.id,
+      'completed',
+      'Reserva completada para depuración.'
+    ]
+  );
+  const reservationId = completedReservation.lastID;
+
+  if (reservationId) {
+    const sale = await db.run(
+      `INSERT OR IGNORE INTO sales (sale_date, total_amount, customer_name, payment_method, reservation_id)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        todayString,
+        60.0, // 25 (service) + 15 (product) + 20 (product)
+        'Cliente Pagado Hoy',
+        'credit_card',
+        reservationId
+      ]
+    );
+    const saleId = sale.lastID;
+
+    if (saleId) {
+      const afeitadoClasico = services.find(s => s.name === 'Afeitado Clásico')!;
+      const ceraPeinar = services.find(s => s.name === 'Cera para Peinar')!;
+      const aceiteBarba = services.find(s => s.name === 'Aceite para Barba')!;
 
       await db.run(
-        'INSERT INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          barbers[r % barbers.length].id,
-          stations[r % stations.length].id, // Added station_id
-          customers[r % customers.length], // client_name
-          `+519${Math.floor(Math.random() * 900000000) + 100000000}`, // client_phone
-          `${customers[r % customers.length].toLowerCase().replace(/\s/g, '')}@example.com`, // client_email
-          startTime.toISOString(),
-          endTime.toISOString(),
-          randomService.id, // service_id
-          'completed',
-          'Nota de prueba para la reserva.', // notes
-        ]
+        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [saleId, afeitadoClasico.id, 'service', afeitadoClasico.name, afeitadoClasico.price, afeitadoClasico.price, 1]
+      );
+      await db.run(
+        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [saleId, ceraPeinar.id, 'product', ceraPeinar.name, ceraPeinar.price, ceraPeinar.price, 1]
+      );
+      await db.run(
+        `INSERT OR IGNORE INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [saleId, aceiteBarba.id, 'product', aceiteBarba.name, aceiteBarba.price, aceiteBarba.price, 1]
       );
     }
   }

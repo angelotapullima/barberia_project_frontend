@@ -53,7 +53,7 @@
           <div
             v-for="hour in hours"
             :key="hour"
-            class="h-16 flex items-center justify-center text-xs text-gray-500 border-b border-gray-200 last:border-b-0"
+            class="h-20 flex items-center justify-center text-xs text-gray-500 border-b border-gray-200 last:border-b-0"
           >
             {{ hour }}
           </div>
@@ -69,7 +69,7 @@
           <div
             v-for="hour in hours"
             :key="hour"
-            class="h-16 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-blue-50"
+            class="h-20 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-blue-50"
             @click="
               openAddAppointmentModalWithTime(
                 selectedBarberFilter === 'all' || selectedBarberFilter === 'scheduled'
@@ -115,6 +115,12 @@
       @close="isSaleRegistrationModalOpen = false"
       @saleProcessed="fetchReservationsForCurrentWeek"
     />
+
+    <SaleDetailsModal
+      :show="isSaleDetailsModalOpen"
+      :reservationId="selectedReservationId"
+      @close="isSaleDetailsModalOpen = false"
+    />
   </div>
 </template>
 
@@ -127,6 +133,7 @@ import { useStationStore } from '../stores/stationStore';
 import { useProductStore } from '../stores/productStore';
 import SaleRegistrationModal from '../components/SaleRegistrationModal.vue';
 import ReservationFormModal from '../components/ReservationFormModal.vue';
+import SaleDetailsModal from '../components/SaleDetailsModal.vue';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
@@ -194,6 +201,8 @@ const selectedBarberFilter = ref('all'); // Keep this
 const isAddAppointmentModalOpen = ref(false);
 const isSaleRegistrationModalOpen = ref(false);
 const reservationToSell = ref(null);
+const isSaleDetailsModalOpen = ref(false);
+const selectedReservationId = ref(null);
 
 const selectedBarberId = ref(null);
 const selectedDate = ref(null);
@@ -340,7 +349,7 @@ const getAppointmentStyle = (reservation) => {
   const startHour = start.hour();
   const startMinute = start.minute();
 
-  const pixelsPerHalfHour = 64; // h-16 in Tailwind is 64px
+  const pixelsPerHalfHour = 80; // Increased for larger items (h-20 equivalent)
   const topOffsetMinutes = (startHour - 8) * 60 + startMinute;
   const top = (topOffsetMinutes / 30) * pixelsPerHalfHour;
 
@@ -349,13 +358,25 @@ const getAppointmentStyle = (reservation) => {
 
   const barberColor = barberColors.value[reservation.barber_id] || { bgColor: '#4299e1', borderColor: '#2b6cb0' }; // Default if color not found
 
+  let statusStyle = {};
+  if (reservation.status === 'completed') {
+    statusStyle = {
+      backgroundColor: barberColor.bgColor.replace('500', '700'), // Darker shade for paid
+      borderColor: barberColor.borderColor.replace('700', '900'), // Even darker border
+    };
+  } else {
+    statusStyle = {
+      backgroundColor: barberColor.bgColor,
+      borderColor: barberColor.borderColor,
+    };
+  }
+
   return {
     top: `${top}px`,
     height: `${height}px`,
-    left: reservation.calculatedLeft, // Use calculated left
-    width: reservation.calculatedWidth, // Use calculated width
-    backgroundColor: barberColor.bgColor,
-    borderColor: barberColor.borderColor,
+    left: reservation.calculatedLeft,
+    width: reservation.calculatedWidth,
+    ...statusStyle, // Apply status-based styles
   };
 };
 
@@ -383,8 +404,13 @@ const openAddAppointmentModal = () => {
 };
 
 const viewAppointmentDetails = (reservation) => {
-  reservationToSell.value = reservation;
-  isSaleRegistrationModalOpen.value = true;
+  if (reservation.status === 'completed') {
+    selectedReservationId.value = reservation.id;
+    isSaleDetailsModalOpen.value = true;
+  } else {
+    reservationToSell.value = reservation;
+    isSaleRegistrationModalOpen.value = true;
+  }
 };
 
 const fetchReservationsForCurrentWeek = async () => {
@@ -423,7 +449,7 @@ onMounted(async () => {
 }
 
 .schedule-day {
-  min-height: 1856px; /* Adjusted for 8 AM to 10 PM (14.5 hours * 64px/half-hour = 1856px) */
+  min-height: 2320px; /* Adjusted for 8 AM to 10 PM (14.5 hours * 80px/half-hour = 2320px) */
   position: relative;
 }
 

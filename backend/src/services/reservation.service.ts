@@ -2,10 +2,28 @@ import setupDatabase from '../database';
 import { Database } from 'sqlite';
 import { saleService } from './sale.service'; // Import saleService
 
+interface SaleItem {
+  id?: number;
+  sale_id?: number;
+  item_id: number;
+  price: number;
+  price_at_sale: number;
+  item_name?: string;
+  type?: string;
+  quantity: number;
+}
+
+interface Sale {
+  id: number;
+  total_amount: number;
+  payment_method: string;
+  sale_items: SaleItem[];
+}
+
 interface Reservation {
   id?: number;
   barber_id: number;
-  station_id: number; // Added station_id
+  station_id: number;
   client_name: string;
   client_phone?: string;
   client_email?: string;
@@ -16,7 +34,8 @@ interface Reservation {
   notes?: string;
   created_at?: string;
   barber_name?: string;
-  service_name?: string; // To display service name in frontend
+  service_name?: string;
+  sale?: Sale;
 }
 
 export class ReservationService {
@@ -38,10 +57,16 @@ export class ReservationService {
           r.id, r.barber_id, b.name as barber_name,
           r.client_name, r.client_phone, r.client_email,
           r.start_time, r.end_time, r.service_id, s.name as service_name,
-          r.status, r.notes, r.created_at
+          r.status, r.notes, r.created_at,
+          sale.id as sale_id, sale.total_amount as sale_total,
+          sale.payment_method as sale_payment_method,
+          si.id as sale_item_id, si.item_name as sale_item_name,
+          si.price_at_sale as sale_item_price, si.quantity as sale_item_quantity
       FROM reservations r
       JOIN barbers b ON r.barber_id = b.id
       JOIN services s ON r.service_id = s.id
+      LEFT JOIN sales sale ON r.id = sale.reservation_id
+      LEFT JOIN sale_items si ON sale.id = si.sale_id
     `;
     const params: any[] = [];
 
@@ -52,8 +77,51 @@ export class ReservationService {
 
     query += ' ORDER BY r.start_time DESC';
 
-    const reservations = await this.db.all(query, params);
-    return reservations;
+    const rows = await this.db.all(query, params);
+    const reservationsMap = new Map<number, Reservation>();
+
+    for (const row of rows) {
+      if (!reservationsMap.has(row.id)) {
+        reservationsMap.set(row.id, {
+          id: row.id,
+          barber_id: row.barber_id,
+          barber_name: row.barber_name,
+          client_name: row.client_name,
+          client_phone: row.client_phone,
+          client_email: row.client_email,
+          start_time: row.start_time,
+          end_time: row.end_time,
+          service_id: row.service_id,
+          service_name: row.service_name,
+          status: row.status,
+          notes: row.notes,
+          created_at: row.created_at,
+          station_id: row.station_id,
+          sale: row.sale_id ? {
+            id: row.sale_id,
+            total_amount: row.sale_total,
+            payment_method: row.sale_payment_method,
+            sale_items: [],
+          } : undefined,
+        });
+      }
+
+      if (row.sale_id) {
+        const reservation = reservationsMap.get(row.id)!;
+        if (reservation.sale && row.sale_item_id) {
+          reservation.sale.sale_items.push({
+            id: row.sale_item_id,
+            item_id: row.sale_item_id, // Add this
+            item_name: row.sale_item_name,
+            price: row.sale_item_price,
+            price_at_sale: row.sale_item_price, // Add this
+            quantity: row.sale_item_quantity,
+          });
+        }
+      }
+    }
+
+    return Array.from(reservationsMap.values());
   }
 
   async getReservationById(id: number): Promise<Reservation | undefined> {
@@ -201,16 +269,16 @@ export class ReservationService {
 
       const newSale = await saleService.createSale({
         sale_date: saleDate,
-        barber_id: reservation.barber_id,
-        station_id: reservation.station_id, // Use station_id from reservation
         total_amount: totalAmount,
         customer_name: reservation.client_name,
         payment_method: 'cash', // Default payment method for now
         reservation_id: reservation.id, // Link sale to reservation
-        services: [{
-          service_id: service.id,
+        sale_items: [{
+          item_id: service.id,
+          price: service.price,
+          quantity: 1,
           price_at_sale: service.price,
-          name: service.name,
+          item_name: service.name,
           type: service.type,
         }],
       });

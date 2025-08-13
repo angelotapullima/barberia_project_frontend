@@ -5,24 +5,22 @@ import { draftSaleService } from './draftSale.service'; // New import
 interface SaleItem {
   id?: number;
   sale_id?: number;
-  service_id: number;
+  item_id: number;
+  price: number;
   price_at_sale: number;
-  name?: string; // Added
-  type?: string; // Added
+  item_name?: string; // Change from 'name' to 'item_name'
+  type?: string;
+  quantity: number;
 }
 
 interface Sale {
   id?: number;
   sale_date: string;
-  barber_id: number;
-  station_id: number;
   total_amount: number;
   customer_name?: string;
-  payment_method?: string; // New field
-  reservation_id?: number; // Added optional reservation_id
-  services: SaleItem[];
-  barber_name?: string;
-  station_name?: string;
+  payment_method?: string;
+  reservation_id?: number;
+  sale_items: SaleItem[];
 }
 
 export class SaleService {
@@ -39,17 +37,14 @@ export class SaleService {
   }
 
   private async getSaleItems(saleId: number): Promise<SaleItem[]> {
-    return this.db.all('SELECT id, service_id, price_at_sale FROM sale_items WHERE sale_id = ?', saleId);
+    return this.db.all('SELECT id, service_id, item_type, item_name, price, price_at_sale, quantity FROM sale_items WHERE sale_id = ?', saleId);
   }
 
   async getAllSales(): Promise<Sale[]> {
     const sales = await this.db.all(`
       SELECT 
-          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method, s.reservation_id,
-          b.name as barber_name, st.name as station_name
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.payment_method, s.reservation_id
       FROM sales s
-      JOIN barbers b ON s.barber_id = b.id
-      JOIN stations st ON s.station_id = st.id
       ORDER BY s.sale_date DESC
     `);
 
@@ -62,11 +57,8 @@ export class SaleService {
   async getFilteredSales(filterType: string, filterValue: string | number): Promise<Sale[]> {
     let query = `
       SELECT 
-          s.id, s.sale_date, s.total_amount, s.customer_name, s.barber_id, s.station_id, s.payment_method, s.reservation_id,
-          b.name as barber_name, st.name as station_name
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.payment_method, s.reservation_id
       FROM sales s
-      JOIN barbers b ON s.barber_id = b.id
-      JOIN stations st ON s.station_id = st.id
     `;
     const params: (string | number)[] = [];
 
@@ -83,10 +75,6 @@ export class SaleService {
         query += ` WHERE STRFTIME('%Y-%m', s.sale_date) = STRFTIME('%Y-%m', ?)`;
         params.push(filterValue as string);
         break;
-      case 'barber':
-        query += ` WHERE s.barber_id = ?`;
-        params.push(filterValue as number);
-        break;
       default:
         // No filter, return all sales (handled by getAllSales if no filter is applied)
         break;
@@ -102,32 +90,53 @@ export class SaleService {
   }
 
   async createSale(sale: Sale): Promise<Sale> {
-    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method, reservation_id } = sale;
+    const { sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id } = sale;
 
-    let saleId: number;
-    
+    await this.db.run('BEGIN TRANSACTION');
+
+    try {
       const saleResult = await this.db.run(
-        'INSERT INTO sales (sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id) VALUES (?, ?, ?, ?, ?, ?, ?)', // Added reservation_id column
-        [sale_date, barber_id, station_id, total_amount, customer_name, payment_method, reservation_id || null] // Added reservation_id value
+        'INSERT INTO sales (sale_date, total_amount, customer_name, payment_method, reservation_id) VALUES (?, ?, ?, ?, ?)',
+        [sale_date, total_amount, customer_name || 'Cliente Varios', payment_method, reservation_id || null]
       );
-      saleId = saleResult.lastID!;
+      const saleId = saleResult.lastID!;
 
       const stmt = await this.db.prepare(
         'INSERT INTO sale_items (sale_id, service_id, item_type, item_name, price, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
-      for (const service of services) {
-        // Assuming service.name and service.price are available from the service object
-        // and quantity is 1 for a single service sale
-        await stmt.run(saleId, service.service_id, 'service', service.name, service.price_at_sale, service.price_at_sale, 1);
+      for (const item of sale_items) {
+        const serviceId = item.type === 'service' ? item.id : null;
+        await stmt.run(saleId, serviceId, item.type, item.item_name, item.price_at_sale, item.price_at_sale, item.quantity);
       }
       await stmt.finalize();
 
-      // If this sale originated from a reservation, delete the corresponding draft sale
       if (reservation_id) {
+        await this.db.run('UPDATE reservations SET status = ? WHERE id = ?', ['completed', reservation_id]);
         await draftSaleService.deleteDraftSale(reservation_id);
       }
 
+      await this.db.run('COMMIT');
+
       return { id: saleId, ...sale };
+    } catch (error) {
+      await this.db.run('ROLLBACK');
+      console.error('Error creating sale:', error);
+      throw new Error('Failed to record sale.');
+    }
+  }
+
+  async getSaleByReservationId(reservationId: number): Promise<Sale | undefined> {
+    const sale = await this.db.get(`
+      SELECT 
+          s.id, s.sale_date, s.total_amount, s.customer_name, s.payment_method, s.reservation_id
+      FROM sales s
+      WHERE s.reservation_id = ?
+    `, reservationId);
+
+    if (sale) {
+      sale.sale_items = await this.getSaleItems(sale.id!); // Assuming getSaleItems fetches sale_items
+    }
+    return sale;
   }
 
   async getSalesSummaryByDateRange(startDate: string, endDate: string): Promise<{ date: string; total: number }[]> {
@@ -143,50 +152,25 @@ export class SaleService {
     return this.db.all(query, [startDate, endDate]);
   }
 
+  /*
+  // Temporarily commented out: This method relies on barber_id being in the sales table, which has been removed.
+  // To re-enable, sales data needs to be linked to barbers via reservations or a new mechanism.
   async getBarberSalesRanking(startDate: string, endDate: string): Promise<{ barber_id: number; barber_name: string; total_sales: number }[]> {
-    const query = `
-      SELECT
-          b.id as barber_id,
-          b.name as barber_name,
-          SUM(s.total_amount) as total_sales
-      FROM sales s
-      JOIN barbers b ON s.barber_id = b.id
-      WHERE s.sale_date BETWEEN ? AND ?
-      GROUP BY b.id, b.name
-      ORDER BY total_sales DESC
-    `;
-    return this.db.all(query, [startDate, endDate]);
+    // Placeholder or re-implementation needed
+    console.warn("getBarberSalesRanking is temporarily disabled as sales no longer store barber_id directly.");
+    return [];
   }
+  */
 
+  /*
+  // Temporarily commented out: This method relies on barber_id being in the sales table, which has been removed.
+  // To re-enable, sales data needs to be linked to barbers via reservations or a new mechanism for payment calculation.
   async getTotalPaymentsToBarbers(startDate: string, endDate: string): Promise<number> {
-    const barbers = await this.db.all<{ id: number; name: string; base_salary: number }[]>(
-      'SELECT id, name, base_salary FROM barbers'
-    );
-    const salesByBarber = await this.db.all<{ barber_id: number; total_generated: number }[]>(
-      `
-            SELECT barber_id, SUM(total_amount) as total_generated
-            FROM sales
-            WHERE sale_date BETWEEN ? AND ?
-            GROUP BY barber_id
-        `,
-      startDate,
-      endDate
-    );
-
-    let totalPayments = 0;
-
-    for (const barber of barbers) {
-      const saleInfo = salesByBarber.find((s) => s.barber_id === barber.id);
-      const total_generated = saleInfo ? saleInfo.total_generated : 0;
-      let payment = barber.base_salary;
-
-      if (total_generated > barber.base_salary) {
-        payment = total_generated * 0.5;
-      }
-      totalPayments += payment;
-    }
-    return totalPayments;
+    // Placeholder or re-implementation needed
+    console.warn("getTotalPaymentsToBarbers is temporarily disabled as sales no longer store barber_id directly.");
+    return 0;
   }
+  */
 
   async getSalesSummaryByService(startDate: string, endDate: string): Promise<{ service_name: string; total_sales: number }[]> {
     const query = `

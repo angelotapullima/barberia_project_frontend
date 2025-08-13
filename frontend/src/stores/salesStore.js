@@ -55,6 +55,20 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
+    async fetchSaleByReservationId(reservationId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`${API_URL}/sales/by-reservation/${reservationId}`);
+        return response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al cargar la venta por ID de reserva.';
+        console.error(error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async saveDraftSale(draftSaleData) {
       this.isLoading = true;
       this.error = null;

@@ -70,7 +70,21 @@
           </div>
 
           <!-- Total and Payment -->
-          <div class="flex justify-end items-center mb-4">
+          <div class="flex flex-col md:flex-row justify-end items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
+            
+
+            <!-- Payment Method Selection -->
+            <div class="w-full md:w-1/3">
+              <label for="payment-method-select" class="block text-sm font-medium text-gray-700 mb-1">Método de Pago:</label>
+              <select id="payment-method-select" v-model="paymentMethod" class="form-select w-full">
+                <option value="">Selecciona un método</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Transferencia">Transferencia</option>
+                <!-- Add more payment methods as needed -->
+              </select>
+            </div>
+
             <h3 class="text-xl font-bold mr-4">Total: {{ saleTotal.toFixed(2) }}€</h3>
             <button @click="processSale" class="btn-primary">Pagar Venta</button>
           </div>
@@ -106,7 +120,8 @@ const salesStore = useSalesStore();
 const barberStore = useBarberStore();
 const reservationStore = useReservationStore();
 
-const selectedItemToAdd = ref(null);
+const selectedItemToAdd = ref(null); // Re-adding the missing declaration
+const paymentMethod = ref(''); // Re-adding the missing declaration
 const saleItems = ref([]); // { id, name, price, quantity, type }
 
 // Initialize saleItems with the primary service from reservation if provided
@@ -153,7 +168,7 @@ watch(saleItems, (newSaleItems) => {
     const draftSaleData = {
       reservation_id: props.reservation.id,
       client_name: props.reservation.client_name,
-      barber_id: props.reservation.barber_id,
+      // barber_id: props.reservation.barber_id, // Removed as barber_id is not in sales table
       sale_items: newSaleItems.map(item => ({
         item_id: item.id,
         item_type: item.type,
@@ -212,21 +227,25 @@ const processSale = async () => {
     return;
   }
 
+  // Client-side validation for required fields
+  if (!paymentMethod.value) {
+    alert('Por favor, selecciona un método de pago.');
+    return;
+  }
+
   try {
     const saleData = {
       reservation_id: props.reservation ? props.reservation.id : null,
-      client_name: props.reservation ? props.reservation.client_name : 'Cliente Directo', // Or prompt for client name
-      barber_id: props.reservation ? props.reservation.barber_id : null, // Or prompt for barber
+      client_name: props.reservation?.client_name || 'Cliente Varios',
       total_amount: saleTotal.value,
       sale_items: saleItems.value.map(item => ({
         item_id: item.id,
         quantity: item.quantity,
-        item_type: item.type, // 'service' or 'product'
+        item_type: item.type,
         price_at_sale: item.price,
+        item_name: item.name,
       })),
-      // Add other sale details like payment method, date, etc.
-      // For now, we'll assume cash payment and current date
-      payment_method: 'Efectivo',
+      payment_method: paymentMethod.value,
       sale_date: dayjs().toISOString(),
     };
 
@@ -234,7 +253,7 @@ const processSale = async () => {
 
     // If it was a reservation, update its status to 'completado' or 'pagado'
     if (props.reservation) {
-      await reservationStore.updateReservation(props.reservation.id, { status: 'completado' });
+      await reservationStore.updateReservation(props.reservation.id, { status: 'completed' });
     }
 
     alert('Venta registrada exitosamente!');

@@ -30,29 +30,48 @@ class SaleController {
   }
 
   async createSale(req: Request, res: Response): Promise<void> {
-    const { sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method } = req.body;
+    const { sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id } = req.body;
 
-    // Validation
+    // Validation for always required fields
     if (
       !sale_date ||
-      !barber_id ||
-      !station_id ||
-      !services ||
-      !Array.isArray(services) ||
-      services.length === 0 ||
+      !sale_items ||
+      !Array.isArray(sale_items) ||
+      sale_items.length === 0 ||
       total_amount === undefined ||
-      !payment_method // Add validation for payment_method
+      !payment_method
     ) {
       res.status(400).json({ error: 'Missing or invalid required fields' });
       return;
     }
 
     try {
-      const newSale = await saleService.createSale({ sale_date, barber_id, station_id, services, total_amount, customer_name, payment_method });
+      const newSale = await saleService.createSale({ sale_date, sale_items, total_amount, customer_name, payment_method, reservation_id });
       res.status(201).json({ id: newSale.id });
     } catch (error) {
       console.error('Error creating sale:', error);
       res.status(500).json({ error: 'Failed to record sale.' });
+    }
+  }
+
+  async getSaleByReservationId(req: Request, res: Response): Promise<void> {
+    const { reservationId } = req.params;
+
+    if (!reservationId) {
+      res.status(400).json({ error: 'Missing reservationId parameter' });
+      return;
+    }
+
+    try {
+      const sale = await saleService.getSaleByReservationId(Number(reservationId));
+      if (sale) {
+        res.json(sale);
+      } else {
+        res.status(404).json({ error: 'Sale not found for this reservation ID' });
+      }
+    } catch (error) {
+      console.error('Error getting sale by reservation ID:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -73,6 +92,8 @@ class SaleController {
     }
   }
 
+  /*
+  // Temporarily commented out: Corresponding method in SaleService has been removed/commented.
   async getBarberRanking(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
 
@@ -82,14 +103,17 @@ class SaleController {
     }
 
     try {
-      const ranking = await saleService.getBarberSalesRanking(startDate as string, endDate as string);
-      res.json(ranking);
+      // const ranking = await saleService.getBarberSalesRanking(startDate as string, endDate as string);
+      res.status(501).json({ error: 'Not Implemented: Barber ranking is temporarily disabled.' }); // 501 Not Implemented
     } catch (error) {
       console.error('Error getting barber ranking:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+  */
 
+  /*
+  // Temporarily commented out: Corresponding method in SaleService has been removed/commented.
   async getTotalBarberPayments(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;
 
@@ -99,13 +123,14 @@ class SaleController {
     }
 
     try {
-      const totalPayments = await saleService.getTotalPaymentsToBarbers(startDate as string, endDate as string);
-      res.json({ totalPayments });
+      // const totalPayments = await saleService.getTotalPaymentsToBarbers(startDate as string, endDate as string);
+      res.status(501).json({ error: 'Not Implemented: Total barber payments calculation is temporarily disabled.' }); // 501 Not Implemented
     } catch (error) {
       console.error('Error getting total barber payments:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+  */
 
   async getSalesSummaryByService(req: Request, res: Response): Promise<void> {
     const { startDate, endDate } = req.query;

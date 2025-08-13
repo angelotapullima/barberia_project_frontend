@@ -17,6 +17,7 @@ export const useReservationStore = defineStore('reservations', {
         const response = await axios.get(`${API_URL}/reservations`, {
           params: { startDate, endDate },
         });
+        this.reservations = response.data;
         return response.data;
       } catch (error) {
         this.error =
