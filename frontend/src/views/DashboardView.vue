@@ -217,9 +217,7 @@
                   <td class="px-4 py-2 text-right">
                     S/ {{ (stat.total_service_sales || 0).toFixed(2) }}
                   </td>
-                  <td
-                    class="px-4 py-2 text-right font-bold text-green-600"
-                  >
+                  <td class="px-4 py-2 text-right font-bold text-green-600">
                     S/ {{ (stat.payment || 0).toFixed(2) }}
                   </td>
                 </tr>
@@ -411,8 +409,12 @@ async function fetchData() {
 
   // --- Process data ---
   // Process today's sales by type
-  productSalesToday.value = dailySalesTodayByTypeData.find(item => item.type === 'product')?.total || 0;
-  serviceSalesToday.value = dailySalesTodayByTypeData.find(item => item.type === 'service')?.total || 0;
+  productSalesToday.value =
+    dailySalesTodayByTypeData.find((item) => item.type === 'product')?.total ||
+    0;
+  serviceSalesToday.value =
+    dailySalesTodayByTypeData.find((item) => item.type === 'service')?.total ||
+    0;
   salesToday.value = productSalesToday.value + serviceSalesToday.value; // Total sales today
 
   salesMonth.value = salesMonthData.reduce((sum, day) => sum + day.total, 0);
