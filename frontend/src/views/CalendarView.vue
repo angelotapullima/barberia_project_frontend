@@ -329,14 +329,16 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   }
 
   // Sort reservations by start time
-  reservations.sort((a, b) => dayjs(a.start_time).local().diff(dayjs(b.start_time).local()));
+  reservations.sort((a, b) =>
+    dayjs(a.start_time).local().diff(dayjs(b.start_time).local()),
+  );
 
   const processedReservations = [];
   const columns = []; // Stores the end time of the last reservation in each column
 
   reservations.forEach((res) => {
     const start = dayjs(res.start_time).local(); // Added .local()
-    const end = dayjs(res.end_time).local();     // Added .local()
+    const end = dayjs(res.end_time).local(); // Added .local()
 
     let assignedColumn = -1;
 
@@ -365,9 +367,9 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   processedReservations.forEach((res) => {
     const overlappingGroup = processedReservations.filter((otherRes) => {
       const resStart = dayjs(res.start_time).local(); // Added .local()
-      const resEnd = dayjs(res.end_time).local();     // Added .local()
+      const resEnd = dayjs(res.end_time).local(); // Added .local()
       const otherResStart = dayjs(otherRes.start_time).local(); // Added .local()
-      const otherResEnd = dayjs(otherRes.end_time).local();     // Added .local()
+      const otherResEnd = dayjs(otherRes.end_time).local(); // Added .local()
 
       // Check for overlap
       return resStart.isBefore(otherResEnd) && otherResStart.isBefore(resEnd);
