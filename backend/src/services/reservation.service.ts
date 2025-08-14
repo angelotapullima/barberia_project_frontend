@@ -114,14 +114,20 @@ export class ReservationService {
       if (row.sale_id) {
         const reservation = reservationsMap.get(row.id)!;
         if (reservation.sale && row.sale_item_id) {
-          reservation.sale.sale_items.push({
-            id: row.sale_item_id,
-            item_id: row.sale_item_id, // Add this
-            item_name: row.sale_item_name,
-            price: row.sale_item_price,
-            price_at_sale: row.sale_item_price, // Add this
-            quantity: row.sale_item_quantity,
-          });
+          // Ensure item is not already added
+          const existingItem = reservation.sale.sale_items.find(
+            (item) => item.id === row.sale_item_id,
+          );
+          if (!existingItem) {
+            reservation.sale.sale_items.push({
+              id: row.sale_item_id,
+              item_id: row.sale_item_id,
+              item_name: row.sale_item_name,
+              price: row.sale_item_price,
+              price_at_sale: row.sale_item_price,
+              quantity: row.sale_item_quantity,
+            });
+          }
         }
       }
     }

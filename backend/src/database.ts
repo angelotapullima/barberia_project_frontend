@@ -201,10 +201,10 @@ export async function seedDatabase(db: Database) {
     'INSERT INTO services (name, price, duration_minutes, type, stock_quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)', // Added one more set of placeholders
     [
       'Corte de Cabello', 30, 30, 'service', 0, 0,
-      'Afeitado Clásico', 25, 45, 'service', 0, 0,
-      'Corte y Barba', 50, 60, 'service', 0, 0,
+      'Afeitado Clásico', 25, 40, 'service', 0, 0, // Changed from 45 to 40
+      'Corte y Barba', 50, 40, 'service', 0, 0,    // Changed from 60 to 40
       'Lavado y Secado', 15, 20, 'service', 0, 0,
-      'Tinte de Cabello', 80, 90, 'service', 0, 0,
+      'Tinte de Cabello', 80, 40, 'service', 0, 0, // Changed from 90 to 40
       'Masaje Capilar', 20, 15, 'service', 0, 0,
       'Cera para Peinar', 15, 0, 'product', 100, 10,
       'Aceite para Barba', 20, 0, 'product', 50, 5,
@@ -233,7 +233,7 @@ export async function seedDatabase(db: Database) {
     date.setDate(today.getDate() - i);
     const dateString = date.toISOString().split('T')[0];
 
-    const numTransactions = Math.floor(Math.random() * 10) + 3; // 3 to 12 transactions per day
+    const numTransactions = Math.floor(Math.random() * 3) + 1; // 1 to 3 transactions per day
 
     for (let t = 0; t < numTransactions; t++) {
       const randomBarber = barbers[Math.floor(Math.random() * barbers.length)];
@@ -253,7 +253,8 @@ export async function seedDatabase(db: Database) {
         const randomService = services[Math.floor(Math.random() * services.length)];
         const startTime = new Date(date);
         startTime.setHours(Math.floor(Math.random() * 8) + 9, Math.floor(Math.random() * 60), 0, 0); // Between 9 AM and 5 PM
-        const endTime = new Date(startTime.getTime() + randomService.duration_minutes * 60 * 1000);
+        const durationInMinutes = Math.min(randomService.duration_minutes, 60); // Ensure max duration is 60 mins
+        const endTime = new Date(startTime.getTime() + durationInMinutes * 60 * 1000);
 
         const reservationResult = await db.run(
           `INSERT INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
@@ -353,11 +354,8 @@ async function initializeDatabase(isTest = false): Promise<Database> {
   await createSchema(db);
 
   if (!isTest) {
-    const usersCount = await db.get('SELECT COUNT(*) as count FROM users');
-    if (usersCount.count === 0) {
-      console.log('Base de datos de desarrollo vacía, insertando datos...');
-      await seedDatabase(db);
-    }
+    console.log('Inicializando base de datos de desarrollo y sembrando datos...');
+    await seedDatabase(db);
   }
 
   return db;

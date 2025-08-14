@@ -1,81 +1,123 @@
 <template>
-  <div class="calendar-view p-4">
-    <h1 class="text-2xl font-bold mb-4">Calendario de Citas</h1>
+  <div class="calendar-dashboard p-4 min-h-screen">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">
+      Calendario de Citas
+    </h1>
 
     <!-- Calendar Header -->
-    <div class="flex justify-between items-center mb-4">
-      <div class="flex space-x-2">
-        <button class="btn-primary" @click="goToToday">Hoy</button>
-        <button class="btn-secondary" @click="goToPreviousWeek">&lt;</button>
-        <button class="btn-secondary" @click="goToNextWeek">&gt;</button>
-        <span class="text-lg font-semibold">{{ currentWeekRange }}</span>
+    <div
+      class="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-white rounded-lg shadow-sm"
+    >
+      <div class="flex items-center space-x-3 mb-4 sm:mb-0">
+        <button class="btn-icon" @click="goToPreviousWeek">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+        <span class="text-xl font-semibold text-gray-800">{{
+          currentWeekRange
+        }}</span>
+        <button class="btn-icon" @click="goToNextWeek">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+        <button class="btn-outline ml-4" @click="goToToday">Hoy</button>
       </div>
 
-      <div class="flex items-center space-x-4">
+      <div
+        class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto"
+      >
         <!-- Barber/Team Selector -->
         <CustomSelect
           :modelValue="selectedBarberFilter"
           @update:modelValue="selectedBarberFilter = $event"
           :options="barberSelectOptions"
           placeholder="Seleccionar Barbero"
+          class="w-full sm:w-48"
         />
 
         <!-- Add Button -->
-        <button class="btn-primary" @click="openAddAppointmentModal">
-          Añadir
+        <button
+          class="btn-primary w-full sm:w-48"
+          @click="openAddAppointmentModal"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Añadir Cita
         </button>
       </div>
     </div>
 
-    <!-- Calendar Grid -->
-    <div class="calendar-grid rounded-lg overflow-hidden">
-      <!-- Days Header -->
+    <!-- Main Calendar Grid -->
+    <div class="relative">
       <div
-        class="calendar-days-header bg-gray-100 border-b border-gray-200"
-        :style="{
-          gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)',
-        }"
+        class="calendar-main-grid grid grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg"
       >
-        <div class="p-2 font-semibold text-sm text-gray-600"></div>
-        <!-- Empty corner for time -->
+        <!-- Time Axis Header (empty corner) -->
+        <div class="bg-white p-2 border-b border-r border-gray-200 h-[76px]"></div>
+
+        <!-- Day Headers -->
         <div
           v-for="day in weekDays"
           :key="day.fullDate"
-          class="p-2 text-center font-semibold text-sm text-gray-600 border-l border-gray-300"
+          class="day-header bg-white p-2 text-center font-semibold text-gray-700 border-b border-r border-gray-200 h-[76px]"
+          :class="{
+            'bg-blue-50 text-blue-700':
+              day.fullDate === dayjs().format('YYYY-MM-DD'),
+          }"
         >
-          {{ day.name }} <br />
-          {{ day.date }}
+          <span class="block text-xs uppercase">{{ day.name }}</span>
+          <span class="block text-xl font-bold">{{
+            day.date.split(' ')[0]
+          }}</span>
+          <span class="block text-xs text-gray-500">{{
+            day.date.split(' ')[1]
+          }}</span>
         </div>
-      </div>
 
-      <div
-        class="calendar-body"
-        :style="{
-          gridTemplateColumns: '1fr ' + 'repeat(' + weekDays.length + ', 1fr)',
-        }"
-      >
-        <!-- Time Slots Column -->
-        <div class="time-slots-column border-r border-gray-200">
+        <!-- Time Axis and Day Columns -->
+        <template v-for="(hour, index) in hours" :key="hour">
+          <!-- Time Label -->
           <div
-            v-for="hour in hours"
-            :key="hour"
-            class="h-20 flex items-center justify-center text-xs text-gray-500 border-b border-gray-200 last:border-b-0"
+            class="time-label bg-white p-2 text-right text-xs text-gray-500 border-r border-gray-200 flex items-start justify-end pr-2"
+            :style="{ height: '60px' }"
           >
-            {{ hour }}
+            <span v-if="index % 2 !== 1">{{ hour.slice(0, 5) }}</span>
           </div>
-        </div>
-
-        <!-- Schedule Grid for each day -->
-        <div
-          v-for="day in weekDays"
-          :key="day.fullDate"
-          class="schedule-day relative border-l border-gray-100 h-full"
-        >
-          <!-- Time slots for each day -->
+          <!-- Day Cells -->
           <div
-            v-for="hour in hours"
-            :key="hour"
-            class="h-20 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-blue-50"
+            v-for="day in weekDays"
+            :key="day.fullDate + '-' + hour"
+            class="day-cell relative bg-white border-b border-r border-gray-200 h-[60px] cursor-pointer hover:bg-blue-50"
             @click="
               openAddAppointmentModalWithTime(
                 selectedBarberFilter === 'all' ||
@@ -86,26 +128,52 @@
                 hour,
               )
             "
-          ></div>
+          >
+            <!-- Cells are now empty, serving as the background grid -->
+          </div>
+        </template>
+      </div>
+
+      <!-- Appointments Overlay -->
+      <div
+        class="appointments-overlay absolute top-[76px] left-[60px] right-0 bottom-0 grid grid-cols-7 gap-px pointer-events-none"
+      >
+        <div
+          v-for="day in weekDays"
+          :key="day.fullDate"
+          class="day-column relative"
+        >
           <!-- Appointments for this day -->
           <div
             v-for="reservation in getFilteredReservationsForDay(day.fullDate)"
             :key="reservation.id"
-            class="appointment absolute rounded-md p-1 text-xs overflow-hidden cursor-pointer"
+            class="appointment absolute rounded-md p-1 text-xs overflow-hidden cursor-pointer border-l-4 shadow-md pointer-events-auto"
             :style="getAppointmentStyle(reservation)"
-            @click="viewAppointmentDetails(reservation)"
+            @click.stop="viewAppointmentDetails(reservation)"
           >
-            <div class="font-semibold">
+            <div class="font-semibold text-white">
               {{ formatTime(reservation.start_time) }} -
               {{ formatTime(reservation.end_time) }}
             </div>
-            <div>{{ reservation.client_name }}</div>
-            <div class="text-gray-200">
+            <div class="text-white text-opacity-90">
+              {{ reservation.client_name }}
+            </div>
+            <div class="text-white text-opacity-70 text-xs">
               {{ getBarberName(reservation.barber_id) }}
             </div>
-            <div class="absolute bottom-1 right-1 text-blue-600">▶</div>
           </div>
         </div>
+      </div>
+
+      <!-- Current Time Indicator -->
+      <div
+        v-if="showCurrentTimeIndicator"
+        class="current-time-indicator absolute left-0 right-0 border-t-2 border-red-500 z-30 pointer-events-none"
+        :style="{ top: currentTimeIndicatorPosition }"
+      >
+        <div
+          class="absolute -left-1.5 -top-1.5 w-3 h-3 bg-red-500 rounded-full"
+        ></div>
       </div>
     </div>
 
@@ -247,6 +315,26 @@ const hours = computed(() => {
   return h;
 });
 
+const currentTimeIndicatorPosition = computed(() => {
+  const now = dayjs();
+  const startHour = 8; // Calendar starts at 8:00 AM
+  const totalMinutesFromStart = (now.hour() - startHour) * 60 + now.minute();
+  const pixelsPerMinute = 60 / 30; // 60px height for 30 minutes
+  const top = totalMinutesFromStart * pixelsPerMinute;
+  const headerHeight = 76; // Height of the day headers
+
+  // Only return a value if the current time is within the displayed hours
+  if (now.hour() >= startHour && now.hour() <= 22) {
+    return `${top + headerHeight}px`;
+  }
+  return '-9999px'; // Position off-screen if not in range
+});
+
+const showCurrentTimeIndicator = computed(() => {
+  const now = dayjs();
+  return now.isSame(currentWeekStart.value, 'week');
+});
+
 // No longer needed as filteredBarbers is used only for the dropdown
 // const filteredBarbers = computed(() => {
 //   if (selectedBarberFilter.value === 'all') {
@@ -276,14 +364,14 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   }
 
   // Sort reservations by start time
-  reservations.sort((a, b) => dayjs(a.start_time).diff(dayjs(b.start_time)));
+  reservations.sort((a, b) => dayjs(a.start_time).local().diff(dayjs(b.start_time).local()));
 
   const processedReservations = [];
   const columns = []; // Stores the end time of the last reservation in each column
 
   reservations.forEach((res) => {
-    const start = dayjs(res.start_time);
-    const end = dayjs(res.end_time);
+    const start = dayjs(res.start_time).local(); // Added .local()
+    const end = dayjs(res.end_time).local();     // Added .local()
 
     let assignedColumn = -1;
 
@@ -311,10 +399,10 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   // Now calculate max columns needed for each overlap group and assign final left/width
   processedReservations.forEach((res) => {
     const overlappingGroup = processedReservations.filter((otherRes) => {
-      const resStart = dayjs(res.start_time);
-      const resEnd = dayjs(res.end_time);
-      const otherResStart = dayjs(otherRes.start_time);
-      const otherResEnd = dayjs(otherRes.end_time);
+      const resStart = dayjs(res.start_time).local(); // Added .local()
+      const resEnd = dayjs(res.end_time).local();     // Added .local()
+      const otherResStart = dayjs(otherRes.start_time).local(); // Added .local()
+      const otherResEnd = dayjs(otherRes.end_time).local();     // Added .local()
 
       // Check for overlap
       return resStart.isBefore(otherResEnd) && otherResStart.isBefore(resEnd);
@@ -362,7 +450,7 @@ const getAppointmentStyle = (reservation) => {
   const startHour = start.hour();
   const startMinute = start.minute();
 
-  const pixelsPerHalfHour = 80; // Increased for larger items (h-20 equivalent)
+  const pixelsPerHalfHour = 60; // Adjusted to match h-[60px] in template
   const topOffsetMinutes = (startHour - 8) * 60 + startMinute;
   const top = (topOffsetMinutes / 30) * pixelsPerHalfHour;
 
@@ -452,42 +540,31 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.calendar-grid {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
-  border: 1px solid #e5e7eb; /* Very light border */
+/* Custom button styles */
+.btn-primary {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center;
 }
 
-.calendar-days-header {
-  display: grid;
+.btn-outline {
+  @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
 }
 
-.calendar-body {
-  display: grid;
-}
-
-.schedule-day {
-  min-height: 2320px; /* Adjusted for 8 AM to 10 PM (14.5 hours * 80px/half-hour = 2320px) */
-  position: relative;
+.btn-icon {
+  @apply p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
 }
 
 .appointment {
   z-index: 20;
-  color: white;
-  border: 1px solid; /* Border color will be dynamic */
-  border-radius: 0.5rem; /* Softer corners (Tailwind's rounded-lg) */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Softer, more modern shadow */
+  /* color: white; - Removed, now applied directly in template */
+  /* border: 1px solid; - Removed, now border-l-4 in template */
+  border-radius: 0.5rem; /* Tailwind's rounded-lg */
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); - Removed, now shadow-md in template */
+  padding: 0.25rem 0.5rem; /* Tailwind's p-1 px-2 */
+  line-height: 1.2;
 }
 
-/* Custom button styles */
-.btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
-}
-
-.btn-secondary {
-  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
+.current-time-indicator {
+  width: calc(100% - 60px); /* Adjust for the time axis column width */
+  left: 60px; /* Align with the start of the day columns */
 }
 </style>
