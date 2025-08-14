@@ -90,14 +90,16 @@
                 <th
                   class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
                 >
-                  Nº de Usos
+                  Nº de Reservas Completadas
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="item in store.stationUsage" :key="item.station_name">
                 <td class="px-4 py-2">{{ item.station_name }}</td>
-                <td class="px-4 py-2 text-right">{{ item.usage_count }}</td>
+                <td class="px-4 py-2 text-right">
+                  {{ item.completed_reservations_count }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -150,7 +152,7 @@ const chartOptions = ref({
   },
   yaxis: {
     title: {
-      text: 'Número de Usos',
+      text: 'Nº de Reservas Completadas',
     },
   },
   fill: {
@@ -159,7 +161,7 @@ const chartOptions = ref({
   tooltip: {
     y: {
       formatter: function (val) {
-        return val + ' usos';
+        return val + ' reservas completadas';
       },
     },
   },
@@ -185,8 +187,10 @@ function updateChartData() {
   if (store.stationUsage.length > 0) {
     series.value = [
       {
-        name: 'Número de Usos',
-        data: store.stationUsage.map((item) => item.usage_count),
+        name: 'Nº de Reservas Completadas',
+        data: store.stationUsage.map(
+          (item) => item.completed_reservations_count,
+        ),
       },
     ];
     chartOptions.value = {
@@ -212,10 +216,10 @@ function exportToCsv() {
     return;
   }
 
-  const headers = ['Estación', 'Nº de Usos'];
+  const headers = ['Estación', 'Nº de Reservas Completadas'];
   const rows = store.stationUsage.map((item) => [
     item.station_name,
-    item.usage_count,
+    item.completed_reservations_count,
   ]);
 
   let csvContent = headers.join(',') + '\n';

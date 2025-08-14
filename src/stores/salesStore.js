@@ -132,25 +132,7 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
-    async getDailySalesByType(startDate, endDate) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(`${API_URL}/sales/daily-by-type`, {
-          params: { startDate, endDate },
-        });
-        return response.data;
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al obtener las ventas diarias por tipo.';
-        console.error(error);
-        return [];
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
+
     async getSalesSummaryByService(startDate, endDate) {
       this.isLoading = true;
       this.error = null;

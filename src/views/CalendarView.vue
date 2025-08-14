@@ -83,7 +83,9 @@
         class="calendar-main-grid grid grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg"
       >
         <!-- Time Axis Header (empty corner) -->
-        <div class="bg-white p-2 border-b border-r border-gray-200 h-[76px]"></div>
+        <div
+          class="bg-white p-2 border-b border-r border-gray-200 h-[76px]"
+        ></div>
 
         <!-- Day Headers -->
         <div
@@ -159,10 +161,20 @@
                 {{ getBarberName(reservation.barber_id) }}
               </div>
               <div class="text-xs text-gray-500 mt-1 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline-block mr-1"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
-                {{ formatTime(reservation.start_time) }} - {{ formatTime(reservation.end_time) }}
+                {{ formatTime(reservation.start_time) }} -
+                {{ formatTime(reservation.end_time) }}
               </div>
             </div>
 
@@ -170,8 +182,10 @@
             <div
               class="status-tag text-xs font-semibold text-center py-1 px-2 rounded-md mt-2 self-start"
               :class="{
-                'bg-yellow-100 text-yellow-800': reservation.status !== 'completed',
-                'bg-green-100 text-green-800': reservation.status === 'completed'
+                'bg-yellow-100 text-yellow-800':
+                  reservation.status !== 'completed',
+                'bg-green-100 text-green-800':
+                  reservation.status === 'completed',
               }"
             >
               {{ reservation.status === 'completed' ? 'Pagado' : 'Reservado' }}
