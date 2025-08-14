@@ -57,7 +57,7 @@
 
         <!-- Add Button -->
         <button
-          class="btn-primary w-full sm:w-auto"
+          class="btn-primary w-full sm:w-48"
           @click="openAddAppointmentModal"
         >
           <svg
@@ -78,77 +78,107 @@
     </div>
 
     <!-- Main Calendar Grid -->
-    <div
-      class="calendar-main-grid grid grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg relative"
-    >
-      <!-- Time Axis Header (empty corner) -->
-      <div class="bg-white p-2 border-b border-r border-gray-200"></div>
-
-      <!-- Day Headers -->
+    <div class="relative">
       <div
-        v-for="day in weekDays"
-        :key="day.fullDate"
-        class="day-header bg-white p-2 text-center font-semibold text-gray-700 border-b border-r border-gray-200"
-        :class="{
-          'bg-blue-50 text-blue-700':
-            day.fullDate === dayjs().format('YYYY-MM-DD'),
-        }"
+        class="calendar-main-grid grid grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg"
       >
-        <span class="block text-xs uppercase">{{ day.name }}</span>
-        <span class="block text-xl font-bold">{{
-          day.date.split(' ')[0]
-        }}</span>
-        <span class="block text-xs text-gray-500">{{
-          day.date.split(' ')[1]
-        }}</span>
-      </div>
+        <!-- Time Axis Header (empty corner) -->
+        <div class="bg-white p-2 border-b border-r border-gray-200 h-[76px]"></div>
 
-      <!-- Time Axis and Day Columns -->
-      <template v-for="(hour, index) in hours" :key="hour">
-        <!-- Time Label -->
-        <div
-          class="time-label bg-white p-2 text-right text-xs text-gray-500 border-r border-gray-200 flex items-start justify-end pr-2"
-          :style="{ height: index % 2 === 0 ? '60px' : '60px' }"
-        >
-          <span v-if="index % 2 === 0">{{ hour.slice(0, 5) }}</span>
-        </div>
-        <!-- Day Cells -->
+        <!-- Day Headers -->
         <div
           v-for="day in weekDays"
-          :key="day.fullDate + '-' + hour"
-          class="day-cell relative bg-white border-b border-r border-gray-200 h-[60px] cursor-pointer hover:bg-blue-50"
-          @click="
-            openAddAppointmentModalWithTime(
-              selectedBarberFilter === 'all' ||
-                selectedBarberFilter === 'scheduled'
-                ? null
-                : selectedBarberFilter,
-              day.fullDate,
-              hour,
-            )
-          "
+          :key="day.fullDate"
+          class="day-header bg-white p-2 text-center font-semibold text-gray-700 border-b border-r border-gray-200 h-[76px]"
+          :class="{
+            'bg-blue-50 text-blue-700':
+              day.fullDate === dayjs().format('YYYY-MM-DD'),
+          }"
         >
-          <!-- Appointments for this day -->
+          <span class="block text-xs uppercase">{{ day.name }}</span>
+          <span class="block text-xl font-bold">{{
+            day.date.split(' ')[0]
+          }}</span>
+          <span class="block text-xs text-gray-500">{{
+            day.date.split(' ')[1]
+          }}</span>
+        </div>
+
+        <!-- Time Axis and Day Columns -->
+        <template v-for="(hour, index) in hours" :key="hour">
+          <!-- Time Label -->
+          <div
+            class="time-label bg-white p-2 text-right text-xs text-gray-500 border-r border-gray-200 flex items-start justify-end pr-2"
+            :style="{ height: '60px' }"
+          >
+            <span v-if="index % 2 !== 1">{{ hour.slice(0, 5) }}</span>
+          </div>
+          <!-- Day Cells -->
+          <div
+            v-for="day in weekDays"
+            :key="day.fullDate + '-' + hour"
+            class="day-cell relative bg-white border-b border-r border-gray-200 h-[60px] cursor-pointer hover:bg-blue-50"
+            @click="
+              openAddAppointmentModalWithTime(
+                selectedBarberFilter === 'all' ||
+                  selectedBarberFilter === 'scheduled'
+                  ? null
+                  : selectedBarberFilter,
+                day.fullDate,
+                hour,
+              )
+            "
+          >
+            <!-- Cells are now empty, serving as the background grid -->
+          </div>
+        </template>
+      </div>
+
+      <!-- Appointments Overlay -->
+      <div
+        class="appointments-overlay absolute top-[76px] left-[60px] right-0 bottom-0 grid grid-cols-7 gap-px pointer-events-none"
+      >
+        <div
+          v-for="day in weekDays"
+          :key="day.fullDate"
+          class="day-column relative"
+        >
           <div
             v-for="reservation in getFilteredReservationsForDay(day.fullDate)"
             :key="reservation.id"
-            class="appointment absolute rounded-md p-1 text-xs overflow-hidden cursor-pointer border-l-4 shadow-md"
+            class="appointment absolute flex flex-col justify-between rounded-lg p-2 text-gray-800 bg-white border border-gray-200 border-l-8 shadow-lg cursor-pointer pointer-events-auto overflow-hidden"
             :style="getAppointmentStyle(reservation)"
             @click.stop="viewAppointmentDetails(reservation)"
           >
-            <div class="font-semibold text-white">
-              {{ formatTime(reservation.start_time) }} -
-              {{ formatTime(reservation.end_time) }}
+            <!-- Top part with info -->
+            <div class="flex-grow">
+              <div class="font-bold text-sm text-gray-900 truncate">
+                {{ reservation.client_name }}
+              </div>
+              <div class="text-xs text-gray-600 truncate">
+                {{ getBarberName(reservation.barber_id) }}
+              </div>
+              <div class="text-xs text-gray-500 mt-1 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                {{ formatTime(reservation.start_time) }} - {{ formatTime(reservation.end_time) }}
+              </div>
             </div>
-            <div class="text-white text-opacity-90">
-              {{ reservation.client_name }}
-            </div>
-            <div class="text-white text-opacity-70 text-xs">
-              {{ getBarberName(reservation.barber_id) }}
+
+            <!-- Bottom part with status -->
+            <div
+              class="status-tag text-xs font-semibold text-center py-1 px-2 rounded-md mt-2 self-start"
+              :class="{
+                'bg-yellow-100 text-yellow-800': reservation.status !== 'completed',
+                'bg-green-100 text-green-800': reservation.status === 'completed'
+              }"
+            >
+              {{ reservation.status === 'completed' ? 'Pagado' : 'Reservado' }}
             </div>
           </div>
         </div>
-      </template>
+      </div>
 
       <!-- Current Time Indicator -->
       <div
@@ -300,6 +330,26 @@ const hours = computed(() => {
   return h;
 });
 
+const currentTimeIndicatorPosition = computed(() => {
+  const now = dayjs();
+  const startHour = 8; // Calendar starts at 8:00 AM
+  const totalMinutesFromStart = (now.hour() - startHour) * 60 + now.minute();
+  const pixelsPerMinute = 60 / 30; // 60px height for 30 minutes
+  const top = totalMinutesFromStart * pixelsPerMinute;
+  const headerHeight = 76; // Height of the day headers
+
+  // Only return a value if the current time is within the displayed hours
+  if (now.hour() >= startHour && now.hour() <= 22) {
+    return `${top + headerHeight}px`;
+  }
+  return '-9999px'; // Position off-screen if not in range
+});
+
+const showCurrentTimeIndicator = computed(() => {
+  const now = dayjs();
+  return now.isSame(currentWeekStart.value, 'week');
+});
+
 // No longer needed as filteredBarbers is used only for the dropdown
 // const filteredBarbers = computed(() => {
 //   if (selectedBarberFilter.value === 'all') {
@@ -422,32 +472,23 @@ const getAppointmentStyle = (reservation) => {
   const top = (topOffsetMinutes / 30) * pixelsPerHalfHour;
 
   const durationMinutes = end.diff(start, 'minute');
-  const height = (durationMinutes / 30) * pixelsPerHalfHour;
+  let height = (durationMinutes / 30) * pixelsPerHalfHour;
+
+  // Ensure a minimum height for the appointment card to prevent overflow
+  if (height < 90) {
+    height = 90;
+  }
 
   const barberColor = barberColors.value[reservation.barber_id] || {
-    bgColor: '#4299e1',
-    borderColor: '#2b6cb0',
-  }; // Default if color not found
-
-  let statusStyle = {};
-  if (reservation.status === 'completed') {
-    statusStyle = {
-      backgroundColor: barberColor.bgColor.replace('500', '700'), // Darker shade for paid
-      borderColor: barberColor.borderColor.replace('700', '900'), // Even darker border
-    };
-  } else {
-    statusStyle = {
-      backgroundColor: barberColor.bgColor,
-      borderColor: barberColor.borderColor,
-    };
-  }
+    bgColor: '#4299e1', // Default color
+  };
 
   return {
     top: `${top}px`,
     height: `${height}px`,
     left: reservation.calculatedLeft,
     width: reservation.calculatedWidth,
-    ...statusStyle, // Apply status-based styles
+    borderLeftColor: barberColor.bgColor,
   };
 };
 

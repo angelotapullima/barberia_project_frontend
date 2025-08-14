@@ -233,7 +233,7 @@ export async function seedDatabase(db: Database) {
     date.setDate(today.getDate() - i);
     const dateString = date.toISOString().split('T')[0];
 
-    const numTransactions = Math.floor(Math.random() * 10) + 3; // 3 to 12 transactions per day
+    const numTransactions = Math.floor(Math.random() * 3) + 1; // 1 to 3 transactions per day
 
     for (let t = 0; t < numTransactions; t++) {
       const randomBarber = barbers[Math.floor(Math.random() * barbers.length)];
@@ -253,7 +253,8 @@ export async function seedDatabase(db: Database) {
         const randomService = services[Math.floor(Math.random() * services.length)];
         const startTime = new Date(date);
         startTime.setHours(Math.floor(Math.random() * 8) + 9, Math.floor(Math.random() * 60), 0, 0); // Between 9 AM and 5 PM
-        const endTime = new Date(startTime.getTime() + randomService.duration_minutes * 60 * 1000);
+        const durationInMinutes = Math.min(randomService.duration_minutes, 60); // Ensure max duration is 60 mins
+        const endTime = new Date(startTime.getTime() + durationInMinutes * 60 * 1000);
 
         const reservationResult = await db.run(
           `INSERT INTO reservations (barber_id, station_id, client_name, client_phone, client_email, start_time, end_time, service_id, status, notes)
