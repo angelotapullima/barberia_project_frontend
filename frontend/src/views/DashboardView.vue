@@ -179,7 +179,10 @@
             :series="serviceSalesChartSeries"
           ></apexchart>
         </div>
+      </div>
 
+      <!-- Right Column -->
+      <div class="space-y-8">
         <!-- Barber Payouts -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">
@@ -208,14 +211,14 @@
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="stat in barberPayouts" :key="stat.barber_id">
-                  <td class="px-4 py-2 whitespace-nowrap">
+                  <td class="px-4 py-2">
                     {{ stat.barber_name }}
                   </td>
-                  <td class="px-4 py-2 whitespace-nowrap text-right">
+                  <td class="px-4 py-2 text-right">
                     S/ {{ (stat.total_service_sales || 0).toFixed(2) }}
                   </td>
                   <td
-                    class="px-4 py-2 whitespace-nowrap text-right font-bold text-green-600"
+                    class="px-4 py-2 text-right font-bold text-green-600"
                   >
                     S/ {{ (stat.payment || 0).toFixed(2) }}
                   </td>
@@ -224,10 +227,6 @@
             </table>
           </div>
         </div>
-      </div>
-
-      <!-- Right Column -->
-      <div class="space-y-8">
         <!-- Top Services Chart -->
         <div class="bg-white p-6 rounded-2xl shadow-md">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">
