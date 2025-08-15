@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 export const useStationStore = defineStore('stations', {
   state: () => ({
     stations: [],
@@ -14,7 +12,7 @@ export const useStationStore = defineStore('stations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/stations`);
+        const response = await axios.get(`/api/stations`);
         this.stations = response.data;
       } catch (error) {
         this.error = 'Error al cargar las estaciones.';
@@ -26,11 +24,15 @@ export const useStationStore = defineStore('stations', {
     async addStation(station) {
       this.error = null;
       try {
-        await axios.post(`${API_URL}/stations`, station);
+        const response = await axios.post(`/api/stations`, station);
+        if (response.data.error) {
+          this.error = response.data.error;
+          throw new Error(response.data.error);
+        }
         await this.fetchStations();
       } catch (error) {
         this.error =
-          error.response?.data?.error || 'Error al añadir la estación.';
+          error.response?.data?.message || 'Error al añadir la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }
@@ -38,11 +40,15 @@ export const useStationStore = defineStore('stations', {
     async updateStation(station) {
       this.error = null;
       try {
-        await axios.put(`${API_URL}/stations/${station.id}`, station);
+        const response = await axios.put(`/api/stations/${station.id}`, station);
+        if (response.data.error) {
+          this.error = response.data.error;
+          throw new Error(response.data.error);
+        }
         await this.fetchStations();
       } catch (error) {
         this.error =
-          error.response?.data?.error || 'Error al actualizar la estación.';
+          error.response?.data?.message || 'Error al actualizar la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }
@@ -50,11 +56,15 @@ export const useStationStore = defineStore('stations', {
     async deleteStation(id) {
       this.error = null;
       try {
-        await axios.delete(`${API_URL}/stations/${id}`);
+        const response = await axios.delete(`/api/stations/${id}`);
+        if (response.data.error) {
+          this.error = response.data.error;
+          throw new Error(response.data.error);
+        }
         await this.fetchStations();
       } catch (error) {
         this.error =
-          error.response?.data?.error || 'Error al eliminar la estación.';
+          error.response?.data?.message || 'Error al eliminar la estación.';
         console.error(error);
         throw error; // Re-throw to be caught in component
       }

@@ -4,14 +4,14 @@
       Reporte de Utilización de Estaciones
     </h1>
 
-    <div v-if="store.isLoading" class="text-center text-gray-500">
+    <div v-if="isLoading" class="text-center text-gray-500">
       Generando reporte...
     </div>
     <div
-      v-if="store.error"
+      v-if="error"
       class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
     >
-      {{ store.error }}
+      {{ error }}
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
@@ -59,7 +59,7 @@
         Utilización de Estaciones
       </h2>
 
-      <div v-if="store.stationUsage.length > 0" class="mt-6">
+      <div v-if="stationUsage.length > 0" class="mt-6">
         <!-- Botón de Exportar -->
         <div class="flex justify-end mb-4">
           <button
@@ -95,7 +95,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in store.stationUsage" :key="item.station_name">
+              <tr v-for="item in stationUsage" :key="item.station_name">
                 <td class="px-4 py-2">{{ item.station_name }}</td>
                 <td class="px-4 py-2 text-right">
                   {{ item.completed_reservations_count }}
@@ -122,6 +122,10 @@ const store = useReportStore();
 
 const startDate = ref('');
 const endDate = ref('');
+
+const stationUsage = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
 
 const series = ref([]);
 const chartOptions = ref({
@@ -180,15 +184,25 @@ async function fetchReportData() {
     alert('Por favor, selecciona un rango de fechas.');
     return;
   }
-  await store.fetchStationUsage(startDate.value, endDate.value);
+
+  isLoading.value = true;
+  error.value = null;
+  try {
+    stationUsage.value = await store.fetchStationUsage(startDate.value, endDate.value);
+  } catch (err) {
+    error.value = err.message || 'Error al cargar el reporte.';
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function updateChartData() {
-  if (store.stationUsage.length > 0) {
+  if (stationUsage.value.length > 0) {
     series.value = [
       {
         name: 'Nº de Reservas Completadas',
-        data: store.stationUsage.map(
+        data: stationUsage.value.map(
           (item) => item.completed_reservations_count,
         ),
       },
@@ -196,7 +210,7 @@ function updateChartData() {
     chartOptions.value = {
       ...chartOptions.value,
       xaxis: {
-        categories: store.stationUsage.map((item) => item.station_name),
+        categories: stationUsage.value.map((item) => item.station_name),
       },
     };
   } else {
@@ -211,13 +225,13 @@ function updateChartData() {
 }
 
 function exportToCsv() {
-  if (store.stationUsage.length === 0) {
+  if (stationUsage.value.length === 0) {
     alert('No hay datos para exportar.');
     return;
   }
 
   const headers = ['Estación', 'Nº de Reservas Completadas'];
-  const rows = store.stationUsage.map((item) => [
+  const rows = stationUsage.value.map((item) => [
     item.station_name,
     item.completed_reservations_count,
   ]);
@@ -236,9 +250,9 @@ function exportToCsv() {
   document.body.removeChild(link);
 }
 
-// Observar cambios en store.stationUsage para actualizar el gráfico
+// Observar cambios en stationUsage para actualizar el gráfico
 watch(
-  () => store.stationUsage,
+  stationUsage,
   () => {
     updateChartData();
   },

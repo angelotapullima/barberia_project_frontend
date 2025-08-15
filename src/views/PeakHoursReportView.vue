@@ -4,14 +4,14 @@
       Reporte de Horas Pico de Reservas
     </h1>
 
-    <div v-if="store.isLoading" class="text-center text-gray-500">
+    <div v-if="isLoading" class="text-center text-gray-500">
       Generando reporte...
     </div>
     <div
-      v-if="store.error"
+      v-if="error"
       class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
     >
-      {{ store.error }}
+      {{ error }}
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
@@ -59,7 +59,7 @@
         Horas Pico de Reservas
       </h2>
 
-      <div v-if="store.peakHours.length > 0" class="mt-6">
+      <div v-if="peakHours.length > 0" class="mt-6">
         <!-- Botón de Exportar -->
         <div class="flex justify-end mb-4">
           <button
@@ -94,6 +94,10 @@ const store = useReportStore();
 const startDate = ref('');
 const endDate = ref('');
 
+const peakHours = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
+
 const peakHoursSeries = ref([]);
 const peakHoursChartOptions = ref({});
 
@@ -105,8 +109,26 @@ function setDefaultDates() {
   endDate.value = today.toISOString().slice(0, 10);
 }
 
+async function fetchReportData() {
+  if (!startDate.value || !endDate.value) {
+    alert('Por favor, selecciona un rango de fechas.');
+    return;
+  }
+
+  isLoading.value = true;
+  error.value = null;
+  try {
+    peakHours.value = await store.fetchPeakHours(startDate.value, endDate.value);
+  } catch (err) {
+    error.value = err.message || 'Error al cargar el reporte.';
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 function updatePeakHoursChart() {
-  const peakHoursData = store.peakHours;
+  const peakHoursData = peakHours.value;
   peakHoursSeries.value = [
     {
       name: 'Cantidad de Reservas',
@@ -127,23 +149,14 @@ function updatePeakHoursChart() {
   };
 }
 
-async function fetchReportData() {
-  if (!startDate.value || !endDate.value) {
-    alert('Por favor, selecciona un rango de fechas.');
-    return;
-  }
-  await store.fetchPeakHours(startDate.value, endDate.value);
-  updatePeakHoursChart();
-}
-
 function exportToCsv() {
-  if (store.peakHours.length === 0) {
+  if (peakHours.value.length === 0) {
     alert('No hay datos para exportar.');
     return;
   }
 
   const headers = ['Hora', 'Cantidad de Reservas'];
-  const rows = store.peakHours.map((item) => [
+  const rows = peakHours.value.map((item) => [
     item.hour,
     item.reservation_count,
   ]);
@@ -162,9 +175,9 @@ function exportToCsv() {
   document.body.removeChild(link);
 }
 
-// Observar cambios en store.peakHours para actualizar el gráfico
+// Observar cambios en peakHours para actualizar el gráfico
 watch(
-  () => store.peakHours,
+  peakHours,
   () => {
     updatePeakHoursChart();
   },

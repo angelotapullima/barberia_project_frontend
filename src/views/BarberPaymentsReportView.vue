@@ -95,17 +95,17 @@
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Servicio
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Fecha
+              Sueldo Base
             </th>
             <th
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Precio (S/)
+              Total Servicios Generados (S/)
+            </th>
+            <th
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Pago Calculado (S/)
             </th>
           </tr>
         </thead>
@@ -117,15 +117,17 @@
               {{ item.barber_name }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ item.service_name }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(item.sale_date) }}
+              {{ item.base_salary.toFixed(2) }}
             </td>
             <td
               class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
             >
-              {{ item.service_price.toFixed(2) }}
+              {{ item.total_services.toFixed(2) }}
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-bold"
+            >
+              {{ item.payment.toFixed(2) }}
             </td>
           </tr>
         </tbody>
@@ -137,34 +139,25 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useReportStore } from '@/stores/reportStore';
-import { useBarberStore } from '@/stores/barberStore'; // Assuming you have a barber store
+import { useBarberStore } from '@/stores/barberStore';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import weekday from 'dayjs/plugin/weekday'; // For startOf('week')
-import advancedFormat from 'dayjs/plugin/advancedFormat'; // For more formatting options if needed
-import customParseFormat from 'dayjs/plugin/customParseFormat'; // For parsing custom formats if needed
+import weekday from 'dayjs/plugin/weekday';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(weekday);
-dayjs.extend(advancedFormat);
-dayjs.extend(customParseFormat);
 
 const reportStore = useReportStore();
-const barberStore = useBarberStore(); // Initialize barber store
+const barberStore = useBarberStore();
 
 const reportData = ref([]);
-const barbers = ref([]); // To store list of barbers for filter
+const barbers = ref([]);
 const selectedBarberId = ref('');
-const dateFilterType = ref('month'); // 'month', 'week', 'day', 'custom'
+const dateFilterType = ref('month');
 const startDate = ref('');
 const endDate = ref('');
 const isLoading = ref(false);
 const error = ref(null);
-
-// Helper to format date for display
-const formatDate = (dateString) => {
-  return dayjs(dateString).format('DD/MM/YYYY');
-};
 
 // Function to calculate start and end dates based on filter type
 const getDatesForFilter = () => {
@@ -174,12 +167,11 @@ const getDatesForFilter = () => {
   switch (dateFilterType.value) {
     case 'month':
       start = today.startOf('month').format('YYYY-MM-DD');
-      end = today.endOf('day').format('YYYY-MM-DD'); // Up to current day
+      end = today.endOf('day').format('YYYY-MM-DD');
       break;
     case 'week':
-      // dayjs().startOf('week') depends on locale, weekday plugin makes it consistent
       start = today.startOf('week').format('YYYY-MM-DD');
-      end = today.endOf('day').format('YYYY-MM-DD'); // Up to current day
+      end = today.endOf('day').format('YYYY-MM-DD');
       break;
     case 'day':
       start = today.format('YYYY-MM-DD');
@@ -201,15 +193,18 @@ const fetchReport = async () => {
   error.value = null;
   try {
     const { start, end } = getDatesForFilter();
-    const filters = {
-      barberId: selectedBarberId.value || undefined,
-      startDate: start || undefined,
-      endDate: end || undefined,
-    };
-    reportData.value = await reportStore.getDetailedBarberServiceSales(filters);
+    const payments = await reportStore.getBarberPayments(start, end);
+    
+    // Filter by selectedBarberId if it's not ''
+    if (selectedBarberId.value) {
+      reportData.value = payments.filter(item => item.barber_id === selectedBarberId.value);
+    } else {
+      reportData.value = payments;
+    }
+
   } catch (err) {
     error.value = err.message || 'Error al cargar el reporte.';
-    console.error('Error fetching detailed barber service sales:', err);
+    console.error('Error fetching barber payments:', err);
   } finally {
     isLoading.value = false;
   }
@@ -218,7 +213,7 @@ const fetchReport = async () => {
 // Fetch barbers on component mount
 onMounted(async () => {
   try {
-    barbers.value = await barberStore.getAllBarbers(); // Assuming this action exists
+    barbers.value = await barberStore.getAllBarbers();
     // Set initial date filters and fetch report
     const { start, end } = getDatesForFilter();
     startDate.value = start;
@@ -246,7 +241,3 @@ watch([selectedBarberId, startDate, endDate, dateFilterType], () => {
   }
 });
 </script>
-
-<style scoped>
-/* Add any specific styles here if needed */
-</style>

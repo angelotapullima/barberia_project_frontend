@@ -2,11 +2,11 @@
   <div class="inventory-report-view p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Reporte de Inventario</h1>
 
-    <div v-if="productStore.loading" class="text-center text-gray-600">
+    <div v-if="isLoading" class="text-center text-gray-600">
       Cargando reporte...
     </div>
-    <div v-if="productStore.error" class="text-center text-red-500">
-      {{ productStore.error }}
+    <div v-if="error" class="text-center text-red-500">
+      {{ error }}
     </div>
 
     <div
@@ -37,13 +37,13 @@
       Productos con Bajo Stock
     </h2>
     <div
-      v-if="productStore.lowStockProducts.length === 0"
+      v-if="lowStockProducts.length === 0"
       class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 shadow-md"
       role="alert"
     >
       <p>¡Excelente! No hay productos con bajo stock en este momento.</p>
     </div>
-    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
       <!-- Botón de Exportar -->
       <div class="flex justify-end p-4">
         <button
@@ -81,7 +81,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="product in productStore.lowStockProducts"
+            v-for="product in lowStockProducts"
             :key="product.id"
             class="hover:bg-gray-50"
           >
@@ -101,39 +101,113 @@
         </tbody>
       </table>
     </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+      Historial de Movimientos de Inventario
+    </h2>
+    <div v-if="inventoryMovements.length === 0" class="text-center text-gray-500 mb-8">
+      No hay movimientos de inventario para mostrar.
+    </div>
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
+      <table class="min-w-full leading-normal">
+        <thead>
+          <tr>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Producto
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Tipo de Movimiento
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Cantidad
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Fecha
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Referencia
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="movement in inventoryMovements" :key="movement.id" class="hover:bg-gray-50">
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              {{ getProductName(movement.product_id) }}
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              {{ movement.movement_type === 'in' ? 'Entrada' : 'Salida' }}
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              {{ movement.quantity }}
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              {{ formatDate(movement.created_at) }}
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              {{ movement.reference_type || 'N/A' }} (ID: {{ movement.reference_id || 'N/A' }})
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useProductStore } from '../stores/productStore';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
-const productStore = useProductStore();
 const inventorySummary = ref(null);
+const lowStockProducts = ref([]);
+const inventoryMovements = ref([]);
+const products = ref([]); // To store all products for name lookup
 
-const fetchInventorySummary = async () => {
-  productStore.loading = true;
-  productStore.error = null;
+const isLoading = ref(false);
+const error = ref(null);
+
+const fetchInventoryData = async () => {
+  isLoading.value = true;
+  error.value = null;
   try {
-    const response = await axios.get('/api/services/products/report/summary');
-    inventorySummary.value = response.data;
-  } catch (error) {
-    productStore.error = 'Error al cargar el resumen del inventario.';
-    console.error('Error fetching inventory summary:', error);
+    const [summaryResponse, lowStockResponse, movementsResponse, productsResponse] = await Promise.all([
+      axios.get('/api/inventory/summary'),
+      axios.get('/api/products?lowStock=true'), // Assuming this endpoint exists or will be created
+      axios.get('/api/inventory/movements'),
+      axios.get('/api/products'), // Fetch all products for name lookup
+    ]);
+
+    inventorySummary.value = summaryResponse.data;
+    lowStockProducts.value = lowStockResponse.data;
+    inventoryMovements.value = movementsResponse.data;
+    products.value = productsResponse.data;
+
+  } catch (err) {
+    error.value = err.message || 'Error al cargar el reporte de inventario.';
+    console.error('Error fetching inventory data:', err);
   } finally {
-    productStore.loading = false;
+    isLoading.value = false;
   }
 };
 
 function exportLowStockToCsv() {
-  if (productStore.lowStockProducts.length === 0) {
+  if (lowStockProducts.value.length === 0) {
     alert('No hay productos con bajo stock para exportar.');
     return;
   }
 
   const headers = ['Nombre', 'Precio', 'Stock Actual', 'Stock Mínimo'];
-  const rows = productStore.lowStockProducts.map((product) => [
+  const rows = lowStockProducts.value.map((product) => [
     product.name,
     (product.price || 0).toFixed(2),
     product.stock_quantity,
@@ -154,12 +228,16 @@ function exportLowStockToCsv() {
   document.body.removeChild(link);
 }
 
+const getProductName = (productId) => {
+  const product = products.value.find(p => p.id === productId);
+  return product ? product.name : 'Desconocido';
+};
+
+const formatDate = (dateString) => {
+  return dayjs(dateString).format('DD/MM/YYYY HH:mm');
+};
+
 onMounted(() => {
-  fetchInventorySummary();
-  productStore.fetchLowStockProducts();
+  fetchInventoryData();
 });
 </script>
-
-<style scoped>
-/* Estilos específicos para este componente */
-</style>

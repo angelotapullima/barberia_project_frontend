@@ -1,106 +1,111 @@
 <template>
-  <div class="products-view p-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">
-      Gestión de Inventario de Productos
-    </h1>
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Gestión de Productos</h1>
 
-    <div v-if="productStore.loading" class="text-center text-gray-600">
+    <!-- Add Product Button -->
+    <div class="flex justify-end mb-4">
+      <button @click="openProductModal(null)" class="btn-primary">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Añadir Producto
+      </button>
+    </div>
+
+    <!-- Product List Table -->
+    <div v-if="productStore.loading" class="text-center text-gray-500">
       Cargando productos...
     </div>
-    <div v-if="productStore.error" class="text-center text-red-500">
-      {{ productStore.error }}
+    <div v-else-if="productStore.error" class="text-center text-red-500">
+      Error: {{ productStore.error }}
     </div>
-
-    <!-- Productos con bajo stock -->
-    <div
-      v-if="productStore.lowStockProducts.length > 0"
-      class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 shadow-md"
-      role="alert"
-    >
-      <p class="font-bold">¡Alerta de Bajo Stock!</p>
-      <ul class="list-disc ml-5">
-        <li v-for="product in productStore.lowStockProducts" :key="product.id">
-          {{ product.name }} (Stock actual: {{ product.stock_quantity }} /
-          Mínimo: {{ product.min_stock_level }})
-        </li>
-      </ul>
-    </div>
-
-    <!-- Botón para añadir nuevo producto -->
-    <button
-      @click="openCreateModal"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6 shadow-lg transition duration-300 ease-in-out"
-    >
-      Añadir Nuevo Producto
-    </button>
-
-    <!-- Tabla de Productos -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-      <table class="min-w-full leading-normal">
-        <thead>
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
           <tr>
             <th
-              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Nombre
             </th>
             <th
-              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Descripción
+            </th>
+            <th
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Precio
             </th>
             <th
-              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Stock
             </th>
             <th
-              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Stock Mínimo
             </th>
             <th
-              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Acciones
+              Categoría
             </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Activo
+            </th>
+            <th class="px-6 py-3"></th>
           </tr>
         </thead>
-        <tbody>
-          <tr
-            v-for="product in productStore.products"
-            :key="product.id"
-            class="hover:bg-gray-50"
-          >
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr v-for="product in productStore.products" :key="product.id">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
               {{ product.name }}
             </td>
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-              S/. {{ (product.price || 0).toFixed(2) }}
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ product.description || 'N/A' }}
             </td>
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+              S/ {{ product.price.toFixed(2) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
               {{ product.stock_quantity }}
             </td>
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
               {{ product.min_stock_level }}
             </td>
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-              <button
-                @click="openEditModal(product)"
-                class="text-indigo-600 hover:text-indigo-900 mr-3"
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ product.category || 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span
+                :class="{
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
+                  'bg-green-100 text-green-800': product.is_active,
+                  'bg-red-100 text-red-800': !product.is_active,
+                }"
               >
+                {{ product.is_active ? 'Sí' : 'No' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button @click="openProductModal(product)" class="text-indigo-600 hover:text-indigo-900 mr-4">
                 Editar
               </button>
-              <button
-                @click="openUpdateStockModal(product)"
-                class="text-green-600 hover:text-green-900 mr-3"
-              >
-                Actualizar Stock
-              </button>
-              <button
-                @click="deleteProduct(product.id)"
-                class="text-red-600 hover:text-red-900"
-              >
+              <button @click="deleteProduct(product.id)" class="text-red-600 hover:text-red-900">
                 Eliminar
               </button>
             </td>
@@ -109,186 +114,47 @@
       </table>
     </div>
 
-    <!-- Modales -->
-    <Modal :show="showCreateModal" @close="closeCreateModal">
-      <h3 class="text-xl font-semibold text-gray-900 mb-4">
-        Añadir Nuevo Producto
-      </h3>
-      <form @submit.prevent="createProduct">
-        <div class="mb-4">
-          <label
-            for="newProductName"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Nombre:</label
-          >
-          <input
-            type="text"
-            id="newProductName"
-            v-model="newProduct.name"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            for="newProductPrice"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Precio:</label
-          >
-          <input
-            type="number"
-            id="newProductPrice"
-            v-model.number="newProduct.price"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            step="0.01"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            for="newProductStock"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Stock Inicial:</label
-          >
-          <input
-            type="number"
-            id="newProductStock"
-            v-model.number="newProduct.stock_quantity"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            for="newProductMinStock"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Stock Mínimo:</label
-          >
-          <input
-            type="number"
-            id="newProductMinStock"
-            v-model.number="newProduct.min_stock_level"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="flex items-center justify-between">
-          <button
-            type="submit"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Guardar
-          </button>
-          <button
-            type="button"
-            @click="closeCreateModal"
-            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </Modal>
-
-    <Modal :show="showEditModal" @close="closeEditModal">
-      <h3 class="text-xl font-semibold text-gray-900 mb-4">Editar Producto</h3>
-      <form @submit.prevent="updateProduct">
-        <div class="mb-4">
-          <label
-            for="editProductName"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Nombre:</label
-          >
-          <input
-            type="text"
-            id="editProductName"
-            v-model="editedProduct.name"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            for="editProductPrice"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Precio:</label
-          >
-          <input
-            type="number"
-            id="editProductPrice"
-            v-model.number="editedProduct.price"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            step="0.01"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            for="editProductMinStock"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Stock Mínimo:</label
-          >
-          <input
-            type="number"
-            id="editProductMinStock"
-            v-model.number="editedProduct.min_stock_level"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="flex items-center justify-between">
-          <button
-            type="submit"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Guardar Cambios
-          </button>
-          <button
-            type="button"
-            @click="closeEditModal"
-            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </Modal>
-
-    <Modal :show="showUpdateStockModal" @close="closeUpdateStockModal">
-      <h3 class="text-xl font-semibold text-gray-900 mb-4">
-        Actualizar Stock de {{ productToUpdateStock?.name }}
-      </h3>
-      <form @submit.prevent="submitUpdateStock">
-        <div class="mb-4">
-          <label
-            for="updateStockQuantity"
-            class="block text-gray-700 text-sm font-bold mb-2"
-            >Nueva Cantidad en Stock:</label
-          >
-          <input
-            type="number"
-            id="updateStockQuantity"
-            v-model.number="stockUpdateQuantity"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div class="flex items-center justify-between">
-          <button
-            type="submit"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Actualizar
-          </button>
-          <button
-            type="button"
-            @click="closeUpdateStockModal"
-            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+    <!-- Product Modal -->
+    <Modal :show="isProductModalOpen" @close="closeProductModal">
+      <template #header>
+        <h3 class="text-xl font-bold">{{ currentProduct?.id ? 'Editar Producto' : 'Añadir Producto' }}</h3>
+      </template>
+      <template #body>
+        <form @submit.prevent="saveProduct">
+          <div class="mb-4">
+            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+            <input type="text" id="name" v-model="productForm.name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+          </div>
+          <div class="mb-4">
+            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+            <textarea id="description" v-model="productForm.description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
+            <input type="number" id="price" v-model.number="productForm.price" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" step="0.01" required />
+          </div>
+          <div class="mb-4">
+            <label for="stock_quantity" class="block text-gray-700 text-sm font-bold mb-2">Stock Actual:</label>
+            <input type="number" id="stock_quantity" v-model.number="productForm.stock_quantity" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+          </div>
+          <div class="mb-4">
+            <label for="min_stock_level" class="block text-gray-700 text-sm font-bold mb-2">Stock Mínimo:</label>
+            <input type="number" id="min_stock_level" v-model.number="productForm.min_stock_level" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+          </div>
+          <div class="mb-4">
+            <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
+            <input type="text" id="category" v-model="productForm.category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+          </div>
+          <div class="mb-4 flex items-center">
+            <input type="checkbox" id="is_active" v-model="productForm.is_active" class="mr-2" />
+            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+          </div>
+          <div class="flex items-center justify-between">
+            <button type="submit" class="btn-primary">Guardar</button>
+            <button type="button" class="btn-secondary" @click="closeProductModal">Cancelar</button>
+          </div>
+        </form>
+      </template>
     </Modal>
   </div>
 </template>
@@ -296,106 +162,87 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useProductStore } from '../stores/productStore';
-import Modal from '../components/Modal.vue'; // Asegúrate de que la ruta sea correcta
+import Modal from '../components/Modal.vue'; // Assuming you have a generic Modal component
 
 const productStore = useProductStore();
 
-// Modales
-const showCreateModal = ref(false);
-const showEditModal = ref(false);
-const showUpdateStockModal = ref(false);
-
-// Datos para formularios
-const newProduct = ref({
+const isProductModalOpen = ref(false);
+const currentProduct = ref(null); // To hold the product being edited
+const productForm = ref({
   name: '',
+  description: '',
   price: 0,
   stock_quantity: 0,
   min_stock_level: 0,
+  category: '',
+  is_active: true,
 });
-const editedProduct = ref(null);
-const productToUpdateStock = ref(null);
-const stockUpdateQuantity = ref(0);
 
-// Funciones para abrir/cerrar modales
-const openCreateModal = () => {
-  newProduct.value = {
-    name: '',
-    price: 0,
-    stock_quantity: 0,
-    min_stock_level: 0,
-  };
-  showCreateModal.value = true;
-};
-const closeCreateModal = () => (showCreateModal.value = false);
-
-const openEditModal = (product) => {
-  editedProduct.value = { ...product };
-  showEditModal.value = true;
-};
-const closeEditModal = () => (showEditModal.value = false);
-
-const openUpdateStockModal = (product) => {
-  productToUpdateStock.value = { ...product };
-  stockUpdateQuantity.value = product.stock_quantity; // Set current stock as default
-  showUpdateStockModal.value = true;
-};
-const closeUpdateStockModal = () => (showUpdateStockModal.value = false);
-
-// Acciones CRUD
-const createProduct = async () => {
-  try {
-    await productStore.createProduct(newProduct.value);
-    closeCreateModal();
-    await productStore.fetchProducts(); // Refresh list
-  } catch (error) {
-    // Error handled by store, display message in UI
+const openProductModal = (product) => {
+  currentProduct.value = product;
+  if (product) {
+    // Populate form for editing
+    productForm.value = { ...product };
+  } else {
+    // Reset form for adding new
+    productForm.value = {
+      name: '',
+      description: '',
+      price: 0,
+      stock_quantity: 0,
+      min_stock_level: 0,
+      category: '',
+      is_active: true,
+    };
   }
+  isProductModalOpen.value = true;
 };
 
-const updateProduct = async () => {
-  try {
-    await productStore.updateProduct(
-      editedProduct.value.id,
-      editedProduct.value,
-    );
-    closeEditModal();
-    await productStore.fetchProducts(); // Refresh list
-  } catch (error) {
-    // Error handled by store
-  }
+const closeProductModal = () => {
+  isProductModalOpen.value = false;
+  currentProduct.value = null;
 };
 
-const submitUpdateStock = async () => {
+const saveProduct = async () => {
   try {
-    await productStore.updateProductStock(
-      productToUpdateStock.value.id,
-      stockUpdateQuantity.value,
-    );
-    closeUpdateStockModal();
+    if (currentProduct.value?.id) {
+      // Update existing product
+      await productStore.updateProduct(currentProduct.value.id, productForm.value);
+      alert('Producto actualizado exitosamente!');
+    } else {
+      // Add new product
+      await productStore.addProduct(productForm.value);
+      alert('Producto añadido exitosamente!');
+    }
+    closeProductModal();
     await productStore.fetchProducts(); // Refresh list
   } catch (error) {
-    // Error handled by store
+    alert(`Error al guardar el producto: ${error.message || error}`);
   }
 };
 
 const deleteProduct = async (id) => {
-  if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+  if (confirm('¿Estás seguro de que quieres eliminar este producto? (Se marcará como inactivo)')) {
     try {
       await productStore.deleteProduct(id);
+      alert('Producto eliminado (inactivado) exitosamente!');
       await productStore.fetchProducts(); // Refresh list
     } catch (error) {
-      // Error handled by store
+      alert(`Error al eliminar el producto: ${error.message || error}`);
     }
   }
 };
 
-// Cargar productos al montar el componente
 onMounted(() => {
   productStore.fetchProducts();
-  productStore.fetchLowStockProducts();
 });
 </script>
 
 <style scoped>
-/* Puedes añadir estilos específicos aquí si es necesario */
+.btn-primary {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center;
+}
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50;
+}
 </style>

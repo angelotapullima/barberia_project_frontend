@@ -8,7 +8,6 @@
 
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <!-- Card 1: Ventas Hoy -->
       <!-- Card 1: Ventas de Productos (Hoy) -->
       <div
         class="bg-white p-6 rounded-2xl shadow-md flex items-center space-x-4"
@@ -88,7 +87,7 @@
         <div>
           <p class="text-sm text-gray-500">Reservas para Hoy</p>
           <p class="text-2xl font-bold text-gray-800">
-            {{ upcomingReservations.length }}
+            {{ upcomingReservations }}
           </p>
         </div>
       </div>
@@ -215,7 +214,7 @@
                     {{ stat.barber_name }}
                   </td>
                   <td class="px-4 py-2 text-right">
-                    S/ {{ (stat.total_service_sales || 0).toFixed(2) }}
+                    S/ {{ (stat.total_services || 0).toFixed(2) }}
                   </td>
                   <td class="px-4 py-2 text-right font-bold text-green-600">
                     S/ {{ (stat.payment || 0).toFixed(2) }}
@@ -244,26 +243,16 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useSalesStore } from '@/stores/salesStore';
-
-import { useReportStore } from '@/stores/reportStore';
-import dayjs from 'dayjs'; // Import dayjs for date manipulation
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
-dayjs.extend(isSameOrBefore); // Extend dayjs with the plugin
-
-const salesStore = useSalesStore();
-
-const reportStore = useReportStore();
+import axios from 'axios';
 
 // Data refs
-const salesToday = ref(0); // This will now be total sales (products + services)
-const productSalesToday = ref(0); // New ref for product sales today
-const serviceSalesToday = ref(0); // New ref for service sales today
-const salesMonth = ref(0);
-const upcomingReservations = ref([]);
+const productSalesToday = ref(0);
+const serviceSalesToday = ref(0);
+const upcomingReservations = ref(0);
 const completedReservationsToday = ref(0);
-const weeklyProductSales = ref([]); // New ref for product sales
-const weeklyServiceSales = ref([]); // New ref for service sales
+const salesMonth = ref(0);
+const weeklyProductSales = ref([]);
+const weeklyServiceSales = ref([]);
 const topServices = ref([]);
 const barberPayouts = ref([]);
 
@@ -380,83 +369,22 @@ const topServicesSeries = computed(() =>
 
 // Fetching logic
 async function fetchData() {
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  try {
+    const response = await axios.get('/api/dashboard/summary');
+    const data = response.data;
 
-  const sevenDaysAgo = dayjs().subtract(7, 'day').format('YYYY-MM-DD'); // Using dayjs
-  const sevenDaysAgoStr = sevenDaysAgo;
-
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const firstDayOfMonthStr = firstDayOfMonth.toISOString().slice(0, 10);
-
-  // --- Parallel fetching ---
-  const [
-    dailySalesTodayByTypeData,
-    dailySalesByTypeDataForWeekly,
-    salesMonthData,
-    reservationsTodayData,
-    topServicesData,
-    barberPaymentsData,
-  ] = await Promise.all([
-    reportStore.fetchServicesProductsSales(todayStr, todayStr),
-    reportStore.fetchServicesProductsSales(sevenDaysAgoStr, todayStr),
-    salesStore.getSalesSummaryByDateRange(firstDayOfMonthStr, todayStr),
-    salesStore.getSalesSummaryByService(sevenDaysAgoStr, todayStr),
-    reportStore.getBarberPayments(firstDayOfMonthStr, todayStr),
-  ]);
-
-  // --- Process data ---
-  // Process today's sales by type
-  productSalesToday.value =
-    dailySalesTodayByTypeData.find((item) => item.type === 'product')
-      ?.total_sales_by_type || 0;
-  serviceSalesToday.value =
-    dailySalesTodayByTypeData.find((item) => item.type === 'service')
-      ?.total_sales_by_type || 0;
-  salesToday.value = productSalesToday.value + serviceSalesToday.value; // Total sales today
-
-  salesMonth.value = salesMonthData.reduce((sum, day) => sum + day.total, 0);
-
-  const now = new Date();
-  upcomingReservations.value = reservationsTodayData
-    .filter((res) => new Date(res.start_time) >= now)
-    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-
-  completedReservationsToday.value = reservationsTodayData.filter(
-    (res) => new Date(res.start_time) < now,
-  ).length;
-
-  // Process daily sales by type for weekly charts
-  const productSalesMap = new Map();
-  const serviceSalesMap = new Map();
-
-  // Initialize maps with all dates in the range set to 0
-  let currentDate = dayjs(sevenDaysAgoStr);
-  while (currentDate.isSameOrBefore(dayjs(todayStr), 'day')) {
-    const dateKey = currentDate.format('YYYY-MM-DD');
-    productSalesMap.set(dateKey, 0);
-    serviceSalesMap.set(dateKey, 0);
-    currentDate = currentDate.add(1, 'day');
+    productSalesToday.value = data.productSalesToday || 0;
+    serviceSalesToday.value = data.serviceSalesToday || 0;
+    upcomingReservations.value = data.upcomingReservations || 0;
+    completedReservationsToday.value = data.completedReservationsToday || 0;
+    salesMonth.value = data.salesMonth || 0;
+    weeklyProductSales.value = data.weeklyProductSales || [];
+    weeklyServiceSales.value = data.weeklyServiceSales || [];
+    topServices.value = data.topServices || [];
+    barberPayouts.value = data.barberPayouts || [];
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
   }
-
-  dailySalesByTypeDataForWeekly.forEach((item) => {
-    const formattedDate = dayjs(item.date).format('YYYY-MM-DD'); // Format date consistently
-    if (item.type === 'product') {
-      productSalesMap.set(formattedDate, item.total_sales_by_type);
-    } else if (item.type === 'service') {
-      serviceSalesMap.set(formattedDate, item.total_sales_by_type);
-    }
-  });
-
-  weeklyProductSales.value = Array.from(productSalesMap.entries()).map(
-    ([date, total]) => ({ date, total }),
-  );
-  weeklyServiceSales.value = Array.from(serviceSalesMap.entries()).map(
-    ([date, total]) => ({ date, total }),
-  );
-
-  topServices.value = topServicesData.slice(0, 5); // Top 5 services
-  barberPayouts.value = barberPaymentsData; // Assigned new data
 }
 
 onMounted(fetchData);

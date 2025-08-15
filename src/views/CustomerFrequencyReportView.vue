@@ -4,14 +4,14 @@
       Reporte de Frecuencia de Clientes
     </h1>
 
-    <div v-if="store.isLoading" class="text-center text-gray-500">
+    <div v-if="isLoading" class="text-center text-gray-500">
       Generando reporte...
     </div>
     <div
-      v-if="store.error"
+      v-if="error"
       class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
     >
-      {{ store.error }}
+      {{ error }}
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
@@ -59,7 +59,7 @@
         Frecuencia de Clientes
       </h2>
 
-      <div v-if="store.customerFrequency.length > 0" class="mt-6">
+      <div v-if="customerFrequency.length > 0" class="mt-6">
         <!-- Botón de Exportar -->
         <div class="flex justify-end mb-4">
           <button
@@ -96,7 +96,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr
-                v-for="item in store.customerFrequency"
+                v-for="item in customerFrequency"
                 :key="item.customer_name"
               >
                 <td class="px-4 py-2">{{ item.customer_name }}</td>
@@ -123,6 +123,10 @@ const store = useReportStore();
 
 const startDate = ref('');
 const endDate = ref('');
+
+const customerFrequency = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
 
 const series = ref([]);
 const chartOptions = ref({
@@ -181,21 +185,31 @@ async function fetchReportData() {
     alert('Por favor, selecciona un rango de fechas.');
     return;
   }
-  await store.fetchCustomerFrequency(startDate.value, endDate.value);
+
+  isLoading.value = true;
+  error.value = null;
+  try {
+    customerFrequency.value = await store.fetchCustomerFrequency(startDate.value, endDate.value);
+  } catch (err) {
+    error.value = err.message || 'Error al cargar el reporte.';
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function updateChartData() {
-  if (store.customerFrequency.length > 0) {
+  if (customerFrequency.value.length > 0) {
     series.value = [
       {
         name: 'Número de Visitas',
-        data: store.customerFrequency.map((item) => item.visit_count),
+        data: customerFrequency.value.map((item) => item.visit_count),
       },
     ];
     chartOptions.value = {
       ...chartOptions.value,
       xaxis: {
-        categories: store.customerFrequency.map((item) => item.customer_name),
+        categories: customerFrequency.value.map((item) => item.customer_name),
       },
     };
   } else {
@@ -210,13 +224,13 @@ function updateChartData() {
 }
 
 function exportToCsv() {
-  if (store.customerFrequency.length === 0) {
+  if (customerFrequency.value.length === 0) {
     alert('No hay datos para exportar.');
     return;
   }
 
   const headers = ['Cliente', 'Nº de Visitas'];
-  const rows = store.customerFrequency.map((item) => [
+  const rows = customerFrequency.value.map((item) => [
     item.customer_name,
     item.visit_count,
   ]);
@@ -235,9 +249,9 @@ function exportToCsv() {
   document.body.removeChild(link);
 }
 
-// Observar cambios en store.customerFrequency para actualizar el gráfico
+// Observar cambios en customerFrequency para actualizar el gráfico
 watch(
-  () => store.customerFrequency,
+  customerFrequency,
   () => {
     updateChartData();
   },

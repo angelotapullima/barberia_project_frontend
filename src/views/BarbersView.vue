@@ -42,6 +42,11 @@
             >
               Sueldo Base
             </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Activo
+            </th>
             <th class="relative px-6 py-3">
               <span class="sr-only">Acciones</span>
             </th>
@@ -52,6 +57,17 @@
             <td class="px-6 py-4">{{ barber.name }}</td>
             <td class="px-6 py-4">{{ barber.station_name || 'N/A' }}</td>
             <td class="px-6 py-4">S/ {{ barber.base_salary }}</td>
+            <td class="px-6 py-4">
+              <span
+                :class="{
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
+                  'bg-green-100 text-green-800': barber.is_active,
+                  'bg-red-100 text-red-800': !barber.is_active,
+                }"
+              >
+                {{ barber.is_active ? 'Sí' : 'No' }}
+              </span>
+            </td>
             <td class="px-6 py-4 text-right text-sm font-medium">
               <button
                 @click="openModal(barber)"
@@ -68,7 +84,7 @@
             </td>
           </tr>
           <tr v-if="barberStore.barbers.length === 0">
-            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
               No se encontraron barberos.
             </td>
           </tr>
@@ -136,6 +152,10 @@
               </option>
             </select>
           </div>
+          <div class="mb-4 flex items-center">
+            <input type="checkbox" id="is_active" v-model="currentBarber.is_active" class="mr-2" />
+            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+          </div>
           <div class="mt-8 flex justify-end space-x-4">
             <button
               type="button"
@@ -167,7 +187,12 @@ const stationStore = useStationStore();
 
 const isModalOpen = ref(false);
 const isEditing = ref(false);
-const currentBarber = ref({});
+const currentBarber = ref({
+  name: '',
+  base_salary: 1250, // Default base salary
+  station_id: null,
+  is_active: true, // New field
+});
 
 const modalTitle = computed(() =>
   isEditing.value ? 'Editar Barbero' : 'Añadir Nuevo Barbero',
@@ -179,7 +204,12 @@ function openModal(barber = null) {
     currentBarber.value = { ...barber };
   } else {
     isEditing.value = false;
-    currentBarber.value = { name: '', base_salary: 1300, station_id: null };
+    currentBarber.value = {
+      name: '',
+      base_salary: 1250,
+      station_id: null,
+      is_active: true,
+    };
   }
   isModalOpen.value = true;
 }
@@ -198,7 +228,7 @@ async function handleSubmit() {
 }
 
 function confirmDelete(id) {
-  if (window.confirm('¿Estás seguro de que quieres eliminar este barbero?')) {
+  if (window.confirm('¿Estás seguro de que quieres eliminar este barbero? (Se marcará como inactivo)')) {
     barberStore.deleteBarber(id);
   }
 }
@@ -208,3 +238,13 @@ onMounted(() => {
   stationStore.fetchStations();
 });
 </script>
+
+<style scoped>
+.btn-primary {
+  @apply bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50;
+}
+</style>
