@@ -545,7 +545,7 @@ const fetchReservationsForCurrentWeek = async () => {
     .endOf('week')
     .endOf('day')
     .toISOString();
-  await reservationStore.fetchReservationsByDateRange(startDate, endDate);
+  await reservationStore.fetchReservations(startDate, endDate);
 };
 
 watch(currentWeekStart, fetchReservationsForCurrentWeek);
