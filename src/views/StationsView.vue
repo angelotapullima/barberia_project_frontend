@@ -34,6 +34,11 @@
             >
               Nombre
             </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Activo
+            </th>
             <th class="relative px-6 py-3">
               <span class="sr-only">Acciones</span>
             </th>
@@ -42,6 +47,17 @@
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="station in store.stations" :key="station.id">
             <td class="px-6 py-4">{{ station.name }}</td>
+            <td class="px-6 py-4">
+              <span
+                :class="{
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
+                  'bg-green-100 text-green-800': station.is_active,
+                  'bg-red-100 text-red-800': !station.is_active,
+                }"
+              >
+                {{ station.is_active ? 'Sí' : 'No' }}
+              </span>
+            </td>
             <td class="px-6 py-4 text-right text-sm font-medium">
               <button
                 @click="openModal(station)"
@@ -58,7 +74,7 @@
             </td>
           </tr>
           <tr v-if="store.stations.length === 0">
-            <td colspan="2" class="px-6 py-4 text-center text-gray-500">
+            <td colspan="3" class="px-6 py-4 text-center text-gray-500">
               No se encontraron estaciones.
             </td>
           </tr>
@@ -92,6 +108,10 @@
               required
             />
           </div>
+          <div class="mb-4 flex items-center">
+            <input type="checkbox" id="is_active" v-model="currentStation.is_active" class="mr-2" />
+            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+          </div>
           <div class="mt-8 flex justify-end space-x-4">
             <button
               type="button"
@@ -121,7 +141,10 @@ const store = useStationStore();
 
 const isModalOpen = ref(false);
 const isEditing = ref(false);
-const currentStation = ref({});
+const currentStation = ref({
+  name: '',
+  is_active: true, // New field
+});
 
 const modalTitle = computed(() =>
   isEditing.value ? 'Editar Estación' : 'Añadir Nueva Estación',
@@ -134,7 +157,10 @@ function openModal(station = null) {
     currentStation.value = { ...station };
   } else {
     isEditing.value = false;
-    currentStation.value = { name: '' };
+    currentStation.value = {
+      name: '',
+      is_active: true,
+    };
   }
   isModalOpen.value = true;
 }
@@ -160,7 +186,7 @@ function confirmDelete(id) {
   store.error = null; // Clear previous errors
   if (
     window.confirm(
-      '¿Estás seguro de que quieres eliminar esta estación? Esta acción no se puede deshacer.',
+      '¿Estás seguro de que quieres eliminar esta estación? (Se marcará como inactiva)',
     )
   ) {
     store.deleteStation(id);
@@ -171,3 +197,13 @@ onMounted(() => {
   store.fetchStations();
 });
 </script>
+
+<style scoped>
+.btn-primary {
+  @apply bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50;
+}
+</style>

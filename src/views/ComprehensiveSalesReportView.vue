@@ -4,14 +4,14 @@
       Reporte de Ventas Completo
     </h1>
 
-    <div v-if="store.isLoading" class="text-center text-gray-500">
+    <div v-if="isLoading" class="text-center text-gray-500">
       Generando reporte...
     </div>
     <div
-      v-if="store.error"
+      v-if="error"
       class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
     >
-      {{ store.error }}
+      {{ error }}
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
@@ -81,7 +81,7 @@
       </div>
 
       <!-- Comprehensive Sales Results -->
-      <div v-if="store.comprehensiveSales.length > 0" class="mt-6">
+      <div v-if="comprehensiveSales.length > 0" class="mt-6">
         <!-- Botón de Exportar -->
         <div class="flex justify-end mb-4">
           <button
@@ -109,7 +109,12 @@
                 <th
                   class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
                 >
-                  Items Vendidos
+                  Monto Servicios
+                </th>
+                <th
+                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
+                  Monto Productos
                 </th>
                 <th
                   class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
@@ -124,10 +129,15 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="sale in store.comprehensiveSales" :key="sale.sale_id">
+              <tr v-for="sale in comprehensiveSales" :key="sale.sale_id">
                 <td class="px-4 py-2">{{ sale.sale_date }}</td>
                 <td class="px-4 py-2">{{ sale.customer_name }}</td>
-                <td class="px-4 py-2">{{ sale.items_sold }}</td>
+                <td class="px-4 py-2">
+                  S/ {{ sale.service_amount.toFixed(2) }}
+                </td>
+                <td class="px-4 py-2">
+                  S/ {{ sale.products_amount.toFixed(2) }}
+                </td>
                 <td class="px-4 py-2">{{ sale.payment_method }}</td>
                 <td class="px-4 py-2 text-right">
                   S/ {{ sale.total_amount.toFixed(2) }}
@@ -148,7 +158,7 @@
 import { ref, onMounted } from 'vue';
 import { useReportStore } from '@/stores/reportStore';
 
-const store = useReportStore();
+const reportStore = useReportStore();
 
 // General Filters
 const startDate = ref('');
@@ -157,6 +167,10 @@ const endDate = ref('');
 // Specific Filters for Comprehensive Report
 const selectedPaymentMethod = ref(null);
 const paymentMethods = ['cash', 'card', 'yape', 'plin'];
+
+const comprehensiveSales = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
 
 function setDefaultDates() {
   const today = new Date();
@@ -171,16 +185,25 @@ async function fetchComprehensiveSalesData() {
     return;
   }
 
-  const filters = {
-    startDate: startDate.value,
-    endDate: endDate.value,
-    paymentMethod: selectedPaymentMethod.value,
-  };
-  await store.fetchComprehensiveSales(filters);
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const filters = {
+      startDate: startDate.value,
+      endDate: endDate.value,
+      paymentMethod: selectedPaymentMethod.value,
+    };
+    comprehensiveSales.value = await reportStore.fetchComprehensiveSales(filters);
+  } catch (err) {
+    error.value = err.message || 'Error al cargar el reporte de ventas completo.';
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function exportToCsv() {
-  if (store.comprehensiveSales.length === 0) {
+  if (comprehensiveSales.value.length === 0) {
     alert('No hay datos para exportar.');
     return;
   }
@@ -188,14 +211,16 @@ function exportToCsv() {
   const headers = [
     'Fecha',
     'Cliente',
-    'Items Vendidos', // Changed from Servicios
+    'Monto Servicios',
+    'Monto Productos',
     'Método Pago',
     'Monto Total',
   ];
-  const rows = store.comprehensiveSales.map((sale) => [
+  const rows = comprehensiveSales.value.map((sale) => [
     sale.sale_date,
     sale.customer_name,
-    sale.items_sold, // Changed from services_sold
+    sale.service_amount.toFixed(2),
+    sale.products_amount.toFixed(2),
     sale.payment_method,
     sale.total_amount.toFixed(2),
   ]);
@@ -216,7 +241,6 @@ function exportToCsv() {
 
 onMounted(() => {
   setDefaultDates();
-  // Fetch initial report data
   fetchComprehensiveSalesData();
 });
 </script>

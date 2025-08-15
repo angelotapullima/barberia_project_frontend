@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 export const useServiceStore = defineStore('services', {
   state: () => ({
     services: [],
@@ -14,7 +12,7 @@ export const useServiceStore = defineStore('services', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/services`);
+        const response = await axios.get('/api/services');
         this.services = response.data;
       } catch (error) {
         this.error = 'Error al cargar los servicios.';
@@ -26,7 +24,7 @@ export const useServiceStore = defineStore('services', {
     async addService(service) {
       this.error = null;
       try {
-        await axios.post(`${API_URL}/services`, service);
+        await axios.post('/api/services', service);
         await this.fetchServices();
       } catch (error) {
         this.error =
@@ -37,7 +35,7 @@ export const useServiceStore = defineStore('services', {
     async updateService(service) {
       this.error = null;
       try {
-        await axios.put(`${API_URL}/services/${service.id}`, service);
+        await axios.put(`/api/services/${service.id}`, service);
         await this.fetchServices();
       } catch (error) {
         this.error =
@@ -48,7 +46,7 @@ export const useServiceStore = defineStore('services', {
     async deleteService(id) {
       this.error = null;
       try {
-        await axios.delete(`${API_URL}/services/${id}`);
+        await axios.delete(`/api/services/${id}`);
         await this.fetchServices();
       } catch (error) {
         this.error =

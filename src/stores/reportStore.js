@@ -1,16 +1,13 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 export const useReportStore = defineStore('reports', {
   state: () => ({
-    events: [],
-    stats: [],
-    comprehensiveSales: [], // New state for comprehensive sales report
-    servicesProductsSales: [], // New state for services vs products sales report
-    servicesProductsSalesComparison: [], // New state for comparison data
-    // Nuevos estados para los reportes
+    events: [], // This state might become obsolete if dashboard handles all
+    stats: [], // This state might become obsolete if dashboard handles all
+    comprehensiveSales: [],
+    servicesProductsSales: [],
+    servicesProductsSalesComparison: [],
     stationUsage: [],
     customerFrequency: [],
     peakHours: [],
@@ -18,29 +15,14 @@ export const useReportStore = defineStore('reports', {
     error: null,
   }),
   actions: {
-    async fetchReport(year, month) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(`${API_URL}/reports`, {
-          params: { year, month },
-        });
-        this.events = response.data.events;
-        this.stats = response.data.stats;
-      } catch (error) {
-        this.error =
-          error.response?.data?.error || 'Error al cargar el reporte.';
-        console.error(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    // fetchReport(year, month) is removed as dashboard endpoint will replace it
+
     async fetchStationUsage(startDate, endDate) {
       this.isLoading = true;
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await axios.get(`${API_URL}/reports/station-usage`, {
+        const response = await axios.get(`/api/reports/station-usage`, {
           params,
         });
         this.stationUsage = response.data;
@@ -59,7 +41,7 @@ export const useReportStore = defineStore('reports', {
       try {
         const params = { startDate, endDate };
         const response = await axios.get(
-          `${API_URL}/reports/customer-frequency`,
+          `/api/reports/customer-frequency`,
           { params },
         );
         this.customerFrequency = response.data;
@@ -77,7 +59,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await axios.get(`${API_URL}/reports/peak-hours`, {
+        const response = await axios.get(`/api/reports/peak-hours`, {
           params,
         });
         this.peakHours = response.data;
@@ -95,7 +77,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const response = await axios.get(
-          `${API_URL}/reports/comprehensive-sales`,
+          `/api/reports/comprehensive-sales`,
           {
             params: filters,
           },
@@ -119,7 +101,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const currentPeriodPromise = axios.get(
-          `${API_URL}/reports/services-products-sales`,
+          `/api/reports/services-products-sales`,
           {
             params: { startDate, endDate },
           },
@@ -128,7 +110,7 @@ export const useReportStore = defineStore('reports', {
         let comparisonPeriodPromise = Promise.resolve({ data: [] });
         if (comparisonFilters) {
           comparisonPeriodPromise = axios.get(
-            `${API_URL}/reports/services-products-sales`,
+            `/api/reports/services-products-sales`,
             {
               params: comparisonFilters,
             },
@@ -157,7 +139,7 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reports/barber-payments`, {
+        const response = await axios.get(`/api/reports/barber-payments`, {
           params: { startDate, endDate },
         });
         return response.data;
@@ -176,7 +158,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const response = await axios.get(
-          `${API_URL}/reports/detailed-barber-service-sales`,
+          `/api/reports/detailed-barber-service-sales`,
           {
             params: filters,
           },

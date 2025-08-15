@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="show" class="modal-mask">
+    <div v-if="show" class="modal-mask" @click="handleClickOutside">
       <div class="modal-container max-w-2xl overflow-y-auto max-h-[90vh]">
         <div class="modal-header">
           <slot name="header">
@@ -183,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue'; // Add onUnmounted
 import { useBarberStore } from '../stores/barberStore';
 import { useReservationStore } from '../stores/reservationStore';
 import { useServiceStore } from '../stores/serviceStore';
@@ -198,6 +198,35 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'reservationCreated']);
+
+// Function to handle Escape key press
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    emit('close');
+  }
+};
+
+// Function to handle click outside modal content
+const handleClickOutside = (event) => {
+  // Check if the click target is the modal mask itself, not a child of modal-container
+  if (event.target.classList.contains('modal-mask')) {
+    emit('close');
+  }
+};
+
+// Watch for changes in the 'show' prop to add/remove event listeners
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.addEventListener('keydown', handleKeydown);
+  } else {
+    document.removeEventListener('keydown', handleKeydown);
+  }
+});
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 const barberStore = useBarberStore();
 const reservationStore = useReservationStore();

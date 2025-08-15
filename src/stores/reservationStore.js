@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 export const useReservationStore = defineStore('reservations', {
   state: () => ({
     reservations: [],
@@ -29,7 +27,7 @@ export const useReservationStore = defineStore('reservations', {
           endDate,
           includeSaleDetails,
         };
-        const response = await axios.get(`${API_URL}/reservations`, { params });
+        const response = await axios.get(`/api/reservations`, { params });
         this.reservations = response.data.reservations;
         this.totalReservationsCount = response.data.total; // Update total count
         this.currentPage = response.data.page; // Update currentPage from backend
@@ -46,7 +44,7 @@ export const useReservationStore = defineStore('reservations', {
       this.error = null;
       try {
         const response = await axios.post(
-          `${API_URL}/reservations`,
+          `/api/reservations`,
           reservationData,
         );
         this.reservations.push(response.data);
@@ -63,7 +61,7 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.put(`${API_URL}/reservations/${id}`, reservationData);
+        await axios.put(`/api/reservations/${id}`, reservationData);
         const index = this.reservations.findIndex((res) => res.id === id);
         if (index !== -1) {
           Object.assign(this.reservations[index], reservationData);
@@ -81,7 +79,7 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.delete(`${API_URL}/reservations/${id}`);
+        await axios.delete(`/api/reservations/${id}`);
         this.reservations = this.reservations.filter((res) => res.id !== id);
       } catch (error) {
         this.error =
@@ -92,62 +90,60 @@ export const useReservationStore = defineStore('reservations', {
         this.isLoading = false;
       }
     },
-    async fetchReservationCount(startDate, endDate) {
+    async addProductToReservation(reservationId, productId, quantity) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reservations/count`, {
-          params: { startDate, endDate },
-        });
-        return response.data.count;
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al obtener el conteo de reservas.';
-        console.error(error);
-        return 0;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    async fetchCompletedReservationCount(startDate, endDate) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(
-          `${API_URL}/reservations/count-completed`,
-          {
-            params: { startDate, endDate },
-          },
+        const response = await axios.post(
+          `/api/reservations/${reservationId}/products`,
+          { productId, quantity },
         );
-        return response.data.count;
+        // Optionally, update the reservation in the store if the backend returns the updated reservation
+        // For now, just return the new product added
+        return response.data;
       } catch (error) {
         this.error =
           error.response?.data?.error ||
-          'Error al obtener el conteo de reservas completadas.';
+          'Error al añadir producto a la reserva.';
         console.error(error);
-        return 0;
+        throw error;
       } finally {
         this.isLoading = false;
       }
     },
-    async fetchCompletedReservations(startDate, endDate) {
+    async removeProductFromReservation(reservationId, reservationProductId) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reservations/completed`, {
-          params: { startDate, endDate },
-        });
-        return response.data; // Assuming response.data is an array of completed reservations
+        await axios.delete(
+          `/api/reservations/${reservationId}/products/${reservationProductId}`,
+        );
+        // Optionally, update the reservation in the store
       } catch (error) {
         this.error =
           error.response?.data?.error ||
-          'Error al obtener las reservas completadas.';
+          'Error al eliminar producto de la reserva.';
         console.error(error);
-        return [];
+        throw error;
       } finally {
         this.isLoading = false;
       }
     },
-  },
-});
+    async completeReservationAndCreateSale(reservationId, paymentMethod) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.post(`/api/reservations/${reservationId}/complete`, { paymentMethod });
+        return response.data;
+      } catch (error) {
+        this.error =
+          error.response?.data?.error ||
+          'Error al completar la reserva y crear la venta.';
+        console.error(error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  }
+})

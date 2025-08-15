@@ -23,9 +23,37 @@
             />
           </svg>
         </button>
+        <button class="btn-icon sm:hidden" @click="goToPreviousDay">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
         <span class="text-xl font-semibold text-gray-800">{{
           currentWeekRange
         }}</span>
+        <button class="btn-icon sm:hidden" @click="goToNextDay">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
         <button class="btn-icon" @click="goToNextWeek">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +108,7 @@
     <!-- Main Calendar Grid -->
     <div class="relative">
       <div
-        class="calendar-main-grid grid grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg"
+        class="calendar-main-grid grid grid-cols-[48px_1fr] md:grid-cols-[60px_repeat(4,_minmax(0,_1fr))] lg:grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px bg-gray-200 rounded-lg overflow-hidden shadow-lg"
       >
         <!-- Time Axis Header (empty corner) -->
         <div
@@ -89,7 +117,7 @@
 
         <!-- Day Headers -->
         <div
-          v-for="day in weekDays"
+          v-for="day in displayedDays"
           :key="day.fullDate"
           class="day-header bg-white p-2 text-center font-semibold text-gray-700 border-b border-r border-gray-200 h-[76px]"
           :class="{
@@ -97,11 +125,11 @@
               day.fullDate === dayjs().format('YYYY-MM-DD'),
           }"
         >
-          <span class="block text-xs uppercase">{{ day.name }}</span>
+          <span class="block text-xs sm:text-sm uppercase">{{ day.name }}</span>
           <span class="block text-xl font-bold">{{
             day.date.split(' ')[0]
           }}</span>
-          <span class="block text-xs text-gray-500">{{
+          <span class="hidden sm:block text-xs text-gray-500">{{
             day.date.split(' ')[1]
           }}</span>
         </div>
@@ -117,7 +145,7 @@
           </div>
           <!-- Day Cells -->
           <div
-            v-for="day in weekDays"
+            v-for="day in displayedDays"
             :key="day.fullDate + '-' + hour"
             class="day-cell relative bg-white border-b border-r border-gray-200 h-[60px] cursor-pointer hover:bg-blue-50"
             @click="
@@ -138,10 +166,10 @@
 
       <!-- Appointments Overlay -->
       <div
-        class="appointments-overlay absolute top-[76px] left-[60px] right-0 bottom-0 grid grid-cols-7 gap-px pointer-events-none"
+        class="appointments-overlay absolute inset-0 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-px pointer-events-none"
       >
         <div
-          v-for="day in weekDays"
+          v-for="day in displayedDays"
           :key="day.fullDate"
           class="day-column relative"
         >
@@ -154,10 +182,10 @@
           >
             <!-- Top part with info -->
             <div class="flex-grow">
-              <div class="font-bold text-sm text-gray-900 truncate">
+              <div class="font-bold text-xs sm:text-sm text-gray-900 truncate">
                 {{ reservation.client_name }}
               </div>
-              <div class="text-xs text-gray-600 truncate">
+              <div class="text-xxs sm:text-xs text-gray-600 truncate">
                 {{ getBarberName(reservation.barber_id) }}
               </div>
               <div class="text-xs text-gray-500 mt-1 flex items-center">
@@ -183,12 +211,12 @@
               class="status-tag text-xs font-semibold text-center py-1 px-2 rounded-md mt-2 self-start"
               :class="{
                 'bg-yellow-100 text-yellow-800':
-                  reservation.status !== 'completed',
+                  reservation.status !== 'paid',
                 'bg-green-100 text-green-800':
-                  reservation.status === 'completed',
+                  reservation.status === 'paid',
               }"
             >
-              {{ reservation.status === 'completed' ? 'Pagado' : 'Reservado' }}
+              {{ reservation.status === 'paid' ? 'Pagado' : 'Reservado' }}
             </div>
           </div>
         </div>
@@ -220,6 +248,7 @@
       :reservation="reservationToSell"
       @close="isSaleRegistrationModalOpen = false"
       @saleProcessed="fetchReservationsForCurrentWeek"
+      @updatedReservation="handleUpdatedReservation"
     />
 
     <SaleDetailsModal
@@ -232,33 +261,22 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useBarberStore } from '../stores/barberStore';
-import { useReservationStore } from '../stores/reservationStore';
-import { useServiceStore } from '../stores/serviceStore';
-import { useStationStore } from '../stores/stationStore';
-import { useProductStore } from '../stores/productStore';
+import axios from 'axios';
 import SaleRegistrationModal from '../components/SaleRegistrationModal.vue';
 import ReservationFormModal from '../components/ReservationFormModal.vue';
 import SaleDetailsModal from '../components/SaleDetailsModal.vue';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
+import utc from 'dayjs/plugin/utc';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
-dayjs.locale('es'); // Set locale globally
-import utc from 'dayjs/plugin/utc'; // Import UTC plugin
-import localizedFormat from 'dayjs/plugin/localizedFormat'; // Import localizedFormat plugin
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'; // Import isSameOrAfter plugin
+dayjs.locale('es');
+dayjs.extend(utc);
+dayjs.extend(localizedFormat);
+dayjs.extend(isSameOrAfter);
 
-dayjs.extend(utc); // Extend dayjs with UTC plugin
-dayjs.extend(localizedFormat); // Extend dayjs with localizedFormat plugin
-dayjs.extend(isSameOrAfter); // Extend dayjs with isSameOrAfter plugin
-
-const barberStore = useBarberStore();
-const reservationStore = useReservationStore();
-const serviceStore = useServiceStore();
-const stationStore = useStationStore();
-const productStore = useProductStore();
-
-import CustomSelect from '../components/CustomSelect.vue'; // Import CustomSelect component
+import CustomSelect from '../components/CustomSelect.vue';
 
 // Define a set of colors for barbers
 const colors = [
@@ -274,9 +292,14 @@ const colors = [
 // Reactive map to store barber colors
 const barberColors = ref({});
 
+// Data refs
+const reservations = ref([]);
+const barbers = ref([]);
+const services = ref([]);
+
 // Function to assign colors to barbers
 const assignBarberColors = () => {
-  barberStore.barbers.forEach((barber, index) => {
+  barbers.value.forEach((barber, index) => {
     barberColors.value[barber.id] = {
       bgColor: colors[index % colors.length],
       borderColor: colors[index % colors.length].replace('500', '700'), // Darker shade for border
@@ -289,7 +312,7 @@ const barberSelectOptions = computed(() => {
     { label: 'Todo el equipo', value: 'all' },
     { label: 'Equipo programado', value: 'scheduled' },
   ];
-  barberStore.barbers.forEach((barber) => {
+  barbers.value.forEach((barber) => {
     options.push({
       label: barber.name,
       value: barber.id,
@@ -303,7 +326,7 @@ const barberSelectOptions = computed(() => {
 });
 
 const currentWeekStart = ref(dayjs().startOf('week'));
-const selectedBarberFilter = ref('all'); // Keep this
+const selectedBarberFilter = ref('all');
 const isAddAppointmentModalOpen = ref(false);
 const isSaleRegistrationModalOpen = ref(false);
 const reservationToSell = ref(null);
@@ -313,6 +336,14 @@ const selectedReservationId = ref(null);
 const selectedBarberId = ref(null);
 const selectedDate = ref(null);
 const selectedHour = ref(null);
+
+const headerHeight = 76; // Height of the day headers
+const timeAxisWidth = computed(() => {
+  const screenWidth = window.innerWidth;
+  return screenWidth < 768 ? 48 : 60; // 48px for mobile, 60px for tablet/desktop
+});
+
+const activeDayIndex = ref(0); // For mobile single-day view
 
 const weekDays = computed(() => {
   const days = [];
@@ -325,6 +356,22 @@ const weekDays = computed(() => {
     });
   }
   return days;
+});
+
+const displayedDays = computed(() => {
+  const screenWidth = window.innerWidth; // Get current screen width
+  const days = weekDays.value; // All 7 days of the week
+
+  if (screenWidth < 768) { // Mobile (sm breakpoint is 640px, md is 768px)
+    return [days[activeDayIndex.value]]; // Show only the active day
+  } else if (screenWidth < 1024) { // Tablet (lg breakpoint is 1024px)
+    // Show 4 days for tablet, starting from the activeDayIndex
+    const start = activeDayIndex.value;
+    const end = Math.min(start + 4, days.length);
+    return days.slice(start, end);
+  } else { // Desktop
+    return days; // Show all 7 days
+  }
 });
 
 const currentWeekRange = computed(() => {
@@ -348,8 +395,8 @@ const currentTimeIndicatorPosition = computed(() => {
   const now = dayjs();
   const startHour = 8; // Calendar starts at 8:00 AM
   const totalMinutesFromStart = (now.hour() - startHour) * 60 + now.minute();
-  const pixelsPerMinute = 60 / 30; // 60px height for 30 minutes
-  const top = totalMinutesFromStart * pixelsPerMinute;
+  const pixelsPerHalfHour = 100; // Further increased for more vertical space
+  const top = (totalMinutesFromStart / 30) * pixelsPerHalfHour;
   const headerHeight = 76; // Height of the day headers
 
   // Only return a value if the current time is within the displayed hours
@@ -364,17 +411,6 @@ const showCurrentTimeIndicator = computed(() => {
   return now.isSame(currentWeekStart.value, 'week');
 });
 
-// No longer needed as filteredBarbers is used only for the dropdown
-// const filteredBarbers = computed(() => {
-//   if (selectedBarberFilter.value === 'all') {
-//     return barberStore.barbers;
-//   } else if (selectedBarberFilter.value === 'scheduled') {
-//     return barberStore.barbers;
-//   } else {
-//     return barberStore.barbers.filter((b) => b.id === selectedBarberFilter.value);
-//   }
-// });
-
 const goToToday = () => {
   currentWeekStart.value = dayjs().startOf('week');
 };
@@ -385,6 +421,26 @@ const goToPreviousWeek = () => {
 
 const goToNextWeek = () => {
   currentWeekStart.value = currentWeekStart.value.add(1, 'week');
+};
+
+const goToPreviousDay = () => {
+  if (activeDayIndex.value > 0) {
+    activeDayIndex.value--;
+  } else {
+    // If at the first day of the week, go to the last day of the previous week
+    currentWeekStart.value = currentWeekStart.value.subtract(1, 'week');
+    activeDayIndex.value = 6; // Last day of the new week
+  }
+};
+
+const goToNextDay = () => {
+  if (activeDayIndex.value < 6) {
+    activeDayIndex.value++;
+  } else {
+    // If at the last day of the week, go to the first day of the next week
+    currentWeekStart.value = currentWeekStart.value.add(1, 'week');
+    activeDayIndex.value = 0; // First day of the new week
+  }
 };
 
 const calculateOverlappingAppointmentsLayout = (reservations) => {
@@ -401,8 +457,8 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   const columns = []; // Stores the end time of the last reservation in each column
 
   reservations.forEach((res) => {
-    const start = dayjs(res.start_time).local(); // Added .local()
-    const end = dayjs(res.end_time).local(); // Added .local()
+    const start = dayjs(res.start_time).local();
+    const end = dayjs(res.end_time).local();
 
     let assignedColumn = -1;
 
@@ -417,7 +473,7 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
     // If no column found, create a new one
     if (assignedColumn === -1) {
       assignedColumn = columns.length;
-      columns.push(null); // Placeholder for new column
+      columns.push(null);
     }
 
     // Update the end time for the assigned column
@@ -430,10 +486,10 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
   // Now calculate max columns needed for each overlap group and assign final left/width
   processedReservations.forEach((res) => {
     const overlappingGroup = processedReservations.filter((otherRes) => {
-      const resStart = dayjs(res.start_time).local(); // Added .local()
-      const resEnd = dayjs(res.end_time).local(); // Added .local()
-      const otherResStart = dayjs(otherRes.start_time).local(); // Added .local()
-      const otherResEnd = dayjs(otherRes.end_time).local(); // Added .local()
+      const resStart = dayjs(res.start_time).local();
+      const resEnd = dayjs(res.end_time).local();
+      const otherResStart = dayjs(otherRes.start_time).local();
+      const otherResEnd = dayjs(otherRes.end_time).local();
 
       // Check for overlap
       return resStart.isBefore(otherResEnd) && otherResStart.isBefore(resEnd);
@@ -442,8 +498,8 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
     const maxColumnsInGroup =
       Math.max(...overlappingGroup.map((o) => o.column)) + 1;
     const baseColumnWidth = 100 / maxColumnsInGroup;
-    const effectiveWidth = baseColumnWidth * 0.98; // Each event takes 98% of its allocated column space
-    const margin = baseColumnWidth * 0.01; // 1% margin on each side within its column
+    const effectiveWidth = baseColumnWidth * 0.98;
+    const margin = baseColumnWidth * 0.01;
     const leftOffset = res.column * baseColumnWidth + margin;
 
     res.calculatedLeft = `${leftOffset}%`;
@@ -454,7 +510,7 @@ const calculateOverlappingAppointmentsLayout = (reservations) => {
 };
 
 const getFilteredReservationsForDay = (date) => {
-  let reservationsForDay = reservationStore.reservations.filter(
+  let reservationsForDay = reservations.value.filter(
     (res) => dayjs(res.start_time).local().format('YYYY-MM-DD') === date,
   );
 
@@ -481,14 +537,16 @@ const getAppointmentStyle = (reservation) => {
   const startHour = start.hour();
   const startMinute = start.minute();
 
-  const pixelsPerHalfHour = 60; // Adjusted to match h-[60px] in template
+  const pixelsPerHalfHour = 60;
   const topOffsetMinutes = (startHour - 8) * 60 + startMinute;
-  const top = (topOffsetMinutes / 30) * pixelsPerHalfHour;
+  let top = (topOffsetMinutes / 30) * pixelsPerHalfHour;
+
+  // Adjust top for header height
+  top += headerHeight;
 
   const durationMinutes = end.diff(start, 'minute');
   let height = (durationMinutes / 30) * pixelsPerHalfHour;
 
-  // Ensure a minimum height for the appointment card to prevent overflow
   if (height < 90) {
     height = 90;
   }
@@ -497,10 +555,14 @@ const getAppointmentStyle = (reservation) => {
     bgColor: '#4299e1', // Default color
   };
 
+  // Adjust left for time axis width
+  let left = `calc(${reservation.calculatedLeft} + ${timeAxisWidth.value}px)`;
+
+
   return {
     top: `${top}px`,
     height: `${height}px`,
-    left: reservation.calculatedLeft,
+    left: left, // Use the adjusted left
     width: reservation.calculatedWidth,
     borderLeftColor: barberColor.bgColor,
   };
@@ -511,8 +573,13 @@ const formatTime = (dateTimeString) => {
 };
 
 const getBarberName = (barberId) => {
-  const barber = barberStore.barbers.find((b) => b.id === barberId);
+  const barber = barbers.value.find((b) => b.id === barberId);
   return barber ? barber.name : 'Desconocido';
+};
+
+const getServiceName = (serviceId) => {
+  const service = services.value.find((s) => s.id === serviceId);
+  return service ? service.name : 'Desconocido';
 };
 
 const openAddAppointmentModalWithTime = (barberId, date, hour) => {
@@ -530,7 +597,7 @@ const openAddAppointmentModal = () => {
 };
 
 const viewAppointmentDetails = (reservation) => {
-  if (reservation.status === 'completed') {
+  if (reservation.status === 'paid') {
     selectedReservationId.value = reservation.id;
     isSaleDetailsModalOpen.value = true;
   } else {
@@ -545,48 +612,30 @@ const fetchReservationsForCurrentWeek = async () => {
     .endOf('week')
     .endOf('day')
     .toISOString();
-  await reservationStore.fetchReservations(startDate, endDate);
+  try {
+    const response = await axios.get('/api/reservations/view/calendar', {
+      params: { startDate, endDate },
+    });
+    reservations.value = response.data.reservations;
+    barbers.value = response.data.barbers;
+    services.value = response.data.services;
+    assignBarberColors(); // Re-assign colors after barbers are fetched
+  } catch (error) {
+    console.error('Error fetching calendar data:', error);
+  }
+};
+
+const handleUpdatedReservation = (updatedReservation) => {
+  const index = reservations.value.findIndex(res => res.id === updatedReservation.id);
+  if (index !== -1) {
+    reservations.value[index] = updatedReservation;
+  }
 };
 
 watch(currentWeekStart, fetchReservationsForCurrentWeek);
-watch(selectedBarberFilter, fetchReservationsForCurrentWeek); // Watch barber filter to refetch
+watch(selectedBarberFilter, fetchReservationsForCurrentWeek);
 
-onMounted(async () => {
-  await barberStore.getAllBarbers();
-  assignBarberColors(); // Call after barbers are fetched
-  await serviceStore.fetchServices();
-  await stationStore.fetchStations();
-  await productStore.fetchProducts();
-  await fetchReservationsForCurrentWeek();
+onMounted(() => {
+  fetchReservationsForCurrentWeek();
 });
 </script>
-
-<style scoped>
-/* Custom button styles */
-.btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center;
-}
-
-.btn-outline {
-  @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
-}
-
-.btn-icon {
-  @apply p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50;
-}
-
-.appointment {
-  z-index: 20;
-  /* color: white; - Removed, now applied directly in template */
-  /* border: 1px solid; - Removed, now border-l-4 in template */
-  border-radius: 0.5rem; /* Tailwind's rounded-lg */
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); - Removed, now shadow-md in template */
-  padding: 0.25rem 0.5rem; /* Tailwind's p-1 px-2 */
-  line-height: 1.2;
-}
-
-.current-time-indicator {
-  width: calc(100% - 60px); /* Adjust for the time axis column width */
-  left: 60px; /* Align with the start of the day columns */
-}
-</style>

@@ -11,11 +11,12 @@
     </div>
 
     <!-- Sale Registration Modal -->
+    <!-- Direct sales are not linked to a reservation -->
     <SaleRegistrationModal
       :show="isNewSaleModalOpen"
       @close="isNewSaleModalOpen = false"
       @saleProcessed="handleSaleProcessed"
-      saleType="product"
+      :reservation="null"
     />
 
     <!-- Sales List and Filtering -->
@@ -73,8 +74,9 @@
             class="block w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
           >
             <option disabled value="">Seleccione un barbero</option>
+            <!-- Barbers will be fetched from sales.barber_name -->
             <option
-              v-for="barber in barberStore.barbers"
+              v-for="barber in salesStore.sales.map(s => ({ id: s.barber_id, name: s.barber_name })).filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)"
               :key="barber.id"
               :value="barber.id"
             >
@@ -130,25 +132,37 @@
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Estación
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
               Cliente
             </th>
             <th
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Servicios
+              Monto Servicios
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Monto Productos
             </th>
             <th
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Total
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Método Pago
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Detalles
             </th>
           </tr>
         </thead>
@@ -161,20 +175,24 @@
               {{ sale.barber_name }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ sale.station_name }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ sale.customer_name || 'N/A' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <ul class="list-disc list-inside">
-                <li v-for="item in sale.sale_items" :key="item.id">
-                  {{ item.item_name }} (S/{{ item.price_at_sale.toFixed(2) }})
-                </li>
-              </ul>
+              S/{{ sale.service_amount.toFixed(2) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              S/{{ sale.products_amount.toFixed(2) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               S/{{ sale.total_amount.toFixed(2) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ sale.payment_method }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <button @click="openSaleDetails(sale.id)" class="text-blue-600 hover:text-blue-900">
+                Ver
+              </button>
             </td>
           </tr>
         </tbody>
@@ -236,21 +254,23 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'; // Add watch
+import { onMounted, ref, computed, watch } from 'vue';
 import SaleRegistrationModal from '../components/SaleRegistrationModal.vue';
+import SaleDetailsModal from '../components/SaleDetailsModal.vue';
 import { useSalesStore } from '../stores/salesStore';
-import { useBarberStore } from '../stores/barberStore';
 
 const isNewSaleModalOpen = ref(false);
+const isSaleDetailsModalOpen = ref(false);
+const selectedSaleId = ref(null);
+
 const salesStore = useSalesStore();
-const barberStore = useBarberStore();
 
 const filterType = ref('');
 const filterValue = ref('');
 
 // Pagination state
-const itemsPerPage = ref(10); // Default value
-const itemsPerPageOptions = [10, 30, 50]; // Options for the select
+const itemsPerPage = ref(10);
+const itemsPerPageOptions = [10, 30, 50];
 
 const totalPages = computed(() => {
   if (salesStore.totalSales > 0 && itemsPerPage.value > 0) {
@@ -261,22 +281,20 @@ const totalPages = computed(() => {
 
 const handleSaleProcessed = () => {
   isNewSaleModalOpen.value = false;
-  salesStore.currentPage = 1; // Reset to first page after new sale
+  salesStore.currentPage = 1;
   applyFilter();
   alert('¡Venta registrada con éxito!');
 };
 
+const openSaleDetails = (saleId) => {
+  selectedSaleId.value = saleId;
+  isSaleDetailsModalOpen.value = true;
+};
+
 async function applyFilter() {
-  if (filterType.value && filterValue.value) {
-    await salesStore.getFilteredSales(
-      filterType.value,
-      filterValue.value,
-      salesStore.currentPage,
-      itemsPerPage.value,
-    );
-  } else {
-    await salesStore.getAllSales(salesStore.currentPage, itemsPerPage.value);
-  }
+  // The filtering logic will be implemented in the backend later if needed.
+  // For now, just fetch all sales with pagination.
+  await salesStore.getAllSales(salesStore.currentPage, itemsPerPage.value);
 }
 
 function goToPage(page) {
@@ -300,17 +318,15 @@ function prevPage() {
   }
 }
 
-// Watch for changes in itemsPerPage and reset to first page
 watch(itemsPerPage, (newVal, oldVal) => {
   if (newVal !== oldVal) {
-    salesStore.currentPage = 1; // Reset to first page when items per page changes
+    salesStore.currentPage = 1;
     applyFilter();
   }
 });
 
 onMounted(() => {
   applyFilter();
-  barberStore.getAllBarbers();
 });
 </script>
 

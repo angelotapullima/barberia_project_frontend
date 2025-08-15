@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 export const useSalesStore = defineStore('sales', {
   state: () => ({
     sales: [],
@@ -16,7 +14,7 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/sales`, {
+        const response = await axios.get(`/api/sales`, {
           params: { page, limit },
         });
         this.sales = response.data.sales;
@@ -38,7 +36,7 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.post(`${API_URL}/sales`, saleData);
+        await axios.post(`/api/sales`, saleData);
       } catch (error) {
         this.error =
           error.response?.data?.error || 'Error al registrar la venta.';
@@ -53,7 +51,7 @@ export const useSalesStore = defineStore('sales', {
       this.error = null;
       try {
         const response = await axios.get(
-          `${API_URL}/sales/by-reservation/${reservationId}`,
+          `/api/sales/by-reservation/${reservationId}`,
         );
         return response.data;
       } catch (error) {
@@ -66,48 +64,11 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
-    async saveDraftSale(draftSaleData) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        await axios.post(`${API_URL}/draft-sales`, draftSaleData);
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al guardar el borrador de venta.';
-        console.error(error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    async fetchDraftSale(reservationId) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(
-          `${API_URL}/draft-sales/${reservationId}`,
-        );
-        return response.data;
-      } catch (error) {
-        // If draft not found (404), it's not an error, just means no draft exists
-        if (error.response && error.response.status === 404) {
-          return null;
-        }
-        this.error =
-          error.response?.data?.error ||
-          'Error al cargar el borrador de venta.';
-        console.error(error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
     async getSalesSummaryByDateRange(startDate, endDate) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/sales/summary`, {
+        const response = await axios.get(`/api/sales/summary`, {
           params: { startDate, endDate },
         });
         return response.data;
@@ -127,7 +88,7 @@ export const useSalesStore = defineStore('sales', {
       this.error = null;
       try {
         const response = await axios.get(
-          `${API_URL}/sales/summary-by-service`,
+          `/api/sales/summary-by-service`,
           {
             params: { startDate, endDate },
           },
@@ -148,7 +109,7 @@ export const useSalesStore = defineStore('sales', {
       this.error = null;
       try {
         const response = await axios.get(
-          `${API_URL}/sales/summary-by-payment-method`,
+          `/api/sales/summary-by-payment-method`,
           {
             params: { startDate, endDate },
           },
