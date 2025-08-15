@@ -166,12 +166,13 @@
 
       <!-- Appointments Overlay -->
       <div
-        class="appointments-overlay absolute inset-0 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-px pointer-events-none"
+        class="appointments-overlay absolute inset-0 grid grid-cols-[48px_1fr] md:grid-cols-[60px_repeat(4,_minmax(0,_1fr))] lg:grid-cols-[60px_repeat(7,_minmax(0,_1fr))] gap-px pointer-events-none"
       >
         <div
-          v-for="day in displayedDays"
+          v-for="(day, index) in displayedDays"
           :key="day.fullDate"
           class="day-column relative"
+          :style="{ 'grid-column': index + 2 }"
         >
           <div
             v-for="reservation in getFilteredReservationsForDay(day.fullDate)"
@@ -556,7 +557,7 @@ const getAppointmentStyle = (reservation) => {
   };
 
   // Adjust left for time axis width
-  let left = `calc(${reservation.calculatedLeft} + ${timeAxisWidth.value}px)`;
+  let left = reservation.calculatedLeft;
 
 
   return {
