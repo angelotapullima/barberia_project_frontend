@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="show" class="modal-mask">
+    <div v-if="show" class="modal-mask" @click="handleClickOutside">
       <div class="modal-container max-w-2xl">
         <div class="modal-header">
           <slot name="header">
@@ -17,19 +17,19 @@
             <p><strong>Cliente:</strong> {{ sale.customer_name }}</p>
             <p><strong>Método de Pago:</strong> {{ sale.payment_method }}</p>
             <p>
-              <strong>Monto Total:</strong> {{ sale.total_amount.toFixed(2) }}€
+              <strong>Monto Total:</strong> S/ {{ sale.total_amount.toFixed(2) }}
             </p>
 
             <h4 class="font-semibold mt-4 mb-2">Items de la Venta:</h4>
             <ul class="list-disc pl-5">
-              <li v-for="item in sale.sale_items" :key="item.id">
+              <li v-for="item in sale.items" :key="item.id">
                 {{ item.item_name }} ({{ Number(item.quantity) || 0 }} x
-                {{ (Number(item.price) || 0).toFixed(2) }}€) -
-                {{
+                S/ {{ (Number(item.unit_price) || 0).toFixed(2) }}) -
+                S/ {{
                   (
-                    (Number(item.quantity) || 0) * (Number(item.price) || 0)
+                    (Number(item.quantity) || 0) * (Number(item.unit_price) || 0)
                   ).toFixed(2)
-                }}€
+                }}
               </li>
             </ul>
           </div>
@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, watch, defineProps, defineEmits, onUnmounted } from 'vue'; // Add onUnmounted
 import { useSalesStore } from '../stores/salesStore';
 import dayjs from 'dayjs';
 
@@ -59,6 +59,35 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+// Function to handle Escape key press
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    emit('close');
+  }
+};
+
+// Function to handle click outside modal content
+const handleClickOutside = (event) => {
+  // Check if the click target is the modal mask itself, not a child of modal-container
+  if (event.target.classList.contains('modal-mask')) {
+    emit('close');
+  }
+};
+
+// Watch for changes in the 'show' prop to add/remove event listeners
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.addEventListener('keydown', handleKeydown);
+  } else {
+    document.removeEventListener('keydown', handleKeydown);
+  }
+});
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 const salesStore = useSalesStore();
 const sale = ref(null);

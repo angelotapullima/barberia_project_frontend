@@ -129,5 +129,21 @@ export const useReservationStore = defineStore('reservations', {
         this.isLoading = false;
       }
     },
-  },
-});
+    async completeReservationAndCreateSale(reservationId, paymentMethod) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await axios.post(`/api/reservations/${reservationId}/complete`, { paymentMethod });
+        return response.data;
+      } catch (error) {
+        this.error =
+          error.response?.data?.error ||
+          'Error al completar la reserva y crear la venta.';
+        console.error(error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  }
+})

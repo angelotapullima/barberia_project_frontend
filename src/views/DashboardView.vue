@@ -217,7 +217,7 @@
                     S/ {{ (stat.total_services || 0).toFixed(2) }}
                   </td>
                   <td class="px-4 py-2 text-right font-bold text-green-600">
-                    S/ {{ (stat.payment || 0).toFixed(2) }}
+                    S/ {{ (stat.commission_payment || 0).toFixed(2) }}
                   </td>
                 </tr>
               </tbody>
@@ -313,27 +313,27 @@ const createSalesChartOptions = (title, categories) => ({
 
 const productSalesChartOptions = computed(() =>
   createSalesChartOptions(
-    'Ventas de Productos (Última Semana)',
+    'Ventas de Productos (Últimos 30 Días)',
     weeklyProductSales.value.map((d) => d.date),
   ),
 );
 const productSalesChartSeries = computed(() => [
   {
     name: 'Ventas de Productos',
-    data: weeklyProductSales.value.map((d) => d.total),
+    data: weeklyProductSales.value.map((d) => d.total_amount),
   },
 ]);
 
 const serviceSalesChartOptions = computed(() =>
   createSalesChartOptions(
-    'Ventas de Servicios (Última Semana)',
+    'Ventas de Servicios (Últimos 30 Días)',
     weeklyServiceSales.value.map((d) => d.date),
   ),
 );
 const serviceSalesChartSeries = computed(() => [
   {
     name: 'Ventas de Servicios',
-    data: weeklyServiceSales.value.map((d) => d.total),
+    data: weeklyServiceSales.value.map((d) => d.total_amount),
   },
 ]);
 
@@ -344,7 +344,7 @@ const topServicesChartOptions = computed(() => ({
   legend: { position: 'bottom' },
   dataLabels: { enabled: false },
   tooltip: {
-    y: { formatter: (val) => `S/ ${val.toFixed(2)}` },
+    y: { formatter: (val) => `${val} ventas` },
   },
   plotOptions: {
     pie: {
@@ -355,7 +355,7 @@ const topServicesChartOptions = computed(() => ({
             show: true,
             label: 'Total',
             formatter: (w) =>
-              `S/ ${w.globals.seriesTotals.reduce((a, b) => a + b, 0).toFixed(2)}`,
+              `${w.globals.seriesTotals.reduce((a, b) => a + b, 0)} ventas`,
           },
         },
       },
@@ -364,7 +364,7 @@ const topServicesChartOptions = computed(() => ({
 }));
 
 const topServicesSeries = computed(() =>
-  topServices.value.map((s) => s.total_sales),
+  topServices.value.map((s) => parseInt(s.total_sales_count)),
 );
 
 // Fetching logic
@@ -378,9 +378,9 @@ async function fetchData() {
     upcomingReservations.value = data.upcomingReservations || 0;
     completedReservationsToday.value = data.completedReservationsToday || 0;
     salesMonth.value = data.salesMonth || 0;
-    weeklyProductSales.value = data.weeklyProductSales || [];
-    weeklyServiceSales.value = data.weeklyServiceSales || [];
-    topServices.value = data.topServices || [];
+    weeklyProductSales.value = data.dailyProductSales || [];
+    weeklyServiceSales.value = data.dailyServiceSales || [];
+    topServices.value = data.popularServices || [];
     barberPayouts.value = data.barberPayouts || [];
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

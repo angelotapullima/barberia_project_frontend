@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="show" class="modal-mask">
+    <div v-if="show" class="modal-mask" @click="handleClickOutside">
       <div class="modal-container">
         <div class="modal-header">
           <slot name="header">default header</slot>
@@ -23,10 +23,41 @@
 </template>
 
 <script setup>
+import { onMounted, onUnmounted, watch } from 'vue';
+
 defineProps({
   show: Boolean,
 });
-defineEmits(['close']);
+const emit = defineEmits(['close']); // Change defineEmits to a const
+
+// Function to handle Escape key press
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    emit('close');
+  }
+};
+
+// Function to handle click outside modal content
+const handleClickOutside = (event) => {
+  // Check if the click target is the modal mask itself, not a child of modal-container
+  if (event.target.classList.contains('modal-mask')) {
+    emit('close');
+  }
+};
+
+// Watch for changes in the 'show' prop to add/remove event listeners
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.addEventListener('keydown', handleKeydown);
+  } else {
+    document.removeEventListener('keydown', handleKeydown);
+  }
+});
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <style>

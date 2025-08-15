@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="show" class="modal-mask">
+    <div v-if="show" class="modal-mask" @click="handleClickOutside">
       <div class="modal-container max-w-4xl overflow-y-auto max-h-[90vh]">
         <div class="modal-header">
           <slot name="header">
@@ -43,7 +43,7 @@
                   :key="'p-' + product.id"
                   :value="product"
                 >
-                  {{ product.name }} (S/ {{ product.price }}€)
+                  {{ product.name }} (S/ {{ product.price }})
                 </option>
               </select>
               <button @click="addItemToReservation" class="btn-primary">Añadir</button>
@@ -66,16 +66,16 @@
                 <!-- Primary Service -->
                 <tr>
                   <td class="py-2 px-4 border-b">{{ getServiceName(reservation.service_id) }} (Servicio Principal)</td>
-                  <td class="py-2 px-4 border-b">{{ reservation.service_price.toFixed(2) }}€</td>
+                  <td class="py-2 px-4 border-b">{{ reservation.service_price.toFixed(2) }}</td>
                   <td class="py-2 px-4 border-b">1</td>
-                  <td class="py-2 px-4 border-b">{{ reservation.service_price.toFixed(2) }}€</td>
+                  <td class="py-2 px-4 border-b">S/ {{ reservation.service_price.toFixed(2) }}</td>
                   <td class="py-2 px-4 border-b"></td>
                 </tr>
                 <!-- Additional Products -->
                 <tr v-for="(item, index) in saleItems" :key="item.id">
                   <td class="py-2 px-4 border-b">{{ getProductName(item.product_id) }}</td>
                   <td class="py-2 px-4 border-b">
-                    {{ item.price_at_reservation.toFixed(2) }}€
+                    {{ item.price_at_reservation.toFixed(2) }}
                   </td>
                   <td class="py-2 px-4 border-b">
                     <input
@@ -87,7 +87,7 @@
                     />
                   </td>
                   <td class="py-2 px-4 border-b">
-                    {{ (item.price_at_reservation * item.quantity).toFixed(2) }}€
+                    S/ {{ (item.price_at_reservation * item.quantity).toFixed(2) }}
                   </td>
                   <td class="py-2 px-4 border-b">
                     <button
@@ -146,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'; // Add onUnmounted
 import axios from 'axios';
 import { useBarberStore } from '../stores/barberStore';
 import { useReservationStore } from '../stores/reservationStore';
@@ -157,7 +157,36 @@ const props = defineProps({
   reservation: Object, // reservation object with products array
 });
 
-const emit = defineEmits(['close', 'saleProcessed']);
+const emit = defineEmits(['close', 'saleProcessed', 'updatedReservation']);
+
+// Function to handle Escape key press
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    emit('close');
+  }
+};
+
+// Function to handle click outside modal content
+const handleClickOutside = (event) => {
+  // Check if the click target is the modal mask itself, not a child of modal-container
+  if (event.target.classList.contains('modal-mask')) {
+    emit('close');
+  }
+};
+
+// Watch for changes in the 'show' prop to add/remove event listeners
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.addEventListener('keydown', handleKeydown);
+  } else {
+    document.removeEventListener('keydown', handleKeydown);
+  }
+});
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 const barberStore = useBarberStore();
 const reservationStore = useReservationStore();
@@ -285,9 +314,9 @@ const processSale = async () => {
 const fetchReservationDetails = async (reservationId) => {
   try {
     const response = await axios.get(`/api/reservations/${reservationId}?includeProducts=true`);
-    // This will update the prop, which in turn updates saleItems via the watcher
-    props.reservation.products = response.data.products; 
-    props.reservation.service_price = response.data.service_price; // Ensure service_price is updated if needed
+    saleItems.value = response.data.products; 
+    // Emit the updated reservation to the parent (still good practice for parent's state)
+    emit('updatedReservation', response.data); 
   } catch (error) {
     console.error('Error fetching updated reservation details:', error);
   }
