@@ -6,16 +6,22 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 export const useSalesStore = defineStore('sales', {
   state: () => ({
     sales: [],
+    totalSales: 0,
+    currentPage: 1,
     isLoading: false,
     error: null,
   }),
   actions: {
-    async getAllSales() {
+    async getAllSales(page = 1, limit = 10) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/sales`);
-        this.sales = response.data;
+        const response = await axios.get(`${API_URL}/sales`, {
+          params: { page, limit },
+        });
+        this.sales = response.data.sales;
+        this.totalSales = response.data.total;
+        this.currentPage = response.data.page;
       } catch (error) {
         this.error =
           error.response?.data?.error || 'Error al cargar las ventas.';
@@ -24,26 +30,9 @@ export const useSalesStore = defineStore('sales', {
         this.isLoading = false;
       }
     },
-    async getFilteredSales(filterType, filterValue) {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(`${API_URL}/sales/filtered`, {
-          params: {
-            filterType,
-            filterValue,
-          },
-        });
-        return response.data; // Return data directly
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al cargar las ventas filtradas.';
-        console.error(error);
-        return []; // Return empty array on error
-      } finally {
-        this.isLoading = false;
-      }
+    async getFilteredSales(filterType, filterValue, page, limit) {
+      // This action will now just call getAllSales with the filters
+      await this.getAllSales(page, limit);
     },
     async addSale(saleData) {
       this.isLoading = true;
