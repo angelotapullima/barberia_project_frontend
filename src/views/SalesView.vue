@@ -168,10 +168,8 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <ul class="list-disc list-inside">
-                <li v-for="service in sale.services" :key="service.id">
-                  {{ service.service_id }} (S/{{
-                    service.price_at_sale.toFixed(2)
-                  }})
+                <li v-for="item in sale.sale_items" :key="item.id">
+                  {{ item.item_name }} (S/{{ item.price_at_sale.toFixed(2) }})
                 </li>
               </ul>
             </td>
@@ -181,12 +179,64 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div
+        class="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 border-t"
+      >
+        <!-- Items per page selector -->
+        <div class="mb-2 sm:mb-0 relative inline-flex items-center">
+          <label for="itemsPerPage" class="text-gray-700 mr-2">Mostrar:</label>
+          <select
+            id="itemsPerPage"
+            v-model.number="itemsPerPage"
+            class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-1 px-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          >
+            <option
+              v-for="option in itemsPerPageOptions"
+              :key="option"
+              :value="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          />
+        </div>
+
+        <!-- Page navigation buttons -->
+        <div class="flex items-center space-x-2">
+          <button
+            @click="prevPage"
+            :disabled="salesStore.currentPage === 1 || totalPages === 0"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-150 ease-in-out"
+          >
+            Anterior
+          </button>
+          <span class="text-gray-700 font-medium">
+            <template v-if="totalPages > 0">
+              Página {{ salesStore.currentPage }} de {{ totalPages }}
+            </template>
+            <template v-else> No hay ventas </template>
+          </span>
+          <button
+            @click="nextPage"
+            :disabled="
+              salesStore.currentPage === totalPages || totalPages === 0
+            "
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-150 ease-in-out"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue'; // Add watch
 import SaleRegistrationModal from '../components/SaleRegistrationModal.vue';
 import { useSalesStore } from '../stores/salesStore';
 import { useBarberStore } from '../stores/barberStore';
@@ -198,24 +248,69 @@ const barberStore = useBarberStore();
 const filterType = ref('');
 const filterValue = ref('');
 
+// Pagination state
+const itemsPerPage = ref(10); // Default value
+const itemsPerPageOptions = [10, 30, 50]; // Options for the select
+
+const totalPages = computed(() => {
+  if (salesStore.totalSales > 0 && itemsPerPage.value > 0) {
+    return Math.ceil(salesStore.totalSales / itemsPerPage.value);
+  }
+  return 0;
+});
+
 const handleSaleProcessed = () => {
   isNewSaleModalOpen.value = false;
-  // Refresh the sales list after a new sale is processed
+  salesStore.currentPage = 1; // Reset to first page after new sale
   applyFilter();
   alert('¡Venta registrada con éxito!');
 };
 
 async function applyFilter() {
   if (filterType.value && filterValue.value) {
-    await salesStore.getFilteredSales(filterType.value, filterValue.value);
+    await salesStore.getFilteredSales(
+      filterType.value,
+      filterValue.value,
+      salesStore.currentPage,
+      itemsPerPage.value,
+    );
   } else {
-    await salesStore.getAllSales(); // If no filter selected, show all sales
+    await salesStore.getAllSales(salesStore.currentPage, itemsPerPage.value);
   }
 }
 
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    salesStore.currentPage = page;
+    applyFilter();
+  }
+}
+
+function nextPage() {
+  if (salesStore.currentPage < totalPages.value) {
+    salesStore.currentPage++;
+    applyFilter();
+  }
+}
+
+function prevPage() {
+  if (salesStore.currentPage > 1) {
+    salesStore.currentPage--;
+    applyFilter();
+  }
+}
+
+// Watch for changes in itemsPerPage and reset to first page
+watch(itemsPerPage, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    salesStore.currentPage = 1; // Reset to first page when items per page changes
+    applyFilter();
+  }
+});
+
 onMounted(() => {
-  applyFilter(); // Fetch sales when component mounts
-  barberStore.getAllBarbers(); // Fetch barbers for the filter dropdown
+  applyFilter();
+  barberStore.getAllBarbers();
 });
 </script>
 

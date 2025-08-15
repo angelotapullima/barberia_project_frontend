@@ -199,7 +199,7 @@
             :key="reservation.id"
           >
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ reservation.customer_name }}
+              {{ reservation.client_name }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ reservation.barber_name }}
@@ -208,10 +208,22 @@
               {{ reservation.station_name }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ new Date(reservation.start_time).toLocaleString() }}
+              {{ new Date(reservation.start_time).toLocaleDateString() }}<br />
+              {{
+                new Date(reservation.start_time).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ new Date(reservation.end_time).toLocaleString() }}
+              {{ new Date(reservation.end_time).toLocaleDateString() }}<br />
+              {{
+                new Date(reservation.end_time).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ reservation.status }}
@@ -220,6 +232,7 @@
               class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
             >
               <button
+                v-if="reservation.status === 'pending'"
                 @click="handleEdit(reservation)"
                 class="text-indigo-600 hover:text-indigo-900 mr-4"
               >
@@ -235,6 +248,58 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div
+        class="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 border-t"
+      >
+        <!-- Items per page selector -->
+        <div class="mb-2 sm:mb-0 relative inline-flex items-center">
+          <label for="itemsPerPage" class="text-gray-700 mr-2">Mostrar:</label>
+          <select
+            id="itemsPerPage"
+            v-model.number="itemsPerPage"
+            class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-1 px-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          >
+            <option
+              v-for="option in itemsPerPageOptions"
+              :key="option"
+              :value="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          />
+        </div>
+
+        <!-- Page navigation buttons -->
+        <div class="flex items-center space-x-2">
+          <button
+            @click="prevPage"
+            :disabled="reservationStore.currentPage === 1 || totalPages === 0"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-150 ease-in-out"
+          >
+            Anterior
+          </button>
+          <span class="text-gray-700 font-medium">
+            <template v-if="totalPages > 0">
+              Página {{ reservationStore.currentPage }} de {{ totalPages }}
+            </template>
+            <template v-else> No hay reservas </template>
+          </span>
+          <button
+            @click="nextPage"
+            :disabled="
+              reservationStore.currentPage === totalPages || totalPages === 0
+            "
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-150 ease-in-out"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Edit Modal -->
@@ -416,7 +481,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, computed, watch } from 'vue'; // Add computed
 import { useReservationStore } from '@/stores/reservationStore';
 import { useBarberStore } from '@/stores/barberStore';
 import { useStationStore } from '@/stores/stationStore';
@@ -437,6 +502,26 @@ const newReservation = reactive({
 const showEditModal = ref(false);
 const editingReservation = reactive({});
 
+// Pagination state
+const itemsPerPage = ref(10); // You can adjust this value
+const itemsPerPageOptions = [10, 50, 100];
+
+const totalPages = computed(() => {
+  if (reservationStore.totalReservationsCount > 0 && itemsPerPage.value > 0) {
+    return Math.ceil(
+      reservationStore.totalReservationsCount / itemsPerPage.value,
+    );
+  }
+  return 0;
+});
+
+async function fetchReservations() {
+  await reservationStore.fetchReservations(
+    reservationStore.currentPage,
+    itemsPerPage.value,
+  );
+}
+
 async function handleAddReservation() {
   try {
     await reservationStore.addReservation({ ...newReservation });
@@ -448,6 +533,8 @@ async function handleAddReservation() {
     newReservation.start_time = '';
     newReservation.end_time = '';
     alert('Reserva registrada con éxito!');
+    reservationStore.currentPage = 1; // Reset to first page after adding
+    fetchReservations(); // Refresh list after adding
   } catch (error) {
     // Error handled by store
   }
@@ -455,12 +542,16 @@ async function handleAddReservation() {
 
 function handleEdit(reservation) {
   editingReservation.id = reservation.id;
-  editingReservation.customer_name = reservation.customer_name;
-  editingReservation.customer_phone = reservation.customer_phone;
+  editingReservation.customer_name = reservation.client_name; // Use client_name from backend
+  editingReservation.customer_phone = reservation.client_phone; // Use client_phone from backend
   editingReservation.barber_id = reservation.barber_id;
   editingReservation.station_id = reservation.station_id;
-  editingReservation.start_time = reservation.start_time.slice(0, 16); // Format for datetime-local input
-  editingReservation.end_time = reservation.end_time.slice(0, 16); // Format for datetime-local input
+  editingReservation.start_time = new Date(reservation.start_time)
+    .toISOString()
+    .slice(0, 16); // Format for datetime-local input
+  editingReservation.end_time = new Date(reservation.end_time)
+    .toISOString()
+    .slice(0, 16); // Format for datetime-local input
   editingReservation.status = reservation.status;
   showEditModal.value = true;
 }
@@ -468,10 +559,17 @@ function handleEdit(reservation) {
 async function handleUpdateReservation() {
   try {
     await reservationStore.updateReservation(editingReservation.id, {
-      ...editingReservation,
+      client_name: editingReservation.customer_name, // Map back to client_name for backend
+      client_phone: editingReservation.customer_phone, // Map back to client_phone for backend
+      barber_id: editingReservation.barber_id,
+      station_id: editingReservation.station_id,
+      start_time: editingReservation.start_time,
+      end_time: editingReservation.end_time,
+      status: editingReservation.status,
     });
     showEditModal.value = false;
     alert('Reserva actualizada con éxito!');
+    fetchReservations(); // Refresh list after updating
   } catch (error) {
     // Error handled by store
   }
@@ -482,14 +580,44 @@ async function handleDelete(id) {
     try {
       await reservationStore.deleteReservation(id);
       alert('Reserva eliminada con éxito!');
+      fetchReservations(); // Refresh list after deleting
     } catch (error) {
       // Error handled by store
     }
   }
 }
 
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    reservationStore.currentPage = page;
+    fetchReservations();
+  }
+}
+
+function nextPage() {
+  if (reservationStore.currentPage < totalPages.value) {
+    reservationStore.currentPage++;
+    fetchReservations();
+  }
+}
+
+function prevPage() {
+  if (reservationStore.currentPage > 1) {
+    reservationStore.currentPage--;
+    fetchReservations();
+  }
+}
+
+// Watch for changes in itemsPerPage and reset to first page
+watch(itemsPerPage, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    reservationStore.currentPage = 1; // Reset to first page when items per page changes
+    fetchReservations();
+  }
+});
+
 onMounted(() => {
-  reservationStore.fetchReservations();
+  fetchReservations(); // Fetch reservations when component mounts
   barberStore.getAllBarbers();
   stationStore.fetchStations();
 });

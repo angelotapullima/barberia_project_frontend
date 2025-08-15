@@ -6,35 +6,33 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 export const useReservationStore = defineStore('reservations', {
   state: () => ({
     reservations: [],
+    totalReservationsCount: 0,
+    currentPage: 1, // Add currentPage to state
     isLoading: false,
     error: null,
   }),
   actions: {
-    async fetchReservationsByDateRange(startDate, endDate) {
+    async fetchReservations(
+      page = 1,
+      limit = 10,
+      startDate,
+      endDate,
+      includeSaleDetails = false,
+    ) {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reservations`, {
-          params: { startDate, endDate },
-        });
-        this.reservations = response.data;
-        return response.data;
-      } catch (error) {
-        this.error =
-          error.response?.data?.error ||
-          'Error al cargar las reservas por rango de fecha.';
-        console.error(error);
-        return [];
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    async fetchReservations() {
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await axios.get(`${API_URL}/reservations`);
-        this.reservations = response.data;
+        const params = {
+          page,
+          limit,
+          startDate,
+          endDate,
+          includeSaleDetails,
+        };
+        const response = await axios.get(`${API_URL}/reservations`, { params });
+        this.reservations = response.data.reservations;
+        this.totalReservationsCount = response.data.total; // Update total count
+        this.currentPage = response.data.page; // Update currentPage from backend
       } catch (error) {
         this.error =
           error.response?.data?.error || 'Error al cargar las reservas.';
