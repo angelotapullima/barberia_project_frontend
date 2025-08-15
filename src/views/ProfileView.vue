@@ -112,7 +112,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/authStore';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 const authStore = useAuthStore();
 
@@ -121,8 +121,6 @@ const newPassword = ref('');
 const confirmNewPassword = ref('');
 const passwordChangeError = ref(null);
 const passwordChangeSuccess = ref(null);
-
-const API_URL = 'http://localhost:3000/api';
 
 onMounted(() => {
   // Asegurarse de que el usuario esté cargado en el store
@@ -150,16 +148,11 @@ const handleChangePassword = async () => {
       return;
     }
 
-    await axios.put(
-      `${API_URL}/auth/change-password`,
+    await api.put(
+      `/auth/change-password`,
       {
         oldPassword: oldPassword.value,
         newPassword: newPassword.value,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       },
     );
     passwordChangeSuccess.value = 'Contraseña actualizada exitosamente.';

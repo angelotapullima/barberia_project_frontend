@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -21,7 +19,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(`${API_URL}/auth/login`, {
+        const response = await api.post('/auth/login', { // Use 'api' instance and relative path
           email,
           password,
         });

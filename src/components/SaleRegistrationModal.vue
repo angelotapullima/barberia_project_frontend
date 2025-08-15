@@ -147,7 +147,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'; // Add onUnmounted
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 import { useBarberStore } from '../stores/barberStore';
 import { useReservationStore } from '../stores/reservationStore';
 import dayjs from 'dayjs';
@@ -201,7 +201,7 @@ const products = ref([]); // Master list of products from API
 // Fetch master data (services and products) on mount
 onMounted(async () => {
   try {
-    const response = await axios.get('/api/pos/master-data');
+    const response = await api.get('/pos/master-data'); // Use 'api' and relative path
     services.value = response.data.services;
     products.value = response.data.products;
     await barberStore.getAllBarbers(); // Ensure barbers are fetched for display
@@ -313,7 +313,7 @@ const processSale = async () => {
 // Helper to fetch full reservation details (including products) after changes
 const fetchReservationDetails = async (reservationId) => {
   try {
-    const response = await axios.get(`/api/reservations/${reservationId}?includeProducts=true`);
+    const response = await api.get(`/reservations/${reservationId}?includeProducts=true`); // Use 'api' and relative path
     saleItems.value = response.data.products; 
     // Emit the updated reservation to the parent (still good practice for parent's state)
     emit('updatedReservation', response.data); 

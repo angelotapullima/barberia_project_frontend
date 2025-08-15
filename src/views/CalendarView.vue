@@ -261,7 +261,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 import SaleRegistrationModal from '../components/SaleRegistrationModal.vue';
 import ReservationFormModal from '../components/ReservationFormModal.vue';
 import SaleDetailsModal from '../components/SaleDetailsModal.vue';
@@ -613,7 +613,7 @@ const fetchReservationsForCurrentWeek = async () => {
     .endOf('day')
     .toISOString();
   try {
-    const response = await axios.get('/api/reservations/view/calendar', {
+    const response = await api.get('/reservations/view/calendar', { // Use 'api' and relative path
       params: { startDate, endDate },
     });
     reservations.value = response.data.reservations;

@@ -243,7 +243,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 // Data refs
 const productSalesToday = ref(0);
@@ -370,7 +370,7 @@ const topServicesSeries = computed(() =>
 // Fetching logic
 async function fetchData() {
   try {
-    const response = await axios.get('/api/dashboard/summary');
+    const response = await api.get('/dashboard/summary'); // Use 'api' instance and relative path
     const data = response.data;
 
     productSalesToday.value = data.productSalesToday || 0;
