@@ -245,15 +245,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useSalesStore } from '@/stores/salesStore';
-import { useReservationStore } from '@/stores/reservationStore';
+
 import { useReportStore } from '@/stores/reportStore';
-import VueApexCharts from 'vue3-apexcharts';
 import dayjs from 'dayjs'; // Import dayjs for date manipulation
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Import the plugin
 dayjs.extend(isSameOrBefore); // Extend dayjs with the plugin
 
 const salesStore = useSalesStore();
-const reservationStore = useReservationStore();
+
 const reportStore = useReportStore();
 
 // Data refs
@@ -402,7 +401,6 @@ async function fetchData() {
     reportStore.fetchServicesProductsSales(todayStr, todayStr),
     reportStore.fetchServicesProductsSales(sevenDaysAgoStr, todayStr),
     salesStore.getSalesSummaryByDateRange(firstDayOfMonthStr, todayStr),
-    reservationStore.fetchReservationsByDateRange(todayStr, todayStr),
     salesStore.getSalesSummaryByService(sevenDaysAgoStr, todayStr),
     reportStore.getBarberPayments(firstDayOfMonthStr, todayStr),
   ]);
