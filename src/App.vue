@@ -2,7 +2,20 @@
   <div class="flex h-screen bg-gray-100">
     <!-- Renderizar Sidebar y Header solo si el usuario está autenticado y no está en la página de Login -->
     <template v-if="authStore.isAuthenticated && currentRouteName !== 'Login'">
-      <Sidebar :isCollapsed="isSidebarCollapsed" @toggle="toggleSidebar" />
+      <Sidebar
+        :isOpen="isSidebarOpen"
+        :isCollapsed="isSidebarCollapsed"
+        @close="closeMobileSidebar"
+        @toggleCollapse="toggleDesktopSidebar"
+        class="flex-shrink-0"
+      />
+
+      <!-- Overlay para móvil cuando el sidebar está abierto -->
+      <div
+        v-if="isSidebarOpen"
+        @click="closeSidebar"
+        class="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"
+      ></div>
 
       <div
         class="flex-1 flex flex-col bg-gray-100 transition-all duration-300 ease-in-out min-w-0"
@@ -14,8 +27,28 @@
               <!-- Lado Izquierdo: Botón de Sidebar y Título (opcional) -->
               <div class="flex items-center">
                 <button
-                  @click="toggleSidebar"
-                  class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100"
+                  @click="isSidebarOpen ? closeMobileSidebar() : toggleMobileSidebar()"
+                  class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 lg:hidden"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h7"
+                    ></path>
+                  </svg>
+                </button>
+                <!-- Desktop toggle button -->
+                <button
+                  @click="toggleDesktopSidebar"
+                  class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 hidden lg:block"
                 >
                   <svg
                     class="w-6 h-6"
@@ -163,7 +196,8 @@ import { useRouter, useRoute } from 'vue-router';
 import Sidebar from './components/Sidebar.vue';
 import { useAuthStore } from './stores/authStore';
 
-const isSidebarCollapsed = ref(false);
+const isSidebarOpen = ref(false); // For mobile off-canvas
+const isSidebarCollapsed = ref(false); // For desktop collapse
 const isProfileMenuOpen = ref(false);
 
 const authStore = useAuthStore();
@@ -172,7 +206,15 @@ const route = useRoute();
 
 const currentRouteName = computed(() => route.name);
 
-const toggleSidebar = () => {
+const toggleMobileSidebar = () => { // Renamed for clarity
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+const closeMobileSidebar = () => { // Renamed for clarity
+  isSidebarOpen.value = false;
+};
+
+const toggleDesktopSidebar = () => { // New function for desktop collapse
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
 

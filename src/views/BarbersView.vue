@@ -14,7 +14,7 @@
       {{ barberStore.error }}
     </div>
 
-    <div class="bg-white shadow-lg rounded-xl">
+    <div class="bg-white">
       <div class="p-6 border-b flex justify-between items-center">
         <h2 class="text-2xl font-semibold text-gray-800">Lista de Barberos</h2>
         <button
@@ -24,72 +24,135 @@
           Añadir Barbero
         </button>
       </div>
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-            >
-              Nombre
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-            >
-              Estación
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-            >
-              Sueldo Base
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-            >
-              Activo
-            </th>
-            <th class="relative px-6 py-3">
-              <span class="sr-only">Acciones</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="barber in barberStore.barbers" :key="barber.id">
-            <td class="px-6 py-4">{{ barber.name }}</td>
-            <td class="px-6 py-4">{{ barber.station_name || 'N/A' }}</td>
-            <td class="px-6 py-4">S/ {{ barber.base_salary }}</td>
-            <td class="px-6 py-4">
-              <span
-                :class="{
-                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                  'bg-green-100 text-green-800': barber.is_active,
-                  'bg-red-100 text-red-800': !barber.is_active,
-                }"
+
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
               >
-                {{ barber.is_active ? 'Sí' : 'No' }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-right text-sm font-medium">
+                Nombre
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+              >
+                Estación
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+              >
+                Sueldo Base
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+              >
+                Activo
+              </th>
+              <th class="relative px-6 py-3">
+                <span class="sr-only">Acciones</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="barber in barberStore.barbers" :key="barber.id">
+              <td class="px-6 py-4">{{ barber.name }}</td>
+              <td class="px-6 py-4">{{ barber.station_name || 'N/A' }}</td>
+              <td class="px-6 py-4">S/ {{ barber.base_salary }}</td>
+              <td class="px-6 py-4">
+                <span
+                  :class="{
+                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
+                    'bg-green-100 text-green-800': barber.is_active,
+                    'bg-red-100 text-red-800': !barber.is_active,
+                  }"
+                >
+                  {{ barber.is_active ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right text-sm font-medium">
+                <button
+                  @click="openModal(barber)"
+                  class="text-indigo-600 hover:text-indigo-900"
+                >
+                  Editar
+                </button>
+                <button
+                  @click="confirmDelete(barber.id)"
+                  class="text-red-600 hover:text-red-900 ml-4"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            <tr v-if="barberStore.barbers.length === 0">
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                No se encontraron barberos.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="block lg:hidden p-4 bg-white">
+        <div
+          v-if="barberStore.barbers.length === 0"
+          class="text-center text-gray-500 py-4"
+        >
+          No se encontraron barberos.
+        </div>
+        <div class="grid grid-cols-1 gap-0">
+          <div
+            v-for="barber in barberStore.barbers"
+            :key="barber.id"
+            class="p-4 transition-shadow duration-300 flex flex-col justify-between border-b border-gray-200"
+          >
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                {{ barber.name }}
+              </h3>
+              <div class="space-y-2 text-gray-700">
+                <p class="text-sm">
+                  <span class="font-medium">Estación:</span>
+                  {{ barber.station_name || 'N/A' }}
+                </p>
+                <p class="text-sm">
+                  <span class="font-medium">Sueldo Base:</span> S/
+                  {{ barber.base_salary }}
+                </p>
+                <p class="text-sm">
+                  <span class="font-medium">Activo:</span>
+                  <span
+                    :class="{
+                      'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
+                      'bg-green-100 text-green-800': barber.is_active,
+                      'bg-red-100 text-red-800': !barber.is_active,
+                    }"
+                  >
+                    {{ barber.is_active ? 'Sí' : 'No' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="mt-4 flex justify-end space-x-2">
               <button
                 @click="openModal(barber)"
-                class="text-indigo-600 hover:text-indigo-900"
+                class="text-blue-600 hover:text-blue-800 text-sm font-semibold"
               >
                 Editar
               </button>
               <button
                 @click="confirmDelete(barber.id)"
-                class="text-red-600 hover:text-red-900 ml-4"
+                class="text-red-600 hover:text-red-800 text-sm font-semibold ml-2"
               >
                 Eliminar
               </button>
-            </td>
-          </tr>
-          <tr v-if="barberStore.barbers.length === 0">
-            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-              No se encontraron barberos.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Modal -->
