@@ -142,6 +142,8 @@ export const useReportStore = defineStore('reports', {
 
         this.servicesProductsSales = currentResponse.data;
         this.servicesProductsSalesComparison = comparisonResponse.data;
+
+        return currentResponse.data;
       } catch (error) {
         this.error =
           error.response?.data?.error ||
@@ -173,9 +175,12 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_URL}/reports/detailed-barber-service-sales`, {
-          params: filters,
-        });
+        const response = await axios.get(
+          `${API_URL}/reports/detailed-barber-service-sales`,
+          {
+            params: filters,
+          },
+        );
         return response.data;
       } catch (error) {
         this.error =

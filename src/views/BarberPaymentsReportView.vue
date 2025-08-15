@@ -1,23 +1,35 @@
 <template>
   <div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Reporte de Pago a Barberos</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+      Reporte de Pago a Barberos
+    </h1>
 
     <!-- Filter Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div>
-        <label for="barberFilter" class="block text-sm font-medium text-gray-700">Filtrar por Barbero:</label>
+        <label
+          for="barberFilter"
+          class="block text-sm font-medium text-gray-700"
+          >Filtrar por Barbero:</label
+        >
         <select
           id="barberFilter"
           v-model="selectedBarberId"
           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
           <option value="">Todos los Barberos</option>
-          <option v-for="barber in barbers" :key="barber.id" :value="barber.id">{{ barber.name }}</option>
+          <option v-for="barber in barbers" :key="barber.id" :value="barber.id">
+            {{ barber.name }}
+          </option>
         </select>
       </div>
 
       <div>
-        <label for="dateFilterType" class="block text-sm font-medium text-gray-700">Tipo de Filtro por Fecha:</label>
+        <label
+          for="dateFilterType"
+          class="block text-sm font-medium text-gray-700"
+          >Tipo de Filtro por Fecha:</label
+        >
         <select
           id="dateFilterType"
           v-model="dateFilterType"
@@ -31,7 +43,9 @@
       </div>
 
       <div v-if="dateFilterType === 'custom'">
-        <label for="startDate" class="block text-sm font-medium text-gray-700">Fecha Inicio:</label>
+        <label for="startDate" class="block text-sm font-medium text-gray-700"
+          >Fecha Inicio:</label
+        >
         <input
           type="date"
           id="startDate"
@@ -40,7 +54,9 @@
         />
       </div>
       <div v-if="dateFilterType === 'custom'">
-        <label for="endDate" class="block text-sm font-medium text-gray-700">Fecha Fin:</label>
+        <label for="endDate" class="block text-sm font-medium text-gray-700"
+          >Fecha Fin:</label
+        >
         <input
           type="date"
           id="endDate"
@@ -58,25 +74,59 @@
     </button>
 
     <!-- Report Table -->
-    <div v-if="isLoading" class="text-center text-gray-500">Cargando reporte...</div>
-    <div v-else-if="error" class="text-center text-red-500">Error: {{ error }}</div>
-    <div v-else-if="reportData.length === 0" class="text-center text-gray-500">No hay datos para mostrar en el rango seleccionado.</div>
+    <div v-if="isLoading" class="text-center text-gray-500">
+      Cargando reporte...
+    </div>
+    <div v-else-if="error" class="text-center text-red-500">
+      Error: {{ error }}
+    </div>
+    <div v-else-if="reportData.length === 0" class="text-center text-gray-500">
+      No hay datos para mostrar en el rango seleccionado.
+    </div>
     <div v-else class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barbero</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio (S/)</th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Barbero
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Servicio
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Fecha
+            </th>
+            <th
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Precio (S/)
+            </th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="(item, index) in reportData" :key="index">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barber_name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.service_name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(item.sale_date) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ item.service_price.toFixed(2) }}</td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
+              {{ item.barber_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ item.service_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ formatDate(item.sale_date) }}
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+            >
+              {{ item.service_price.toFixed(2) }}
+            </td>
           </tr>
         </tbody>
       </table>

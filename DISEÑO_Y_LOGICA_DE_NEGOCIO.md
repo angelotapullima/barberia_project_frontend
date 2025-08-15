@@ -51,12 +51,13 @@ Cuando se genera el reporte para un mes específico, el sistema sigue estos paso
 
 1.  **Calcular Ventas Totales:** El sistema suma todas las ventas (`total_generated`) que el barbero realizó durante ese mes.
 2.  **Aplicar la Condición:** Se compara el `total_generated` con el `COMMISSION_THRESHOLD` (S/ 2,500).
-    -   **CASO A (No se alcanza el umbral):** Si el total de ventas del barbero es **menor o igual a S/ 2,500**, su pago para ese mes será el `BASE_SALARY` de **S/ 1,250**.
-    -   **CASO B (Se supera el umbral):** Si el total de ventas del barbero es **mayor a S/ 2,500**, el modelo de pago cambia. El pago ya no es el sueldo base, sino que se convierte en el **50% del total de sus ventas** (`pago = total_generado * 0.5`).
+    - **CASO A (No se alcanza el umbral):** Si el total de ventas del barbero es **menor o igual a S/ 2,500**, su pago para ese mes será el `BASE_SALARY` de **S/ 1,250**.
+    - **CASO B (Se supera el umbral):** Si el total de ventas del barbero es **mayor a S/ 2,500**, el modelo de pago cambia. El pago ya no es el sueldo base, sino que se convierte en el **50% del total de sus ventas** (`pago = total_generado * 0.5`).
 
 ### Propósito del Modelo de Pago
 
-Este sistema está diseñado para ser un modelo **incentivador**. 
+Este sistema está diseñado para ser un modelo **incentivador**.
+
 - **Seguridad:** Proporciona una red de seguridad con el sueldo base, asegurando que los barberos tengan un ingreso mínimo.
 - **Recompensa:** Motiva a los barberos a superar el umbral de ventas, ya que su potencial de ingresos aumenta significativamente una vez que pasan a la modalidad de comisión. Esto alinea los objetivos del personal con los objetivos de crecimiento del negocio.
 
@@ -67,29 +68,35 @@ Este sistema está diseñado para ser un modelo **incentivador**.
 Los reportes son herramientas de inteligencia de negocio (Business Intelligence) diseñadas para transformar los datos crudos de las operaciones diarias en información valiosa para la toma de decisiones estratégicas.
 
 ### Reporte de Ventas por Tipo (Servicio vs. Producto)
--   **¿Qué hace?:** Muestra el total de ingresos generado por "Servicios" y lo compara con el total generado por "Productos".
--   **¿Para qué sirve?:** Ayuda a entender la **estructura de ingresos** del negocio. Responde a la pregunta: "¿De dónde viene nuestro dinero principalmente?". Permite tomar decisiones como: 
-    -   Si la venta de productos es baja, se pueden crear estrategias para potenciarla (ej. capacitar a los barberos en ventas, crear ofertas).
-    -   Si los servicios son la fuente principal, se puede pensar en crear nuevos servicios premium.
+
+- **¿Qué hace?:** Muestra el total de ingresos generado por "Servicios" y lo compara con el total generado por "Productos".
+- **¿Para qué sirve?:** Ayuda a entender la **estructura de ingresos** del negocio. Responde a la pregunta: "¿De dónde viene nuestro dinero principalmente?". Permite tomar decisiones como:
+  - Si la venta de productos es baja, se pueden crear estrategias para potenciarla (ej. capacitar a los barberos en ventas, crear ofertas).
+  - Si los servicios son la fuente principal, se puede pensar en crear nuevos servicios premium.
 
 ### Reporte de Uso de Estaciones
--   **¿Qué hace?:** Cuenta cuántas ventas o servicios se realizaron en cada estación de trabajo en un período.
--   **¿Para qué sirve?:** Es un reporte de **eficiencia y optimización de recursos físicos**. Ayuda a identificar cuellos de botella o recursos infrautilizados. Si una estación se usa mucho más que otras, podría necesitar mantenimiento más frecuente. Si una estación casi no se usa, se podría investigar el motivo (ej. silla incómoda, mala iluminación) y corregirlo para aprovechar al máximo el espacio.
+
+- **¿Qué hace?:** Cuenta cuántas ventas o servicios se realizaron en cada estación de trabajo en un período.
+- **¿Para qué sirve?:** Es un reporte de **eficiencia y optimización de recursos físicos**. Ayuda a identificar cuellos de botella o recursos infrautilizados. Si una estación se usa mucho más que otras, podría necesitar mantenimiento más frecuente. Si una estación casi no se usa, se podría investigar el motivo (ej. silla incómoda, mala iluminación) y corregirlo para aprovechar al máximo el espacio.
 
 ### Reporte de Frecuencia de Clientes
--   **¿Qué hace?:** Identifica y lista a los clientes que más han visitado la barbería.
--   **¿Para qué sirve?:** Es una herramienta clave para la **fidelización y el marketing**. Permite reconocer a los clientes más leales para ofrecerles un trato especial, un descuento o un agradecimiento, fortaleciendo la relación. También ayuda a entender el perfil del cliente recurrente.
+
+- **¿Qué hace?:** Identifica y lista a los clientes que más han visitado la barbería.
+- **¿Para qué sirve?:** Es una herramienta clave para la **fidelización y el marketing**. Permite reconocer a los clientes más leales para ofrecerles un trato especial, un descuento o un agradecimiento, fortaleciendo la relación. También ayuda a entender el perfil del cliente recurrente.
 
 ### Reporte de Horas Pico
--   **¿Qué hace?:** Analiza a qué horas del día se concentran la mayor cantidad de reservas y servicios.
--   **¿Para qué sirve?:** Es fundamental para la **gestión de personal y optimización de horarios**. Permite asignar más personal durante las horas de alta demanda para no perder clientes y reducir los tiempos de espera. En las horas de baja demanda, se pueden programar descansos, tareas administrativas o de limpieza, optimizando los costos laborales.
+
+- **¿Qué hace?:** Analiza a qué horas del día se concentran la mayor cantidad de reservas y servicios.
+- **¿Para qué sirve?:** Es fundamental para la **gestión de personal y optimización de horarios**. Permite asignar más personal durante las horas de alta demanda para no perder clientes y reducir los tiempos de espera. En las horas de baja demanda, se pueden programar descansos, tareas administrativas o de limpieza, optimizando los costos laborales.
 
 ### Reporte de Inventario
--   **¿Qué hace?:** Muestra un resumen del inventario de productos y alerta sobre aquellos con bajo stock.
--   **¿Para qué sirve?:** Es una herramienta de **gestión de stock y control de costos**. Su propósito es evitar dos problemas críticos: 
-    1.  **Quiebre de Stock:** Quedarse sin un producto popular significa perder ventas directas y la confianza del cliente.
-    2.  **Sobre-stock:** Comprar demasiado de un producto que no se vende inmoviliza dinero que podría usarse en otras áreas del negocio. Este reporte ayuda a tomar decisiones de compra informadas.
+
+- **¿Qué hace?:** Muestra un resumen del inventario de productos y alerta sobre aquellos con bajo stock.
+- **¿Para qué sirve?:** Es una herramienta de **gestión de stock y control de costos**. Su propósito es evitar dos problemas críticos:
+  1.  **Quiebre de Stock:** Quedarse sin un producto popular significa perder ventas directas y la confianza del cliente.
+  2.  **Sobre-stock:** Comprar demasiado de un producto que no se vende inmoviliza dinero que podría usarse en otras áreas del negocio. Este reporte ayuda a tomar decisiones de compra informadas.
 
 ### Reporte de Ventas Completo (Detallado)
--   **¿Qué hace?:** Ofrece una vista granular de cada transacción, con potentes filtros.
--   **¿Para qué sirve?:** Es la herramienta definitiva de **auditoría y consulta**. No busca tendencias generales, sino que permite investigar transacciones específicas. Es útil para resolver dudas como: "¿Qué se le vendió exactamente a este cliente en esta fecha?" o "Necesito el detalle de todas las ventas con tarjeta del barbero Juan de la última semana".
+
+- **¿Qué hace?:** Ofrece una vista granular de cada transacción, con potentes filtros.
+- **¿Para qué sirve?:** Es la herramienta definitiva de **auditoría y consulta**. No busca tendencias generales, sino que permite investigar transacciones específicas. Es útil para resolver dudas como: "¿Qué se le vendió exactamente a este cliente en esta fecha?" o "Necesito el detalle de todas las ventas con tarjeta del barbero Juan de la última semana".

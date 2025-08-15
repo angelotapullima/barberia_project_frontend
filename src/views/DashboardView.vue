@@ -392,17 +392,17 @@ async function fetchData() {
 
   // --- Parallel fetching ---
   const [
-    dailySalesTodayByTypeData, // Changed from salesTodayData
+    dailySalesTodayByTypeData,
+    dailySalesByTypeDataForWeekly,
     salesMonthData,
     reservationsTodayData,
-    dailySalesByTypeDataForWeekly, // Changed from dailySalesByTypeData
     topServicesData,
     barberPaymentsData,
   ] = await Promise.all([
-    salesStore.getDailySalesByType(todayStr, todayStr), // New call for today's sales
+    reportStore.fetchServicesProductsSales(todayStr, todayStr),
+    reportStore.fetchServicesProductsSales(sevenDaysAgoStr, todayStr),
     salesStore.getSalesSummaryByDateRange(firstDayOfMonthStr, todayStr),
     reservationStore.fetchReservationsByDateRange(todayStr, todayStr),
-    salesStore.getDailySalesByType(sevenDaysAgoStr, todayStr),
     salesStore.getSalesSummaryByService(sevenDaysAgoStr, todayStr),
     reportStore.getBarberPayments(firstDayOfMonthStr, todayStr),
   ]);
@@ -410,11 +410,11 @@ async function fetchData() {
   // --- Process data ---
   // Process today's sales by type
   productSalesToday.value =
-    dailySalesTodayByTypeData.find((item) => item.type === 'product')?.total ||
-    0;
+    dailySalesTodayByTypeData.find((item) => item.type === 'product')
+      ?.total_sales_by_type || 0;
   serviceSalesToday.value =
-    dailySalesTodayByTypeData.find((item) => item.type === 'service')?.total ||
-    0;
+    dailySalesTodayByTypeData.find((item) => item.type === 'service')
+      ?.total_sales_by_type || 0;
   salesToday.value = productSalesToday.value + serviceSalesToday.value; // Total sales today
 
   salesMonth.value = salesMonthData.reduce((sum, day) => sum + day.total, 0);
@@ -442,10 +442,11 @@ async function fetchData() {
   }
 
   dailySalesByTypeDataForWeekly.forEach((item) => {
+    const formattedDate = dayjs(item.date).format('YYYY-MM-DD'); // Format date consistently
     if (item.type === 'product') {
-      productSalesMap.set(item.date, item.total);
+      productSalesMap.set(formattedDate, item.total_sales_by_type);
     } else if (item.type === 'service') {
-      serviceSalesMap.set(item.date, item.total);
+      serviceSalesMap.set(formattedDate, item.total_sales_by_type);
     }
   });
 
