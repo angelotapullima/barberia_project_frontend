@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useSalesStore = defineStore('sales', {
   state: () => ({
@@ -14,7 +14,7 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`/api/sales`, {
+        const response = await api.get(`/sales`, { // Use 'api' instance and relative path
           params: { page, limit },
         });
         this.sales = response.data.sales;
@@ -36,7 +36,7 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.post(`/api/sales`, saleData);
+        await api.post(`/sales`, saleData); // Use 'api' instance and relative path
       } catch (error) {
         this.error =
           error.response?.data?.error || 'Error al registrar la venta.';
@@ -50,8 +50,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `/api/sales/by-reservation/${reservationId}`,
+        const response = await api.get( // Use 'api' instance and relative path
+          `/sales/by-reservation/${reservationId}`,
         );
         return response.data;
       } catch (error) {
@@ -68,7 +68,7 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`/api/sales/summary`, {
+        const response = await api.get(`/sales/summary`, { // Use 'api' instance and relative path
           params: { startDate, endDate },
         });
         return response.data;
@@ -87,8 +87,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `/api/sales/summary-by-service`,
+        const response = await api.get( // Use 'api' instance and relative path
+          `/sales/summary-by-service`,
           {
             params: { startDate, endDate },
           },
@@ -108,8 +108,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `/api/sales/summary-by-payment-method`,
+        const response = await api.get( // Use 'api' instance and relative path
+          `/sales/summary-by-payment-method`,
           {
             params: { startDate, endDate },
           },

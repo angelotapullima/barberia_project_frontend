@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useServiceStore = defineStore('services', {
   state: () => ({
@@ -12,7 +12,7 @@ export const useServiceStore = defineStore('services', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get('/api/services');
+        const response = await api.get('/services'); // Use 'api' instance and relative path
         this.services = response.data;
       } catch (error) {
         this.error = 'Error al cargar los servicios.';
@@ -24,7 +24,7 @@ export const useServiceStore = defineStore('services', {
     async addService(service) {
       this.error = null;
       try {
-        await axios.post('/api/services', service);
+        await api.post('/services', service); // Use 'api' instance and relative path
         await this.fetchServices();
       } catch (error) {
         this.error =
@@ -35,7 +35,7 @@ export const useServiceStore = defineStore('services', {
     async updateService(service) {
       this.error = null;
       try {
-        await axios.put(`/api/services/${service.id}`, service);
+        await api.put(`/services/${service.id}`, service); // Use 'api' instance and relative path
         await this.fetchServices();
       } catch (error) {
         this.error =
@@ -46,7 +46,7 @@ export const useServiceStore = defineStore('services', {
     async deleteService(id) {
       this.error = null;
       try {
-        await axios.delete(`/api/services/${id}`);
+        await api.delete(`/services/${id}`); // Use 'api' instance and relative path
         await this.fetchServices();
       } catch (error) {
         this.error =

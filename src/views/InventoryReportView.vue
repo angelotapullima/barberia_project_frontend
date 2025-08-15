@@ -165,7 +165,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 import dayjs from 'dayjs';
 
 const inventorySummary = ref(null);
@@ -181,10 +181,10 @@ const fetchInventoryData = async () => {
   error.value = null;
   try {
     const [summaryResponse, lowStockResponse, movementsResponse, productsResponse] = await Promise.all([
-      axios.get('/api/inventory/summary'),
-      axios.get('/api/products?lowStock=true'), // Assuming this endpoint exists or will be created
-      axios.get('/api/inventory/movements'),
-      axios.get('/api/products'), // Fetch all products for name lookup
+      api.get('/inventory/summary'), // Use 'api' and relative path
+      api.get('/products?lowStock=true'), // Use 'api' and relative path
+      api.get('/inventory/movements'), // Use 'api' and relative path
+      api.get('/products'), // Use 'api' and relative path
     ]);
 
     inventorySummary.value = summaryResponse.data;

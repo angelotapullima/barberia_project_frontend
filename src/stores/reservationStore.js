@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useReservationStore = defineStore('reservations', {
   state: () => ({
@@ -27,7 +27,7 @@ export const useReservationStore = defineStore('reservations', {
           endDate,
           includeSaleDetails,
         };
-        const response = await axios.get(`/api/reservations`, { params });
+        const response = await api.get(`/reservations`, { params }); // Use 'api' instance and relative path
         this.reservations = response.data.reservations;
         this.totalReservationsCount = response.data.total; // Update total count
         this.currentPage = response.data.page; // Update currentPage from backend
@@ -43,8 +43,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(
-          `/api/reservations`,
+        const response = await api.post( // Use 'api' instance and relative path
+          `/reservations`,
           reservationData,
         );
         this.reservations.push(response.data);
@@ -61,7 +61,7 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.put(`/api/reservations/${id}`, reservationData);
+        await api.put(`/reservations/${id}`, reservationData); // Use 'api' instance and relative path
         const index = this.reservations.findIndex((res) => res.id === id);
         if (index !== -1) {
           Object.assign(this.reservations[index], reservationData);
@@ -79,7 +79,7 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.delete(`/api/reservations/${id}`);
+        await api.delete(`/reservations/${id}`); // Use 'api' instance and relative path
         this.reservations = this.reservations.filter((res) => res.id !== id);
       } catch (error) {
         this.error =
@@ -94,8 +94,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(
-          `/api/reservations/${reservationId}/products`,
+        const response = await api.post( // Use 'api' instance and relative path
+          `/reservations/${reservationId}/products`,
           { productId, quantity },
         );
         // Optionally, update the reservation in the store if the backend returns the updated reservation
@@ -115,8 +115,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await axios.delete(
-          `/api/reservations/${reservationId}/products/${reservationProductId}`,
+        await api.delete( // Use 'api' instance and relative path
+          `/reservations/${reservationId}/products/${reservationProductId}`,
         );
         // Optionally, update the reservation in the store
       } catch (error) {
@@ -133,7 +133,7 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.post(`/api/reservations/${reservationId}/complete`, { paymentMethod });
+        const response = await api.post(`/reservations/${reservationId}/complete`, { paymentMethod }); // Use 'api' instance and relative path
         return response.data;
       } catch (error) {
         this.error =

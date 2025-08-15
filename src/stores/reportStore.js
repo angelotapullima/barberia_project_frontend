@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useReportStore = defineStore('reports', {
   state: () => ({
@@ -22,7 +22,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await axios.get(`/api/reports/station-usage`, {
+        const response = await api.get(`/reports/station-usage`, {
           params,
         });
         this.stationUsage = response.data;
@@ -40,8 +40,8 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await axios.get(
-          `/api/reports/customer-frequency`,
+        const response = await api.get(
+          `/reports/customer-frequency`,
           { params },
         );
         this.customerFrequency = response.data;
@@ -59,7 +59,7 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await axios.get(`/api/reports/peak-hours`, {
+        const response = await api.get(`/reports/peak-hours`, {
           params,
         });
         this.peakHours = response.data;
@@ -76,8 +76,8 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `/api/reports/comprehensive-sales`,
+        const response = await api.get(
+          `/reports/comprehensive-sales`,
           {
             params: filters,
           },
@@ -100,8 +100,8 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const currentPeriodPromise = axios.get(
-          `/api/reports/services-products-sales`,
+        const currentPeriodPromise = api.get(
+          `/reports/services-products-sales`,
           {
             params: { startDate, endDate },
           },
@@ -109,8 +109,8 @@ export const useReportStore = defineStore('reports', {
 
         let comparisonPeriodPromise = Promise.resolve({ data: [] });
         if (comparisonFilters) {
-          comparisonPeriodPromise = axios.get(
-            `/api/reports/services-products-sales`,
+          comparisonPeriodPromise = api.get(
+            `/reports/services-products-sales`,
             {
               params: comparisonFilters,
             },
@@ -139,7 +139,7 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`/api/reports/barber-payments`, {
+        const response = await api.get(`/reports/barber-payments`, {
           params: { startDate, endDate },
         });
         return response.data;
@@ -157,8 +157,8 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `/api/reports/detailed-barber-service-sales`,
+        const response = await api.get(
+          `/reports/detailed-barber-service-sales`,
           {
             params: filters,
           },

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 
 export const useBarberStore = defineStore('barbers', {
   state: () => ({
@@ -13,7 +13,7 @@ export const useBarberStore = defineStore('barbers', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await axios.get(`/api/barbers`);
+        const response = await api.get(`/barbers`); // Use 'api' instance and relative path
         this.barbers = response.data;
         return response.data; // Return the data
       } catch (error) {
@@ -27,7 +27,7 @@ export const useBarberStore = defineStore('barbers', {
 
     async addBarber(barber) {
       try {
-        const response = await axios.post(`/api/barbers`, barber);
+        const response = await api.post(`/barbers`, barber); // Use 'api' instance and relative path
         this.barbers.push(response.data);
         await this.getAllBarbers(); // Refresh list
       } catch (error) {
@@ -39,7 +39,7 @@ export const useBarberStore = defineStore('barbers', {
 
     async updateBarber(barber) {
       try {
-        await axios.put(`/api/barbers/${barber.id}`, barber);
+        await api.put(`/barbers/${barber.id}`, barber); // Use 'api' instance and relative path
         await this.getAllBarbers(); // Refresh list
       } catch (error) {
         this.error = 'Error al actualizar el barbero.';
@@ -50,7 +50,7 @@ export const useBarberStore = defineStore('barbers', {
 
     async deleteBarber(id) {
       try {
-        await axios.delete(`/api/barbers/${id}`);
+        await api.delete(`/barbers/${id}`); // Use 'api' instance and relative path
         await this.getAllBarbers(); // Refresh list
       } catch (error) {
         this.error = 'Error al eliminar el barbero.';

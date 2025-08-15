@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 import { useAuthStore } from './authStore'; // Import auth store to get token
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const useSettingStore = defineStore('settings', {
   state: () => ({
@@ -24,11 +22,7 @@ export const useSettingStore = defineStore('settings', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        const response = await axios.get(`${API_URL}/settings`, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        });
+        const response = await api.get('/settings'); // Use 'api' instance and relative path
         this.settings = response.data;
       } catch (error) {
         this.error =
@@ -45,14 +39,9 @@ export const useSettingStore = defineStore('settings', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        await axios.put(
-          `${API_URL}/settings/${key}`,
+        await api.put( // Use 'api' instance and relative path
+          `/settings/${key}`,
           { value },
-          {
-            headers: {
-              Authorization: `Bearer ${authStore.token}`,
-            },
-          },
         );
         // Actualizar el valor en el store localmente
         const index = this.settings.findIndex((s) => s.setting_key === key);

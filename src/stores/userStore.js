@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../services/api'; // Import the centralized Axios instance
 import { useAuthStore } from './authStore'; // Import auth store to get token
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const useUserStore = defineStore('users', {
   state: () => ({
@@ -17,11 +15,7 @@ export const useUserStore = defineStore('users', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        const response = await axios.get(`${API_URL}/auth/users`, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        });
+        const response = await api.get('/auth/users'); // Use 'api' instance and relative path
         this.users = response.data;
       } catch (error) {
         this.error =
@@ -37,11 +31,7 @@ export const useUserStore = defineStore('users', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        const response = await axios.post(`${API_URL}/auth/users`, userData, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        });
+        const response = await api.post('/auth/users', userData); // Use 'api' instance and relative path
         this.users.push(response.data);
         return true;
       } catch (error) {
@@ -59,11 +49,7 @@ export const useUserStore = defineStore('users', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        await axios.put(`${API_URL}/auth/users/${id}`, userData, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        });
+        await api.put(`/auth/users/${id}`, userData); // Use 'api' instance and relative path
         // Actualizar el usuario en el store localmente
         const index = this.users.findIndex((user) => user.id === id);
         if (index !== -1) {
@@ -85,11 +71,7 @@ export const useUserStore = defineStore('users', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        await axios.delete(`${API_URL}/auth/users/${id}`, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        });
+        await api.delete(`/auth/users/${id}`); // Use 'api' instance and relative path
         this.users = this.users.filter((user) => user.id !== id);
         return true;
       } catch (error) {
