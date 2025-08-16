@@ -1,307 +1,317 @@
 <template>
-  <div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">
-      Reporte de Pago a Barberos
-    </h1>
-
-    <!-- Filter Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div>
-        <label for="monthFilter" class="block text-sm font-medium text-gray-700"
-          >Mes:</label
-        >
-        <select
-          v-model="selectedMonth"
-          id="monthFilter"
-          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-        >
-          <option v-for="(month, index) in months" :key="index" :value="index">
-            {{ month }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="yearFilter" class="block text-sm font-medium text-gray-700"
-          >Año:</label
-        >
-        <select
-          v-model.number="selectedYear"
-          id="yearFilter"
-          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-        >
-          <option
-            v-for="yearOption in yearOptions"
-            :key="yearOption"
-            :value="yearOption"
+  <div class="container mx-auto">
+    <div class="bg-white rounded-lg shadow-md">
+      <!-- Filter Section -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label
+            for="monthFilter"
+            class="block text-sm font-medium text-gray-700"
+            >Mes:</label
           >
-            {{ yearOption }}
-          </option>
-        </select>
-      </div>
-      <div class="flex items-end">
-        <button
-          @click="fetchReport"
-          class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Generar Reporte
-        </button>
-      </div>
-    </div>
-
-    <!-- Report Table -->
-    <div v-if="isLoading" class="text-center text-gray-500">
-      Cargando reporte...
-    </div>
-    <div v-else-if="error" class="text-center text-red-500">
-      Error: {{ error }}
-    </div>
-    <div v-else-if="reportData.length === 0" class="text-center text-gray-500">
-      No hay datos para mostrar en el rango seleccionado.
-    </div>
-    <div v-else class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Barbero
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Período
-            </th>
-            <th
-              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Sueldo Base
-            </th>
-            <th
-              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Total Servicios Generados (S/)
-            </th>
-            <th
-              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Pago Calculado (S/)
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Estado
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <template
-            v-for="item in reportData"
-            :key="item.barber_id + '-' + item.period_start"
+          <select
+            v-model="selectedMonth"
+            id="monthFilter"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
           >
+            <option
+              v-for="(month, index) in months"
+              :key="index"
+              :value="index"
+            >
+              {{ month }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label
+            for="yearFilter"
+            class="block text-sm font-medium text-gray-700"
+            >Año:</label
+          >
+          <select
+            v-model.number="selectedYear"
+            id="yearFilter"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          >
+            <option
+              v-for="yearOption in yearOptions"
+              :key="yearOption"
+              :value="yearOption"
+            >
+              {{ yearOption }}
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button
+            @click="fetchReport"
+            class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Generar Reporte
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Table -->
+      <div v-if="isLoading" class="text-center text-gray-500">
+        Cargando reporte...
+      </div>
+      <div v-else-if="error" class="text-center text-red-500">
+        Error: {{ error }}
+      </div>
+      <div
+        v-else-if="reportData.length === 0"
+        class="text-center text-gray-500"
+      >
+        No hay datos para mostrar en el rango seleccionado.
+      </div>
+      <div v-else class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
             <tr>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                {{ item.barber_name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ months[new Date(item.period_start).getMonth()] }}
-                {{ new Date(item.period_start).getFullYear() }}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+                Barbero
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                {{ item.base_salary.toFixed(2) }}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+                Período
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                {{ item.services_total.toFixed(2) }}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-bold"
+                Sueldo Base
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                {{ item.total_payment.toFixed(2) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ item.status }}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                Total Servicios Generados (S/)
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                <button
-                  @click="handlePay(item)"
-                  :disabled="
-                    item.status === 'paid' || !isPaymentEnabled(item.period_end)
-                  "
-                  class="text-indigo-600 hover:text-indigo-900 mr-2 disabled:text-gray-400"
-                >
-                  Pagar
-                </button>
-                <button
-                  @click="handleAdvance(item)"
-                  :disabled="!isAdvanceEnabled(item.period_end)"
-                  class="text-blue-600 hover:text-blue-900 disabled:text-gray-400"
-                >
-                  Adelanto
-                </button>
-                <button
-                  @click="toggleDetails(item)"
-                  class="ml-2 text-gray-600 hover:text-gray-900"
-                >
-                  {{ item.showDetails ? 'Ocultar' : 'Ver' }} Detalles
-                </button>
-              </td>
+                Pago Calculado (S/)
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Estado
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Acciones
+              </th>
             </tr>
-            <tr v-if="item.showDetails">
-              <td :colspan="7" class="px-6 py-4 bg-gray-50">
-                <div class="p-4 border rounded-md bg-white">
-                  <h4 class="text-lg font-semibold mb-2">
-                    Detalle de Servicios
-                  </h4>
-                  <div v-if="item.servicesLoading" class="text-gray-500">
-                    Cargando servicios...
-                  </div>
-                  <div v-else-if="item.servicesError" class="text-red-500">
-                    Error al cargar servicios: {{ item.servicesError }}
-                  </div>
-                  <div
-                    v-else-if="
-                      item.detailedServices && item.detailedServices.length
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <template
+              v-for="item in reportData"
+              :key="item.barber_id + '-' + item.period_start"
+            >
+              <tr>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  {{ item.barber_name }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ months[new Date(item.period_start).getMonth()] }}
+                  {{ new Date(item.period_start).getFullYear() }}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+                >
+                  {{ item.base_salary.toFixed(2) }}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+                >
+                  {{ item.services_total.toFixed(2) }}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-bold"
+                >
+                  {{ item.total_payment.toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ item.status }}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                >
+                  <button
+                    @click="handlePay(item)"
+                    :disabled="
+                      item.status === 'paid' ||
+                      !isPaymentEnabled(item.period_end)
                     "
-                    class="overflow-x-auto"
+                    class="text-indigo-600 hover:text-indigo-900 mr-2 disabled:text-gray-400"
                   >
-                    <table class="min-w-full divide-y divide-gray-200">
-                      <thead class="bg-gray-50">
-                        <tr>
-                          <th
-                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    Pagar
+                  </button>
+                  <button
+                    @click="handleAdvance(item)"
+                    :disabled="!isAdvanceEnabled(item.period_end)"
+                    class="text-blue-600 hover:text-blue-900 disabled:text-gray-400"
+                  >
+                    Adelanto
+                  </button>
+                  <button
+                    @click="toggleDetails(item)"
+                    class="ml-2 text-gray-600 hover:text-gray-900"
+                  >
+                    {{ item.showDetails ? 'Ocultar' : 'Ver' }} Detalles
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="item.showDetails">
+                <td :colspan="7" class="px-6 py-4 bg-gray-50">
+                  <div class="p-4 border rounded-md bg-white">
+                    <h4 class="text-lg font-semibold mb-2">
+                      Detalle de Servicios
+                    </h4>
+                    <div v-if="item.servicesLoading" class="text-gray-500">
+                      Cargando servicios...
+                    </div>
+                    <div v-else-if="item.servicesError" class="text-red-500">
+                      Error al cargar servicios: {{ item.servicesError }}
+                    </div>
+                    <div
+                      v-else-if="
+                        item.detailedServices && item.detailedServices.length
+                      "
+                      class="overflow-x-auto"
+                    >
+                      <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                          <tr>
+                            <th
+                              class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Fecha
+                            </th>
+                            <th
+                              class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Servicio
+                            </th>
+                            <th
+                              class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Monto (S/)
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                          <tr
+                            v-for="service in item.detailedServices"
+                            :key="service.sale_id"
                           >
-                            Fecha
-                          </th>
-                          <th
-                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Servicio
-                          </th>
-                          <th
-                            class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Monto (S/)
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-                        <tr
-                          v-for="service in item.detailedServices"
-                          :key="service.sale_id"
-                        >
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
-                          >
-                            {{ formatDate(service.sale_date) }}
-                          </td>
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
-                          >
-                            {{ service.service_name }}
-                          </td>
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
-                          >
-                            {{ service.service_amount.toFixed(2) }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div v-else class="text-gray-500">
-                    No hay servicios detallados para este período.
-                  </div>
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                            >
+                              {{ formatDate(service.sale_date) }}
+                            </td>
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                            >
+                              {{ service.service_name }}
+                            </td>
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
+                            >
+                              {{ service.service_amount.toFixed(2) }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div v-else class="text-gray-500">
+                      No hay servicios detallados para este período.
+                    </div>
 
-                  <h4 class="text-lg font-semibold mt-4 mb-2">
-                    Detalle de Adelantos
-                  </h4>
-                  <div v-if="item.advancesLoading" class="text-gray-500">
-                    Cargando adelantos...
+                    <h4 class="text-lg font-semibold mt-4 mb-2">
+                      Detalle de Adelantos
+                    </h4>
+                    <div v-if="item.advancesLoading" class="text-gray-500">
+                      Cargando adelantos...
+                    </div>
+                    <div v-else-if="item.advancesError" class="text-red-500">
+                      Error al cargar adelantos: {{ item.advancesError }}
+                    </div>
+                    <div
+                      v-else-if="
+                        item.detailedAdvances && item.detailedAdvances.length
+                      "
+                      class="overflow-x-auto"
+                    >
+                      <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                          <tr>
+                            <th
+                              class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Fecha
+                            </th>
+                            <th
+                              class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Monto (S/)
+                            </th>
+                            <th
+                              class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Notas
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                          <tr
+                            v-for="advance in item.detailedAdvances"
+                            :key="advance.id"
+                          >
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                            >
+                              {{ formatDate(advance.date) }}
+                            </td>
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
+                            >
+                              {{ advance.amount.toFixed(2) }}
+                            </td>
+                            <td
+                              class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                            >
+                              {{ advance.notes || 'Sin notas' }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div v-else class="text-gray-500">
+                      No hay adelantos detallados para este período.
+                    </div>
                   </div>
-                  <div v-else-if="item.advancesError" class="text-red-500">
-                    Error al cargar adelantos: {{ item.advancesError }}
-                  </div>
-                  <div
-                    v-else-if="
-                      item.detailedAdvances && item.detailedAdvances.length
-                    "
-                    class="overflow-x-auto"
-                  >
-                    <table class="min-w-full divide-y divide-gray-200">
-                      <thead class="bg-gray-50">
-                        <tr>
-                          <th
-                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Fecha
-                          </th>
-                          <th
-                            class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Monto (S/)
-                          </th>
-                          <th
-                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Notas
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-                        <tr
-                          v-for="advance in item.detailedAdvances"
-                          :key="advance.id"
-                        >
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
-                          >
-                            {{ formatDate(advance.date) }}
-                          </td>
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
-                          >
-                            {{ advance.amount.toFixed(2) }}
-                          </td>
-                          <td
-                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
-                          >
-                            {{ advance.notes || 'Sin notas' }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div v-else class="text-gray-500">
-                    No hay adelantos detallados para este período.
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <BarberAdvanceModal
+        :show="isAdvanceModalOpen"
+        :barberId="selectedBarberForAdvance?.id"
+        :barberName="selectedBarberForAdvance?.name"
+        @close="isAdvanceModalOpen = false"
+        @advanceRegistered="fetchReport"
+      />
     </div>
-
-    <BarberAdvanceModal
-      :show="isAdvanceModalOpen"
-      :barberId="selectedBarberForAdvance?.id"
-      :barberName="selectedBarberForAdvance?.name"
-      @close="isAdvanceModalOpen = false"
-      @advanceRegistered="fetchReport"
-    />
   </div>
 </template>
 

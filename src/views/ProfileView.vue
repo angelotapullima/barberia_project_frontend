@@ -1,7 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Mi Perfil</h1>
-
+  <div class="container mx-auto">
     <div v-if="authStore.isLoading" class="text-center text-gray-500">
       Cargando perfil...
     </div>
@@ -12,7 +10,7 @@
       {{ authStore.error }}
     </div>
 
-    <div v-if="authStore.user" class="bg-white shadow-lg rounded-xl p-8 mb-8">
+    <div v-if="authStore.user" class="bg-white shadow-lg rounded-xl mb-8">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">
         Información Personal
       </h2>
@@ -38,7 +36,7 @@
       </div>
     </div>
 
-    <div class="bg-white shadow-lg rounded-xl p-8">
+    <div class="bg-white shadow-lg rounded-xl">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">Cambiar Contraseña</h2>
       <form @submit.prevent="handleChangePassword">
         <div class="mb-4">

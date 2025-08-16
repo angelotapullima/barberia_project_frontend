@@ -1,9 +1,5 @@
 <template>
-  <div class="calendar-dashboard p-4 min-h-screen">
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">
-      Calendario de Citas
-    </h1>
-
+  <div class="calendar-dashboard">
     <!-- Calendar Header -->
     <div
       class="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-white rounded-lg shadow-sm"

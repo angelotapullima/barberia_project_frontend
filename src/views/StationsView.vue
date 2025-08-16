@@ -1,9 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Gestión de Estaciones
-    </h1>
-
+  <div class="container mx-auto">
     <div v-if="store.isLoading" class="text-center text-gray-500">
       Cargando...
     </div>
@@ -14,7 +10,7 @@
       {{ store.error }}
     </div>
 
-    <div class="bg-white shadow-lg rounded-xl">
+    <div class="bg-white shadow-lg rounded-xl p-6">
       <div class="p-6 border-b flex justify-between items-center">
         <h2 class="text-2xl font-semibold text-gray-800">
           Lista de Estaciones

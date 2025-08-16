@@ -1,9 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Gestión de Barberos
-    </h1>
-
+  <div class="container mx-auto">
     <div v-if="barberStore.isLoading" class="text-center text-gray-500">
       Cargando...
     </div>
