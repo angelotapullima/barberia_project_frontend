@@ -1,7 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Gestión de Productos</h1>
-
+  <div class="container mx-auto">
     <!-- Add Product Button -->
     <div class="flex justify-end mb-4">
       <button @click="openProductModal(null)" class="btn-primary">
@@ -28,7 +26,7 @@
     <div v-else-if="productStore.error" class="text-center text-red-500">
       Error: {{ productStore.error }}
     </div>
-    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden p-6">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>

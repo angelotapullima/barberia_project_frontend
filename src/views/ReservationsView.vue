@@ -1,10 +1,6 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Gestión de Reservas
-    </h1>
-
-    <div class="bg-white shadow-lg rounded-xl p-8 mb-8">
+  <div class="container mx-auto">
+    <div class="bg-white shadow-lg rounded-xl mb-8">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">
         Registrar Nueva Reserva
       </h2>

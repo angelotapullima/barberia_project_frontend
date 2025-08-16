@@ -1,9 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Gestión de Ventas
-    </h1>
-
+  <div class="container mx-auto">
     <div class="flex justify-end mb-6">
       <button @click="isNewSaleModalOpen = true" class="btn-primary">
         Registrar Nueva Venta
@@ -20,7 +16,7 @@
     />
 
     <!-- Sales List and Filtering -->
-    <div class="bg-white shadow-lg rounded-xl p-8 mb-8">
+    <div class="bg-white shadow-lg rounded-xl mb-8">
       <h2 class="text-2xl font-bold mb-4">Lista de Ventas</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <div>

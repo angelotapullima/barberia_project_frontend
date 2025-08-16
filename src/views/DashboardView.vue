@@ -1,11 +1,5 @@
 <template>
   <div class="bg-gray-50 min-h-full">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-      <p class="text-gray-500">Un resumen de la actividad de tu barbería.</p>
-    </div>
-
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <!-- Card 1: Ventas de Productos (Hoy) -->

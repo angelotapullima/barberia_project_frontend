@@ -1,7 +1,5 @@
 <template>
-  <div class="inventory-report-view p-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Reporte de Inventario</h1>
-
+  <div class="inventory-report-view">
     <div v-if="isLoading" class="text-center text-gray-600">
       Cargando reporte...
     </div>
@@ -13,19 +11,19 @@
       v-if="inventorySummary"
       class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
     >
-      <div class="bg-white p-6 rounded-lg shadow-md text-center">
+      <div class="bg-white rounded-lg shadow-md text-center">
         <p class="text-gray-500 text-sm">Total de Productos</p>
         <p class="text-3xl font-bold text-blue-600">
           {{ inventorySummary.totalProducts }}
         </p>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md text-center">
+      <div class="bg-white rounded-lg shadow-md text-center">
         <p class="text-gray-500 text-sm">Productos con Bajo Stock</p>
         <p class="text-3xl font-bold text-red-600">
           {{ inventorySummary.lowStockCount }}
         </p>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md text-center">
+      <div class="bg-white rounded-lg shadow-md text-center">
         <p class="text-gray-500 text-sm">Valor Total del Inventario</p>
         <p class="text-3xl font-bold text-green-600">
           S/. {{ (inventorySummary.totalInventoryValue || 0).toFixed(2) }}

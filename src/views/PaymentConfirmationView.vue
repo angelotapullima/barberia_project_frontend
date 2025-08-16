@@ -1,11 +1,9 @@
 <template>
-  <div class="container mx-auto p-6">
+  <div class="container mx-auto">
     <Breadcrumbs :items="breadcrumbItems" class="mb-6" />
 
     <div class="bg-white p-8 rounded-lg shadow-xl max-w-full w-full mx-auto">
       <div v-if="commission">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Confirmar Pago</h1>
-
         <!-- Payment Summary -->
         <div
           class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 text-lg"

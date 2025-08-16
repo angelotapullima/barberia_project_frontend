@@ -1,9 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Configuración del Sistema
-    </h1>
-
+  <div class="container mx-auto">
     <div
       v-if="settingStore.isLoading || userStore.isLoading"
       class="text-center text-gray-500"
@@ -24,7 +20,7 @@
     </div>
 
     <!-- Sección de Reglas de Pago a Barberos -->
-    <div class="bg-white shadow-lg rounded-xl p-8 mb-8">
+    <div class="bg-white shadow-lg rounded-xl mb-8">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">
         Reglas de Pago a Barberos
       </h2>
@@ -93,7 +89,7 @@
     </div>
 
     <!-- Sección de Gestión de Usuarios -->
-    <div class="bg-white shadow-lg rounded-xl p-8">
+    <div class="bg-white shadow-lg rounded-xl">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">Gestión de Usuarios</h2>
       <button @click="openUserModal()" class="btn-primary mb-4">
         Añadir Usuario

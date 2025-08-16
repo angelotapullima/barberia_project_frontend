@@ -1,9 +1,5 @@
 <template>
-  <div class="container mx-auto p-6">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">
-      Reporte de Ventas por Tipo (Servicio/Producto)
-    </h1>
-
+  <div class="container mx-auto">
     <div v-if="isLoading" class="text-center text-gray-500">
       Generando reporte...
     </div>
@@ -14,7 +10,7 @@
       {{ error }}
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+    <div class="bg-white rounded-xl shadow-lg mb-8">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">Filtros</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
@@ -98,7 +94,7 @@
       </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-lg">
+    <div class="bg-white rounded-xl shadow-lg">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">
         Resumen de Ventas por Tipo
       </h2>

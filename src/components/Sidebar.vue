@@ -1,49 +1,24 @@
 <template>
   <aside
     :class="[
-      // Mobile behavior
-      isOpen ? 'translate-x-0' : '-translate-x-full',
-      'fixed inset-y-0 left-0 z-40 h-full overflow-y-auto bg-white text-gray-700 flex flex-col shadow-lg', // Removed transform transition
-      // Desktop behavior - always visible
-      'lg:static lg:translate-x-0 lg:block', // Ensure it's always visible and static on desktop
-      isCollapsed ? 'lg:w-20' : 'lg:w-64',
-      // Removed 'transition-all duration-4000 ease-in-out'
+      'fixed inset-y-0 z-40 h-full overflow-y-auto bg-white text-gray-700 flex flex-col shadow-lg transition-all duration-300 ease-in-out',
+      'w-64', // Fixed width for both mobile and desktop overlay
+
+      // Combined behavior for both mobile and desktop overlay
+      // If isOpen (mobile) or !isCollapsed (desktop overlay), then translate-x-0 (visible)
+      // Otherwise, -translate-x-full (hidden)
+      isOpen || !isCollapsed ? 'translate-x-0' : '-translate-x-full',
     ]"
     aria-label="Sidebar"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200">
-      <div class="flex items-center space-x-3">
-        <div
-          class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md"
-        >
-          <svg
-            class="w-6 h-6 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
-        </div>
-        <h1
-          class="text-lg font-bold tracking-wide text-gray-800 lg:block"
-          :class="{ 'lg:hidden': isCollapsed }"
-        >
-          BARBERSHOP
-        </h1>
-      </div>
-
-      <!-- Botón cerrar (solo en móvil) -->
+    <div class="flex items-center justify-end p-4">
+      <!-- Botón cerrar (visible en móvil y en desktop cuando expandido) -->
       <button
         @click="emitClose"
         aria-label="Cerrar sidebar"
-        class="p-1 rounded-md hover:bg-gray-100 transition-colors lg:hidden"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors"
+        v-if="isOpen || !isCollapsed"
       >
         <svg
           class="w-5 h-5"
@@ -58,30 +33,6 @@
             stroke-width="2"
             d="M6 18L18 6M6 6l12 12"
           ></path>
-        </svg>
-      </button>
-
-      <!-- Botón colapsar (solo en desktop) -->
-      <button
-        @click="emitToggleCollapse"
-        :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        class="p-1 rounded-md hover:bg-gray-100 transition-colors hidden lg:block"
-      >
-        <svg
-          :class="[
-            'w-5 h-5 transform transition-transform duration-200',
-            isCollapsed ? 'rotate-180' : 'rotate-0',
-          ]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 5l7 7-7 7"
-          />
         </svg>
       </button>
     </div>
@@ -263,7 +214,7 @@
 
               <span
                 class="ml-3 lg:block"
-                :class="{ 'lg:hidden': isCollapsed }"
+                :class="{ 'lg:hidden': isCollapsed && !isOpen }"
                 >{{ item.label }}</span
               >
 
@@ -288,12 +239,20 @@
               </svg>
             </div>
             <ul
-              v-if="openSubmenu === item.label"
-              class="ml-8 mt-1 space-y-1 lg:block"
-              :class="{ 'lg:hidden': isCollapsed }"
+              v-show="openSubmenu === item.label"
+              class="ml-8 mt-1 space-y-1 lg:block overflow-hidden transition-all duration-300 ease-in-out"
+              :class="{
+                'max-h-0': openSubmenu !== item.label,
+                'max-h-screen': openSubmenu === item.label, // Use a large value to ensure content is visible
+                'lg:hidden': isCollapsed, // Still hide on desktop when collapsed
+              }"
             >
               <li v-for="subItem in item.children" :key="subItem.label">
-                <router-link :to="subItem.to" v-slot="{ isActive }">
+                <router-link
+                  :to="subItem.to"
+                  v-slot="{ isActive }"
+                  @click="emitClose"
+                >
                   <div
                     :class="[
                       'group flex items-center px-3 py-2.5 rounded-md text-sm font-semibold tracking-wide transition-all duration-200',
@@ -369,7 +328,7 @@
             </ul>
           </template>
           <template v-else>
-            <router-link :to="item.to" v-slot="{ isActive }">
+            <router-link :to="item.to" v-slot="{ isActive }" @click="emitClose">
               <div
                 :class="[
                   'group flex items-center px-3 py-2.5 rounded-md text-sm font-semibold tracking-wide transition-all duration-200',
@@ -538,7 +497,9 @@
                   </svg>
                 </span>
 
-                <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
+                <span v-if="!isCollapsed || isOpen" class="ml-3">{{
+                  item.label
+                }}</span>
               </div>
             </router-link>
           </template>
@@ -608,7 +569,7 @@ const items = [
     ],
   },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
-  { to: '/barbers/advances', label: 'Adelantos', icon: 'credit-card' },
+
   { to: '/payments', label: 'Pagos', icon: 'credit-card' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },
   { to: '/services', label: 'Servicios', icon: 'scissors' },

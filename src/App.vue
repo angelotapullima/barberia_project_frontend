@@ -5,16 +5,22 @@
       <Sidebar
         :isOpen="isSidebarOpen"
         :isCollapsed="isSidebarCollapsed"
-        @close="closeMobileSidebar"
+        @close="closeSidebar"
         @toggleCollapse="toggleDesktopSidebar"
         class="flex-shrink-0"
       />
 
       <!-- Overlay para móvil cuando el sidebar está abierto -->
+      <!-- Overlay cuando el sidebar está abierto (móvil y desktop) -->
       <div
-        v-if="isSidebarOpen"
+        v-if="
+          isSidebarOpen ||
+          (!isSidebarCollapsed &&
+            authStore.isAuthenticated &&
+            currentRouteName !== 'Login')
+        "
         @click="closeSidebar"
-        class="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"
+        class="fixed inset-0 bg-black opacity-50 z-30"
       ></div>
 
       <div
@@ -24,30 +30,9 @@
         <header class="bg-white border-b border-gray-200 shadow-sm z-10">
           <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-              <!-- Lado Izquierdo: Botón de Sidebar y Título (opcional) -->
-              <div class="flex items-center">
-                <button
-                  @click="
-                    isSidebarOpen ? closeMobileSidebar() : toggleMobileSidebar()
-                  "
-                  class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 lg:hidden"
-                >
-                  <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 6h16M4 12h16M4 18h7"
-                    ></path>
-                  </svg>
-                </button>
-                <!-- Desktop toggle button -->
+              <!-- Lado Izquierdo: Botón de Hamburguesa, Logo y Título de Sección -->
+              <div class="flex items-center space-x-4">
+                <!-- Botón de Hamburguesa (para alternar sidebar en desktop) -->
                 <button
                   @click="toggleDesktopSidebar"
                   class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 hidden lg:block"
@@ -63,11 +48,45 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 6h16M4 12h16M4 18h7"
+                      d="M4 6h16M4 12h16M4 18h16"
                     ></path>
                   </svg>
                 </button>
-                <!-- Opcional: Breadcrumbs o Título de la Vista Actual -->
+
+                <!-- Botón de Hamburguesa (para alternar sidebar en mobile) -->
+                <button
+                  @click="toggleMobileSidebar"
+                  class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 lg:hidden"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    ></path>
+                  </svg>
+                </button>
+
+                <!-- Logo de la Empresa (Placeholder) -->
+                <div class="flex-shrink-0">
+                  <img
+                    class="h-8 w-8 rounded-full"
+                    src="https://via.placeholder.com/32/0000FF/FFFFFF?text=LOGO"
+                    alt="Company Logo"
+                  />
+                </div>
+
+                <!-- Título de la Vista Actual -->
+                <h1 class="text-xl font-semibold text-gray-800">
+                  {{ route.meta.title || currentRouteName }}
+                </h1>
               </div>
 
               <!-- Centro: Barra de Búsqueda -->
@@ -199,7 +218,7 @@ import Sidebar from './components/Sidebar.vue';
 import { useAuthStore } from './stores/authStore';
 
 const isSidebarOpen = ref(false); // For mobile off-canvas
-const isSidebarCollapsed = ref(false); // For desktop collapse
+const isSidebarCollapsed = ref(true); // For desktop collapse (starts collapsed)
 const isProfileMenuOpen = ref(false);
 
 const authStore = useAuthStore();
@@ -208,19 +227,25 @@ const route = useRoute();
 
 const currentRouteName = computed(() => route.name);
 
-const toggleMobileSidebar = () => {
-  // Renamed for clarity
-  isSidebarOpen.value = !isSidebarOpen.value;
+const closeSidebar = () => {
+  isSidebarOpen.value = false; // For mobile
+  isSidebarCollapsed.value = true; // For desktop
 };
 
-const closeMobileSidebar = () => {
-  // Renamed for clarity
-  isSidebarOpen.value = false;
+const toggleMobileSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+  if (isSidebarOpen.value) {
+    // If opening mobile sidebar, ensure desktop is collapsed
+    isSidebarCollapsed.value = true;
+  }
 };
 
 const toggleDesktopSidebar = () => {
-  // New function for desktop collapse
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  if (!isSidebarCollapsed.value) {
+    // If opening desktop sidebar, ensure mobile is closed
+    isSidebarOpen.value = false;
+  }
 };
 
 const handleLogout = () => {
