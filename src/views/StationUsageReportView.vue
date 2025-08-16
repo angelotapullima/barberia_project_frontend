@@ -115,17 +115,15 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useReportStore } from '@/stores/reportStore';
 import VueApexCharts from 'vue3-apexcharts';
 
 const store = useReportStore();
+const { stationUsage, isLoading, error } = storeToRefs(store);
 
 const startDate = ref('');
 const endDate = ref('');
-
-const stationUsage = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
 
 const series = ref([]);
 const chartOptions = ref({
@@ -184,21 +182,11 @@ async function fetchReportData() {
     alert('Por favor, selecciona un rango de fechas.');
     return;
   }
-
-  isLoading.value = true;
-  error.value = null;
-  try {
-    stationUsage.value = await store.fetchStationUsage(startDate.value, endDate.value);
-  } catch (err) {
-    error.value = err.message || 'Error al cargar el reporte.';
-    console.error(err);
-  } finally {
-    isLoading.value = false;
-  }
+  await store.fetchStationUsage(startDate.value, endDate.value);
 }
 
 function updateChartData() {
-  if (stationUsage.value.length > 0) {
+  if (stationUsage.value && stationUsage.value.length > 0) {
     series.value = [
       {
         name: 'Nº de Reservas Completadas',

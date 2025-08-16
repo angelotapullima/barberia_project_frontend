@@ -39,7 +39,8 @@ export const useSettingStore = defineStore('settings', {
       this.error = null;
       const authStore = useAuthStore();
       try {
-        await api.put( // Use 'api' instance and relative path
+        await api.put(
+          // Use 'api' instance and relative path
           `/settings/${key}`,
           { value },
         );

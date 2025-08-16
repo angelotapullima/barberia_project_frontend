@@ -130,7 +130,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="sale in comprehensiveSales" :key="sale.sale_id">
-                <td class="px-4 py-2">{{ sale.sale_date }}</td>
+                <td class="px-4 py-2">{{ formatDateTime(sale.sale_date) }}</td>
                 <td class="px-4 py-2">{{ sale.customer_name }}</td>
                 <td class="px-4 py-2">
                   S/ {{ sale.service_amount.toFixed(2) }}
@@ -156,9 +156,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useReportStore } from '@/stores/reportStore';
 
 const reportStore = useReportStore();
+const { comprehensiveSales, isLoading, error } = storeToRefs(reportStore);
 
 // General Filters
 const startDate = ref('');
@@ -167,10 +169,6 @@ const endDate = ref('');
 // Specific Filters for Comprehensive Report
 const selectedPaymentMethod = ref(null);
 const paymentMethods = ['cash', 'card', 'yape', 'plin'];
-
-const comprehensiveSales = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
 
 function setDefaultDates() {
   const today = new Date();
@@ -185,21 +183,17 @@ async function fetchComprehensiveSalesData() {
     return;
   }
 
-  isLoading.value = true;
-  error.value = null;
-  try {
-    const filters = {
-      startDate: startDate.value,
-      endDate: endDate.value,
-      paymentMethod: selectedPaymentMethod.value,
-    };
-    comprehensiveSales.value = await reportStore.fetchComprehensiveSales(filters);
-  } catch (err) {
-    error.value = err.message || 'Error al cargar el reporte de ventas completo.';
-    console.error(err);
-  } finally {
-    isLoading.value = false;
-  }
+  const filters = {
+    startDate: startDate.value,
+    endDate: endDate.value,
+    paymentMethod: selectedPaymentMethod.value,
+  };
+  await reportStore.fetchComprehensiveSales(filters);
+}
+
+function formatDateTime(dateTimeString) {
+  const date = new Date(dateTimeString);
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 }
 
 function exportToCsv() {
@@ -217,7 +211,7 @@ function exportToCsv() {
     'Monto Total',
   ];
   const rows = comprehensiveSales.value.map((sale) => [
-    sale.sale_date,
+    formatDateTime(sale.sale_date),
     sale.customer_name,
     sale.service_amount.toFixed(2),
     sale.products_amount.toFixed(2),

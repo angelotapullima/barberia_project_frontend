@@ -109,8 +109,15 @@
             />
           </div>
           <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_active" v-model="currentStation.is_active" class="mr-2" />
-            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+            <input
+              type="checkbox"
+              id="is_active"
+              v-model="currentStation.is_active"
+              class="mr-2"
+            />
+            <label for="is_active" class="text-gray-700 text-sm font-bold"
+              >Activo</label
+            >
           </div>
           <div class="mt-8 flex justify-end space-x-4">
             <button

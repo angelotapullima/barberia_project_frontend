@@ -95,10 +95,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr
-                v-for="item in customerFrequency"
-                :key="item.customer_name"
-              >
+              <tr v-for="item in customerFrequency" :key="item.customer_name">
                 <td class="px-4 py-2">{{ item.customer_name }}</td>
                 <td class="px-4 py-2 text-right">{{ item.visit_count }}</td>
               </tr>
@@ -116,17 +113,15 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useReportStore } from '@/stores/reportStore';
 import VueApexCharts from 'vue3-apexcharts';
 
 const store = useReportStore();
+const { customerFrequency, isLoading, error } = storeToRefs(store);
 
 const startDate = ref('');
 const endDate = ref('');
-
-const customerFrequency = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
 
 const series = ref([]);
 const chartOptions = ref({
@@ -185,21 +180,11 @@ async function fetchReportData() {
     alert('Por favor, selecciona un rango de fechas.');
     return;
   }
-
-  isLoading.value = true;
-  error.value = null;
-  try {
-    customerFrequency.value = await store.fetchCustomerFrequency(startDate.value, endDate.value);
-  } catch (err) {
-    error.value = err.message || 'Error al cargar el reporte.';
-    console.error(err);
-  } finally {
-    isLoading.value = false;
-  }
+  await store.fetchCustomerFrequency(startDate.value, endDate.value);
 }
 
 function updateChartData() {
-  if (customerFrequency.value.length > 0) {
+  if (customerFrequency.value && customerFrequency.value.length > 0) {
     series.value = [
       {
         name: 'Número de Visitas',

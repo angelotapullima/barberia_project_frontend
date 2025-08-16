@@ -40,10 +40,9 @@ export const useReportStore = defineStore('reports', {
       this.error = null;
       try {
         const params = { startDate, endDate };
-        const response = await api.get(
-          `/reports/customer-frequency`,
-          { params },
-        );
+        const response = await api.get(`/reports/customer-frequency`, {
+          params,
+        });
         this.customerFrequency = response.data;
       } catch (error) {
         this.error =
@@ -76,12 +75,9 @@ export const useReportStore = defineStore('reports', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get(
-          `/reports/comprehensive-sales`,
-          {
-            params: filters,
-          },
-        );
+        const response = await api.get(`/reports/comprehensive-sales`, {
+          params: filters,
+        });
         this.comprehensiveSales = response.data;
       } catch (error) {
         this.error =

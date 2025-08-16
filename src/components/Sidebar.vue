@@ -1,6 +1,6 @@
 <template>
   <aside
-        :class="[
+    :class="[
       // Mobile behavior
       isOpen ? 'translate-x-0' : '-translate-x-full',
       'fixed inset-y-0 left-0 z-40 h-full overflow-y-auto bg-white text-gray-700 flex flex-col shadow-lg', // Removed transform transition
@@ -261,14 +261,18 @@
                 </svg>
               </span>
 
-              <span class="ml-3 lg:block" :class="{ 'lg:hidden': isCollapsed }">{{ item.label }}</span>
+              <span
+                class="ml-3 lg:block"
+                :class="{ 'lg:hidden': isCollapsed }"
+                >{{ item.label }}</span
+              >
 
               <!-- Flecha de despliegue -->
               <svg
                 :class="[
                   'w-4 h-4 ml-auto transform transition-transform duration-200 lg:block',
                   openSubmenu === item.label ? 'rotate-90' : 'rotate-0',
-                  { 'lg:hidden': isCollapsed }
+                  { 'lg:hidden': isCollapsed },
                 ]"
                 fill="none"
                 stroke="currentColor"
@@ -604,6 +608,8 @@ const items = [
     ],
   },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
+  { to: '/barbers/advances', label: 'Adelantos', icon: 'credit-card' },
+  { to: '/payments', label: 'Pagos', icon: 'credit-card' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },
   { to: '/services', label: 'Servicios', icon: 'scissors' },
   { to: '/stations', label: 'Estaciones', icon: 'map-pin' },
@@ -614,7 +620,9 @@ const items = [
 
 <style scoped>
 aside {
-  transition: width 0.5s ease-in-out, transform 0.5s ease-in-out; /* Explicitly transition width and transform */
+  transition:
+    width 0.5s ease-in-out,
+    transform 0.5s ease-in-out; /* Explicitly transition width and transform */
 }
 /* Nada extra porque todo se maneja con Tailwind */
 </style>

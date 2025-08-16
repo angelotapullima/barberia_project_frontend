@@ -58,7 +58,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="barber in barberStore.barbers" :key="barber.id">
               <td class="px-6 py-4">{{ barber.name }}</td>
-              <td class="px-6 py-4">{{ barber.station_name || 'N/A' }}</td>
+              <td class="px-6 py-4">{{ getStationName(barber.station_id) }}</td>
               <td class="px-6 py-4">S/ {{ barber.base_salary }}</td>
               <td class="px-6 py-4">
                 <span
@@ -116,7 +116,7 @@
               <div class="space-y-2 text-gray-700">
                 <p class="text-sm">
                   <span class="font-medium">Estación:</span>
-                  {{ barber.station_name || 'N/A' }}
+                  {{ getStationName(barber.station_id) }}
                 </p>
                 <p class="text-sm">
                   <span class="font-medium">Sueldo Base:</span> S/
@@ -216,8 +216,15 @@
             </select>
           </div>
           <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_active" v-model="currentBarber.is_active" class="mr-2" />
-            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+            <input
+              type="checkbox"
+              id="is_active"
+              v-model="currentBarber.is_active"
+              class="mr-2"
+            />
+            <label for="is_active" class="text-gray-700 text-sm font-bold"
+              >Activo</label
+            >
           </div>
           <div class="mt-8 flex justify-end space-x-4">
             <button
@@ -261,6 +268,12 @@ const modalTitle = computed(() =>
   isEditing.value ? 'Editar Barbero' : 'Añadir Nuevo Barbero',
 );
 
+function getStationName(stationId) {
+  if (!stationId || !stationStore.stations) return 'N/A';
+  const station = stationStore.stations.find((s) => s.id === stationId);
+  return station ? station.name : 'N/A';
+}
+
 function openModal(barber = null) {
   if (barber) {
     isEditing.value = true;
@@ -291,7 +304,11 @@ async function handleSubmit() {
 }
 
 function confirmDelete(id) {
-  if (window.confirm('¿Estás seguro de que quieres eliminar este barbero? (Se marcará como inactivo)')) {
+  if (
+    window.confirm(
+      '¿Estás seguro de que quieres eliminar este barbero? (Se marcará como inactivo)',
+    )
+  ) {
     barberStore.deleteBarber(id);
   }
 }

@@ -14,7 +14,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get(`/sales`, { // Use 'api' instance and relative path
+        const response = await api.get(`/sales`, {
+          // Use 'api' instance and relative path
           params: { page, limit },
         });
         this.sales = response.data.sales;
@@ -50,7 +51,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get( // Use 'api' instance and relative path
+        const response = await api.get(
+          // Use 'api' instance and relative path
           `/sales/by-reservation/${reservationId}`,
         );
         return response.data;
@@ -68,7 +70,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get(`/sales/summary`, { // Use 'api' instance and relative path
+        const response = await api.get(`/sales/summary`, {
+          // Use 'api' instance and relative path
           params: { startDate, endDate },
         });
         return response.data;
@@ -87,7 +90,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get( // Use 'api' instance and relative path
+        const response = await api.get(
+          // Use 'api' instance and relative path
           `/sales/summary-by-service`,
           {
             params: { startDate, endDate },
@@ -108,7 +112,8 @@ export const useSalesStore = defineStore('sales', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.get( // Use 'api' instance and relative path
+        const response = await api.get(
+          // Use 'api' instance and relative path
           `/sales/summary-by-payment-method`,
           {
             params: { startDate, endDate },

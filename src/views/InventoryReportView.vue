@@ -105,7 +105,10 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-4">
       Historial de Movimientos de Inventario
     </h2>
-    <div v-if="inventoryMovements.length === 0" class="text-center text-gray-500 mb-8">
+    <div
+      v-if="inventoryMovements.length === 0"
+      class="text-center text-gray-500 mb-8"
+    >
       No hay movimientos de inventario para mostrar.
     </div>
     <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -140,7 +143,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="movement in inventoryMovements" :key="movement.id" class="hover:bg-gray-50">
+          <tr
+            v-for="movement in inventoryMovements"
+            :key="movement.id"
+            class="hover:bg-gray-50"
+          >
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
               {{ getProductName(movement.product_id) }}
             </td>
@@ -154,7 +161,8 @@
               {{ formatDate(movement.created_at) }}
             </td>
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-              {{ movement.reference_type || 'N/A' }} (ID: {{ movement.reference_id || 'N/A' }})
+              {{ movement.reference_type || 'N/A' }} (ID:
+              {{ movement.reference_id || 'N/A' }})
             </td>
           </tr>
         </tbody>
@@ -180,7 +188,12 @@ const fetchInventoryData = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const [summaryResponse, lowStockResponse, movementsResponse, productsResponse] = await Promise.all([
+    const [
+      summaryResponse,
+      lowStockResponse,
+      movementsResponse,
+      productsResponse,
+    ] = await Promise.all([
       api.get('/inventory/summary'), // Use 'api' and relative path
       api.get('/products?lowStock=true'), // Use 'api' and relative path
       api.get('/inventory/movements'), // Use 'api' and relative path
@@ -191,7 +204,6 @@ const fetchInventoryData = async () => {
     lowStockProducts.value = lowStockResponse.data;
     inventoryMovements.value = movementsResponse.data;
     products.value = productsResponse.data;
-
   } catch (err) {
     error.value = err.message || 'Error al cargar el reporte de inventario.';
     console.error('Error fetching inventory data:', err);
@@ -229,7 +241,7 @@ function exportLowStockToCsv() {
 }
 
 const getProductName = (productId) => {
-  const product = products.value.find(p => p.id === productId);
+  const product = products.value.find((p) => p.id === productId);
   return product ? product.name : 'Desconocido';
 };
 

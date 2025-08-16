@@ -7,71 +7,46 @@
     <!-- Filter Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div>
-        <label
-          for="barberFilter"
-          class="block text-sm font-medium text-gray-700"
-          >Filtrar por Barbero:</label
+        <label for="monthFilter" class="block text-sm font-medium text-gray-700"
+          >Mes:</label
         >
         <select
-          id="barberFilter"
-          v-model="selectedBarberId"
+          v-model="selectedMonth"
+          id="monthFilter"
           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
-          <option value="">Todos los Barberos</option>
-          <option v-for="barber in barbers" :key="barber.id" :value="barber.id">
-            {{ barber.name }}
+          <option v-for="(month, index) in months" :key="index" :value="index">
+            {{ month }}
           </option>
         </select>
       </div>
-
       <div>
-        <label
-          for="dateFilterType"
-          class="block text-sm font-medium text-gray-700"
-          >Tipo de Filtro por Fecha:</label
+        <label for="yearFilter" class="block text-sm font-medium text-gray-700"
+          >Año:</label
         >
         <select
-          id="dateFilterType"
-          v-model="dateFilterType"
+          v-model.number="selectedYear"
+          id="yearFilter"
           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
-          <option value="month">Mensual</option>
-          <option value="week">Semanal</option>
-          <option value="day">Diario</option>
-          <option value="custom">Rango Personalizado</option>
+          <option
+            v-for="yearOption in yearOptions"
+            :key="yearOption"
+            :value="yearOption"
+          >
+            {{ yearOption }}
+          </option>
         </select>
       </div>
-
-      <div v-if="dateFilterType === 'custom'">
-        <label for="startDate" class="block text-sm font-medium text-gray-700"
-          >Fecha Inicio:</label
+      <div class="flex items-end">
+        <button
+          @click="fetchReport"
+          class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-        <input
-          type="date"
-          id="startDate"
-          v-model="startDate"
-          class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-        />
-      </div>
-      <div v-if="dateFilterType === 'custom'">
-        <label for="endDate" class="block text-sm font-medium text-gray-700"
-          >Fecha Fin:</label
-        >
-        <input
-          type="date"
-          id="endDate"
-          v-model="endDate"
-          class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-        />
+          Generar Reporte
+        </button>
       </div>
     </div>
-
-    <button
-      @click="fetchReport"
-      class="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-    >
-      Generar Reporte
-    </button>
 
     <!-- Report Table -->
     <div v-if="isLoading" class="text-center text-gray-500">
@@ -95,6 +70,11 @@
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
+              Período
+            </th>
+            <th
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Sueldo Base
             </th>
             <th
@@ -107,137 +87,378 @@
             >
               Pago Calculado (S/)
             </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Estado
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="(item, index) in reportData" :key="index">
-            <td
-              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-            >
-              {{ item.barber_name }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ item.base_salary.toFixed(2) }}
-            </td>
-            <td
-              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
-            >
-              {{ item.total_services.toFixed(2) }}
-            </td>
-            <td
-              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-bold"
-            >
-              {{ item.payment.toFixed(2) }}
-            </td>
-          </tr>
+          <template
+            v-for="(item, index) in reportData"
+            :key="item.barber_id + '-' + item.period_start"
+          >
+            <tr>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+              >
+                {{ item.barber_name }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ months[new Date(item.period_start).getMonth()] }}
+                {{ new Date(item.period_start).getFullYear() }}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+              >
+                {{ item.base_salary.toFixed(2) }}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+              >
+                {{ item.services_total.toFixed(2) }}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-bold"
+              >
+                {{ item.total_payment.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ item.status }}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
+                <button
+                  @click="handlePay(item)"
+                  :disabled="
+                    item.status === 'paid' || !isPaymentEnabled(item.period_end)
+                  "
+                  class="text-indigo-600 hover:text-indigo-900 mr-2 disabled:text-gray-400"
+                >
+                  Pagar
+                </button>
+                <button
+                  @click="handleAdvance(item)"
+                  :disabled="!isAdvanceEnabled(item.period_end)"
+                  class="text-blue-600 hover:text-blue-900 disabled:text-gray-400"
+                >
+                  Adelanto
+                </button>
+                <button
+                  @click="toggleDetails(item)"
+                  class="ml-2 text-gray-600 hover:text-gray-900"
+                >
+                  {{ item.showDetails ? 'Ocultar' : 'Ver' }} Detalles
+                </button>
+              </td>
+            </tr>
+            <tr v-if="item.showDetails">
+              <td :colspan="7" class="px-6 py-4 bg-gray-50">
+                <div class="p-4 border rounded-md bg-white">
+                  <h4 class="text-lg font-semibold mb-2">
+                    Detalle de Servicios
+                  </h4>
+                  <div v-if="item.servicesLoading" class="text-gray-500">
+                    Cargando servicios...
+                  </div>
+                  <div v-else-if="item.servicesError" class="text-red-500">
+                    Error al cargar servicios: {{ item.servicesError }}
+                  </div>
+                  <div
+                    v-else-if="
+                      item.detailedServices && item.detailedServices.length
+                    "
+                    class="overflow-x-auto"
+                  >
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th
+                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Fecha
+                          </th>
+                          <th
+                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Servicio
+                          </th>
+                          <th
+                            class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Monto (S/)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr
+                          v-for="service in item.detailedServices"
+                          :key="service.sale_id"
+                        >
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                          >
+                            {{ formatDate(service.sale_date) }}
+                          </td>
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                          >
+                            {{ service.service_name }}
+                          </td>
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
+                          >
+                            {{ service.service_amount.toFixed(2) }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div v-else class="text-gray-500">
+                    No hay servicios detallados para este período.
+                  </div>
+
+                  <h4 class="text-lg font-semibold mt-4 mb-2">
+                    Detalle de Adelantos
+                  </h4>
+                  <div v-if="item.advancesLoading" class="text-gray-500">
+                    Cargando adelantos...
+                  </div>
+                  <div v-else-if="item.advancesError" class="text-red-500">
+                    Error al cargar adelantos: {{ item.advancesError }}
+                  </div>
+                  <ul
+                    v-else-if="
+                      item.detailedAdvances && item.detailedAdvances.length
+                    "
+                  >
+                    <li
+                      v-for="advance in item.detailedAdvances"
+                      :key="advance.id"
+                      class="text-sm text-gray-700"
+                    >
+                      {{ formatDate(advance.date) }}: S/
+                      {{ advance.amount.toFixed(2) }} ({{
+                        advance.notes || 'Sin notas'
+                      }})
+                    </li>
+                  </ul>
+                  <div v-else class="text-gray-500">
+                    No hay adelantos detallados para este período.
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
+
+    <BarberPaymentModal
+      :show="isPaymentModalOpen"
+      :barber="selectedBarberForPayment"
+      :commission="selectedCommissionForPayment"
+      :selectedYear="selectedYear"
+      :selectedMonth="selectedMonth"
+      @close="isPaymentModalOpen = false"
+      @paymentFinalized="fetchReport"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useReportStore } from '@/stores/reportStore';
-import { useBarberStore } from '@/stores/barberStore';
-import dayjs from 'dayjs';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import weekday from 'dayjs/plugin/weekday';
-
-dayjs.extend(isSameOrBefore);
-dayjs.extend(weekday);
-
-const reportStore = useReportStore();
-const barberStore = useBarberStore();
+import { ref, onMounted, computed, watch } from 'vue';
+import api from '@/services/api';
+import BarberPaymentModal from '@/components/BarberPaymentModal.vue';
 
 const reportData = ref([]);
-const barbers = ref([]);
-const selectedBarberId = ref('');
-const dateFilterType = ref('month');
-const startDate = ref('');
-const endDate = ref('');
+const selectedMonth = ref(new Date().getMonth());
+const selectedYear = ref(new Date().getFullYear());
 const isLoading = ref(false);
 const error = ref(null);
 
-// Function to calculate start and end dates based on filter type
-const getDatesForFilter = () => {
-  const today = dayjs();
-  let start, end;
+const isPaymentModalOpen = ref(false);
+const selectedBarberForPayment = ref(null);
+const selectedCommissionForPayment = ref(null);
 
-  switch (dateFilterType.value) {
-    case 'month':
-      start = today.startOf('month').format('YYYY-MM-DD');
-      end = today.endOf('day').format('YYYY-MM-DD');
-      break;
-    case 'week':
-      start = today.startOf('week').format('YYYY-MM-DD');
-      end = today.endOf('day').format('YYYY-MM-DD');
-      break;
-    case 'day':
-      start = today.format('YYYY-MM-DD');
-      end = today.format('YYYY-MM-DD');
-      break;
-    case 'custom':
-      start = startDate.value;
-      end = endDate.value;
-      break;
-    default:
-      start = '';
-      end = '';
+const months = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+
+const yearOptions = computed(() => {
+  const currentYear = new Date().getFullYear();
+  const startYear = 2024; // Fixed start year
+  const years = [];
+  for (let i = startYear; i <= currentYear; i++) {
+    years.push(i);
   }
-  return { start, end };
+  return years;
+});
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 };
 
 const fetchReport = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const { start, end } = getDatesForFilter();
-    const payments = await reportStore.getBarberPayments(start, end);
-    
-    // Filter by selectedBarberId if it's not ''
-    if (selectedBarberId.value) {
-      reportData.value = payments.filter(item => item.barber_id === selectedBarberId.value);
-    } else {
-      reportData.value = payments;
-    }
-
+    const response = await api.get('/barber-commissions/monthly-summary', {
+      params: {
+        year: selectedYear.value,
+        month: selectedMonth.value + 1, // Months are 0-indexed in JS, 1-indexed in backend
+      },
+    });
+    reportData.value = response.data.map((item) => ({
+      ...item,
+      showDetails: false,
+      servicesLoading: false,
+      servicesError: null,
+      detailedServices: [],
+      advancesLoading: false,
+      advancesError: null,
+      detailedAdvances: [],
+    }));
+    console.log('Report Data:', reportData.value);
   } catch (err) {
     error.value = err.message || 'Error al cargar el reporte.';
-    console.error('Error fetching barber payments:', err);
+    console.error('Error fetching monthly barber commissions:', err);
   } finally {
     isLoading.value = false;
   }
 };
 
-// Fetch barbers on component mount
-onMounted(async () => {
+const isPaymentEnabled = (periodEnd) => {
+  const today = new Date();
+  const endDate = new Date(periodEnd);
+  return today >= endDate;
+};
+
+const isAdvanceEnabled = (periodEnd) => {
+  const today = new Date();
+  const endDate = new Date(periodEnd);
+  return today < endDate;
+};
+
+const handlePay = (item) => {
+  selectedBarberForPayment.value = {
+    id: item.barber_id,
+    name: item.barber_name,
+  };
+  selectedCommissionForPayment.value = item;
+  isPaymentModalOpen.value = true;
+};
+
+const handleAdvance = (item) => {
+  alert(`Registrar adelanto para ${item.barber_name}`);
+  // TODO: Implement advance registration modal/logic
+};
+
+const toggleDetails = async (item) => {
+  item.showDetails = !item.showDetails;
+  if (item.showDetails) {
+    // Fetch detailed services
+    item.servicesLoading = true;
+    item.servicesError = null;
+    try {
+      const response = await api.get(
+        `/barber-commissions/${item.barber_id}/services`,
+        {
+          params: {
+            year: selectedYear.value,
+            month: selectedMonth.value + 1,
+          },
+        },
+      );
+      item.detailedServices = response.data;
+    } catch (err) {
+      item.servicesError = err.message || 'Error al cargar los servicios.';
+      console.error('Error fetching detailed services:', err);
+    } finally {
+      item.servicesLoading = false;
+    }
+
+    // Fetch detailed advances
+    item.advancesLoading = true;
+    item.advancesError = null;
+    try {
+      const response = await api.get(
+        `/barber-commissions/${item.barber_id}/advances`,
+        {
+          params: {
+            year: selectedYear.value,
+            month: selectedMonth.value + 1,
+          },
+        },
+      );
+      item.detailedAdvances = response.data;
+    } catch (err) {
+      item.advancesError = err.message || 'Error al cargar los adelantos.';
+      console.error('Error fetching detailed advances:', err);
+    } finally {
+      item.advancesLoading = false;
+    }
+  }
+};
+
+const isGeneratePaymentsEnabled = computed(() => {
+  const today = new Date();
+  const selectedMonthEndDate = new Date(
+    selectedYear.value,
+    selectedMonth.value + 1,
+    0,
+  ); // Last day of selected month
+  return today >= selectedMonthEndDate;
+});
+
+const generatePayments = async () => {
+  if (
+    !confirm(
+      `¿Estás seguro de que quieres generar los pagos para ${months[selectedMonth.value]} de ${selectedYear.value}? Esta acción no se puede deshacer.`,
+    )
+  ) {
+    return;
+  }
+
   try {
-    barbers.value = await barberStore.getAllBarbers();
-    // Set initial date filters and fetch report
-    const { start, end } = getDatesForFilter();
-    startDate.value = start;
-    endDate.value = end;
-    fetchReport();
+    await api.post('/barber-commissions/calculate-monthly', {
+      year: selectedYear.value,
+      month: selectedMonth.value + 1,
+    });
+    alert('Pagos generados exitosamente.');
+    fetchReport(); // Refresh report after generating payments
   } catch (err) {
-    console.error('Error fetching barbers:', err);
-    error.value = 'Error al cargar la lista de barberos.';
+    console.error('Error generating payments:', err);
+    alert('Error al generar los pagos.');
   }
-});
+};
 
-// Watch for changes in filter type to update dates
-watch(dateFilterType, (newType) => {
-  if (newType !== 'custom') {
-    const { start, end } = getDatesForFilter();
-    startDate.value = start;
-    endDate.value = end;
-  }
-});
+watch([selectedMonth, selectedYear], fetchReport); // Watch for changes in month/year
 
-// Automatically fetch report when filters change (except custom date inputs)
-watch([selectedBarberId, startDate, endDate, dateFilterType], () => {
-  if (dateFilterType.value !== 'custom' || (startDate.value && endDate.value)) {
-    fetchReport();
-  }
+onMounted(() => {
+  fetchReport();
 });
 </script>

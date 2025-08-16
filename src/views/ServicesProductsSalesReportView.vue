@@ -140,41 +140,24 @@
                 <th
                   class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
                 >
-                  Monto Servicios (Período Actual)
-                </th>
-                <th
-                  class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
-                >
-                  Monto Productos (Período Actual)
+                  Monto (Período Actual)
                 </th>
                 <th
                   v-if="compareEnabled"
                   class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
                 >
-                  Monto Servicios (Período Comparación)
-                </th>
-                <th
-                  v-if="compareEnabled"
-                  class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
-                >
-                  Monto Productos (Período Comparación)
+                  Monto (Período Comparación)
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in combinedSalesData" :key="item.date">
-                <td class="px-4 py-2">{{ item.date }}</td>
+              <tr v-for="item in tableData" :key="item.type">
+                <td class="px-4 py-2">{{ item.type }}</td>
                 <td class="px-4 py-2 text-right">
-                  S/ {{ item.currentServiceAmount.toFixed(2) }}
-                </td>
-                <td class="px-4 py-2 text-right">
-                  S/ {{ item.currentProductAmount.toFixed(2) }}
+                  S/ {{ item.currentAmount.toFixed(2) }}
                 </td>
                 <td v-if="compareEnabled" class="px-4 py-2 text-right">
-                  S/ {{ item.comparisonServiceAmount.toFixed(2) }}
-                </td>
-                <td v-if="compareEnabled" class="px-4 py-2 text-right">
-                  S/ {{ item.comparisonProductAmount.toFixed(2) }}
+                  S/ {{ item.comparisonAmount.toFixed(2) }}
                 </td>
               </tr>
             </tbody>
@@ -190,10 +173,17 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useReportStore } from '@/stores/reportStore';
 import VueApexCharts from 'vue3-apexcharts';
 
 const store = useReportStore();
+const {
+  servicesProductsSales,
+  servicesProductsSalesComparison,
+  isLoading,
+  error,
+} = storeToRefs(store);
 
 const startDate = ref('');
 const endDate = ref('');
@@ -201,15 +191,11 @@ const compareEnabled = ref(false);
 const compareStartDate = ref('');
 const compareEndDate = ref('');
 
-const servicesProductsSales = ref([]);
-const servicesProductsSalesComparison = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
-
 const series = ref([]);
 const chartOptions = ref({
   chart: {
     type: 'pie',
+    width: 400,
   },
   labels: [],
   responsive: [
@@ -227,27 +213,37 @@ const chartOptions = ref({
   ],
 });
 
-// Computed property para combinar los datos de ambos períodos para la tabla
-const combinedSalesData = computed(() => {
-  const data = [];
-  const dates = new Set();
+const tableData = computed(() => {
+  const currentServiceTotal = servicesProductsSales.value.reduce(
+    (sum, item) => sum + parseFloat(item.service_total),
+    0,
+  );
+  const currentProductTotal = servicesProductsSales.value.reduce(
+    (sum, item) => sum + parseFloat(item.product_total),
+    0,
+  );
 
-  servicesProductsSales.value.forEach(item => dates.add(item.date));
-  servicesProductsSalesComparison.value.forEach(item => dates.add(item.date));
+  const comparisonServiceTotal = servicesProductsSalesComparison.value.reduce(
+    (sum, item) => sum + parseFloat(item.service_total),
+    0,
+  );
+  const comparisonProductTotal = servicesProductsSalesComparison.value.reduce(
+    (sum, item) => sum + parseFloat(item.product_total),
+    0,
+  );
 
-  Array.from(dates).sort().forEach(date => {
-    const current = servicesProductsSales.value.find(item => item.date === date);
-    const comparison = servicesProductsSalesComparison.value.find(item => item.date === date);
-
-    data.push({
-      date: date,
-      currentServiceAmount: current ? parseFloat(current.service_total) : 0,
-      currentProductAmount: current ? parseFloat(current.product_total) : 0,
-      comparisonServiceAmount: comparison ? parseFloat(comparison.service_total) : 0,
-      comparisonProductAmount: comparison ? parseFloat(comparison.product_total) : 0,
-    });
-  });
-  return data;
+  return [
+    {
+      type: 'Servicios',
+      currentAmount: currentServiceTotal,
+      comparisonAmount: comparisonServiceTotal,
+    },
+    {
+      type: 'Productos',
+      currentAmount: currentProductTotal,
+      comparisonAmount: comparisonProductTotal,
+    },
+  ];
 });
 
 function setDefaultDates() {
@@ -257,7 +253,6 @@ function setDefaultDates() {
   startDate.value = thirtyDaysAgo.toISOString().slice(0, 10);
   endDate.value = today.toISOString().slice(0, 10);
 
-  // Set default for comparison period (e.g., previous 30 days)
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(today.getDate() - 60);
   compareStartDate.value = sixtyDaysAgo.toISOString().slice(0, 10);
@@ -270,73 +265,44 @@ async function fetchServicesProductsSalesData() {
     return;
   }
 
-  isLoading.value = true;
-  error.value = null;
-  try {
-    const currentPeriodPromise = reportStore.fetchServicesProductsSales(
-      startDate.value,
-      endDate.value,
-    );
-
-    let comparisonPeriodPromise = Promise.resolve([]);
-    if (compareEnabled.value) {
-      if (!compareStartDate.value || !compareEndDate.value) {
-        alert(
-          'Por favor, selecciona un rango de fechas para el período de comparación.',
-        );
-        isLoading.value = false;
-        return;
-      }
-      comparisonPeriodPromise = reportStore.fetchServicesProductsSales(
-        compareStartDate.value,
-        compareEndDate.value,
+  let comparisonFilters = null;
+  if (compareEnabled.value) {
+    if (!compareStartDate.value || !compareEndDate.value) {
+      alert(
+        'Por favor, selecciona un rango de fechas para el período de comparación.',
       );
+      return;
     }
-
-    const [currentResponse, comparisonResponse] = await Promise.all([
-      currentPeriodPromise,
-      comparisonPeriodPromise,
-    ]);
-
-    servicesProductsSales.value = currentResponse;
-    servicesProductsSalesComparison.value = comparisonResponse;
-
-    updateChartData();
-  } catch (err) {
-    error.value = err.message || 'Error al cargar el reporte de servicios vs productos.';
-    console.error(err);
-  } finally {
-    isLoading.value = false;
+    comparisonFilters = {
+      startDate: compareStartDate.value,
+      endDate: compareEndDate.value,
+    };
   }
+
+  await store.fetchServicesProductsSales(
+    startDate.value,
+    endDate.value,
+    comparisonFilters,
+  );
 }
 
 function updateChartData() {
   if (compareEnabled.value) {
-    // Gráfico de barras para comparación
-    const categories = combinedSalesData.value.map((item) => item.date);
+    const categories = tableData.value.map((item) => item.type);
     series.value = [
       {
-        name: 'Servicios (Período Actual)',
-        data: combinedSalesData.value.map((item) => item.currentServiceAmount),
+        name: 'Período Actual',
+        data: tableData.value.map((item) => item.currentAmount),
       },
       {
-        name: 'Productos (Período Actual)',
-        data: combinedSalesData.value.map((item) => item.currentProductAmount),
-      },
-      {
-        name: 'Servicios (Período Comparación)',
-        data: combinedSalesData.value.map((item) => item.comparisonServiceAmount),
-      },
-      {
-        name: 'Productos (Período Comparación)',
-        data: combinedSalesData.value.map((item) => item.comparisonProductAmount),
+        name: 'Período Comparación',
+        data: tableData.value.map((item) => item.comparisonAmount),
       },
     ];
     chartOptions.value = {
       chart: {
         type: 'bar',
         height: 350,
-        stacked: true, // Stacked bars for service/product within each period
       },
       plotOptions: {
         bar: {
@@ -356,7 +322,7 @@ function updateChartData() {
       xaxis: {
         categories: categories,
         title: {
-          text: 'Fecha',
+          text: 'Tipo',
         },
       },
       yaxis: {
@@ -376,15 +342,13 @@ function updateChartData() {
       },
     };
   } else {
-    // Gráfico de pastel normal
-    const totalServiceSales = servicesProductsSales.value.reduce((sum, item) => sum + parseFloat(item.service_total), 0);
-    const totalProductSales = servicesProductsSales.value.reduce((sum, item) => sum + parseFloat(item.product_total), 0);
-
-    if (totalServiceSales > 0 || totalProductSales > 0) {
-      series.value = [totalServiceSales, totalProductSales];
+    const [service, product] = tableData.value;
+    if (service.currentAmount > 0 || product.currentAmount > 0) {
+      series.value = [service.currentAmount, product.currentAmount];
       chartOptions.value = {
         chart: {
           type: 'pie',
+          width: 400,
         },
         labels: ['Servicios', 'Productos'],
         responsive: [
@@ -406,6 +370,7 @@ function updateChartData() {
       chartOptions.value = {
         chart: {
           type: 'pie',
+          width: 400,
         },
         labels: [],
       };
@@ -414,28 +379,20 @@ function updateChartData() {
 }
 
 function exportToCsv() {
-  if (
-    servicesProductsSales.value.length === 0 &&
-    (!compareEnabled.value ||
-      servicesProductsSalesComparison.value.length === 0)
-  ) {
+  if (tableData.value.length === 0) {
     alert('No hay datos para exportar.');
     return;
   }
 
-  let headers = ['Fecha', 'Monto Servicios (Período Actual)', 'Monto Productos (Período Actual)'];
+  let headers = ['Tipo', 'Monto (Período Actual)'];
   if (compareEnabled.value) {
-    headers.push('Monto Servicios (Período Comparación)', 'Monto Productos (Período Comparación)');
+    headers.push('Monto (Período Comparación)');
   }
 
-  const rows = combinedSalesData.value.map((item) => {
-    const row = [
-      item.date,
-      item.currentServiceAmount.toFixed(2),
-      item.currentProductAmount.toFixed(2),
-    ];
+  const rows = tableData.value.map((item) => {
+    const row = [item.type, item.currentAmount.toFixed(2)];
     if (compareEnabled.value) {
-      row.push(item.comparisonServiceAmount.toFixed(2), item.comparisonProductAmount.toFixed(2));
+      row.push(item.comparisonAmount.toFixed(2));
     }
     return row;
   });
@@ -454,7 +411,6 @@ function exportToCsv() {
   document.body.removeChild(link);
 }
 
-// Observar cambios en servicesProductsSales y servicesProductsSalesComparison para actualizar el gráfico
 watch(
   () => [
     servicesProductsSales.value,

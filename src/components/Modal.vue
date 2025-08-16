@@ -25,7 +25,7 @@
 <script setup>
 import { onMounted, onUnmounted, watch } from 'vue';
 
-defineProps({
+const props = defineProps({
   show: Boolean,
 });
 const emit = defineEmits(['close']); // Change defineEmits to a const
@@ -46,13 +46,16 @@ const handleClickOutside = (event) => {
 };
 
 // Watch for changes in the 'show' prop to add/remove event listeners
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    document.addEventListener('keydown', handleKeydown);
-  } else {
-    document.removeEventListener('keydown', handleKeydown);
-  }
-});
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      document.addEventListener('keydown', handleKeydown);
+    } else {
+      document.removeEventListener('keydown', handleKeydown);
+    }
+  },
+);
 
 // Clean up event listener when component is unmounted
 onUnmounted(() => {

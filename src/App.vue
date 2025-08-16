@@ -27,7 +27,9 @@
               <!-- Lado Izquierdo: Botón de Sidebar y Título (opcional) -->
               <div class="flex items-center">
                 <button
-                  @click="isSidebarOpen ? closeMobileSidebar() : toggleMobileSidebar()"
+                  @click="
+                    isSidebarOpen ? closeMobileSidebar() : toggleMobileSidebar()
+                  "
                   class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100 lg:hidden"
                 >
                   <svg
@@ -206,15 +208,18 @@ const route = useRoute();
 
 const currentRouteName = computed(() => route.name);
 
-const toggleMobileSidebar = () => { // Renamed for clarity
+const toggleMobileSidebar = () => {
+  // Renamed for clarity
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
-const closeMobileSidebar = () => { // Renamed for clarity
+const closeMobileSidebar = () => {
+  // Renamed for clarity
   isSidebarOpen.value = false;
 };
 
-const toggleDesktopSidebar = () => { // New function for desktop collapse
+const toggleDesktopSidebar = () => {
+  // New function for desktop collapse
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
 

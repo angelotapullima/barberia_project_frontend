@@ -146,8 +146,15 @@
             />
           </div>
           <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_active" v-model="currentService.is_active" class="mr-2" />
-            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+            <input
+              type="checkbox"
+              id="is_active"
+              v-model="currentService.is_active"
+              class="mr-2"
+            />
+            <label for="is_active" class="text-gray-700 text-sm font-bold"
+              >Activo</label
+            >
           </div>
           <div class="mt-8 flex justify-end space-x-4">
             <button
@@ -225,7 +232,11 @@ async function handleSubmit() {
 
 function confirmDelete(id) {
   store.error = null;
-  if (window.confirm('¿Estás seguro de que quieres eliminar este servicio? (Se marcará como inactivo)')) {
+  if (
+    window.confirm(
+      '¿Estás seguro de que quieres eliminar este servicio? (Se marcará como inactivo)',
+    )
+  ) {
     store.deleteService(id);
   }
 }

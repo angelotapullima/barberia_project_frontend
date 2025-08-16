@@ -86,17 +86,15 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useReportStore } from '@/stores/reportStore';
 import VueApexCharts from 'vue3-apexcharts';
 
 const store = useReportStore();
+const { peakHours, isLoading, error } = storeToRefs(store);
 
 const startDate = ref('');
 const endDate = ref('');
-
-const peakHours = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
 
 const peakHoursSeries = ref([]);
 const peakHoursChartOptions = ref({});
@@ -114,39 +112,31 @@ async function fetchReportData() {
     alert('Por favor, selecciona un rango de fechas.');
     return;
   }
-
-  isLoading.value = true;
-  error.value = null;
-  try {
-    peakHours.value = await store.fetchPeakHours(startDate.value, endDate.value);
-  } catch (err) {
-    error.value = err.message || 'Error al cargar el reporte.';
-    console.error(err);
-  } finally {
-    isLoading.value = false;
-  }
+  await store.fetchPeakHours(startDate.value, endDate.value);
 }
 
 function updatePeakHoursChart() {
   const peakHoursData = peakHours.value;
-  peakHoursSeries.value = [
-    {
-      name: 'Cantidad de Reservas',
-      data: peakHoursData.map((item) => item.reservation_count),
-    },
-  ];
-  peakHoursChartOptions.value = {
-    chart: { type: 'bar', height: 350 },
-    plotOptions: { bar: { horizontal: false } },
-    dataLabels: { enabled: false },
-    xaxis: {
-      categories: peakHoursData.map((item) => item.hour),
-      title: { text: 'Hora del Día' },
-    },
-    yaxis: {
-      title: { text: 'Nº de Reservas' },
-    },
-  };
+  if (peakHoursData && peakHoursData.length > 0) {
+    peakHoursSeries.value = [
+      {
+        name: 'Cantidad de Reservas',
+        data: peakHoursData.map((item) => item.reservation_count),
+      },
+    ];
+    peakHoursChartOptions.value = {
+      chart: { type: 'bar', height: 350 },
+      plotOptions: { bar: { horizontal: false } },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: peakHoursData.map((item) => item.hour),
+        title: { text: 'Hora del Día' },
+      },
+      yaxis: {
+        title: { text: 'Nº de Reservas' },
+      },
+    };
+  }
 }
 
 function exportToCsv() {
