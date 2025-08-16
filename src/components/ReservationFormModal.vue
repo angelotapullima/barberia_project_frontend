@@ -215,13 +215,16 @@ const handleClickOutside = (event) => {
 };
 
 // Watch for changes in the 'show' prop to add/remove event listeners
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    document.addEventListener('keydown', handleKeydown);
-  } else {
-    document.removeEventListener('keydown', handleKeydown);
-  }
-});
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      document.addEventListener('keydown', handleKeydown);
+    } else {
+      document.removeEventListener('keydown', handleKeydown);
+    }
+  },
+);
 
 // Clean up event listener when component is unmounted
 onUnmounted(() => {

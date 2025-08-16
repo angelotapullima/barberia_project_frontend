@@ -43,7 +43,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.post( // Use 'api' instance and relative path
+        const response = await api.post(
+          // Use 'api' instance and relative path
           `/reservations`,
           reservationData,
         );
@@ -94,7 +95,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.post( // Use 'api' instance and relative path
+        const response = await api.post(
+          // Use 'api' instance and relative path
           `/reservations/${reservationId}/products`,
           { productId, quantity },
         );
@@ -115,7 +117,8 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        await api.delete( // Use 'api' instance and relative path
+        await api.delete(
+          // Use 'api' instance and relative path
           `/reservations/${reservationId}/products/${reservationProductId}`,
         );
         // Optionally, update the reservation in the store
@@ -133,7 +136,10 @@ export const useReservationStore = defineStore('reservations', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.post(`/reservations/${reservationId}/complete`, { paymentMethod }); // Use 'api' instance and relative path
+        const response = await api.post(
+          `/reservations/${reservationId}/complete`,
+          { paymentMethod },
+        ); // Use 'api' instance and relative path
         return response.data;
       } catch (error) {
         this.error =
@@ -145,5 +151,5 @@ export const useReservationStore = defineStore('reservations', {
         this.isLoading = false;
       }
     },
-  }
-})
+  },
+});

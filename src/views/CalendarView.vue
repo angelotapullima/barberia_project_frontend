@@ -211,10 +211,8 @@
             <div
               class="status-tag text-xs font-semibold text-center py-1 px-2 rounded-md mt-2 self-start"
               :class="{
-                'bg-yellow-100 text-yellow-800':
-                  reservation.status !== 'paid',
-                'bg-green-100 text-green-800':
-                  reservation.status === 'paid',
+                'bg-yellow-100 text-yellow-800': reservation.status !== 'paid',
+                'bg-green-100 text-green-800': reservation.status === 'paid',
               }"
             >
               {{ reservation.status === 'paid' ? 'Pagado' : 'Reservado' }}
@@ -363,14 +361,17 @@ const displayedDays = computed(() => {
   const screenWidth = window.innerWidth; // Get current screen width
   const days = weekDays.value; // All 7 days of the week
 
-  if (screenWidth < 768) { // Mobile (sm breakpoint is 640px, md is 768px)
+  if (screenWidth < 768) {
+    // Mobile (sm breakpoint is 640px, md is 768px)
     return [days[activeDayIndex.value]]; // Show only the active day
-  } else if (screenWidth < 1024) { // Tablet (lg breakpoint is 1024px)
+  } else if (screenWidth < 1024) {
+    // Tablet (lg breakpoint is 1024px)
     // Show 4 days for tablet, starting from the activeDayIndex
     const start = activeDayIndex.value;
     const end = Math.min(start + 4, days.length);
     return days.slice(start, end);
-  } else { // Desktop
+  } else {
+    // Desktop
     return days; // Show all 7 days
   }
 });
@@ -559,7 +560,6 @@ const getAppointmentStyle = (reservation) => {
   // Adjust left for time axis width
   let left = reservation.calculatedLeft;
 
-
   return {
     top: `${top}px`,
     height: `${height}px`,
@@ -614,7 +614,8 @@ const fetchReservationsForCurrentWeek = async () => {
     .endOf('day')
     .toISOString();
   try {
-    const response = await api.get('/reservations/view/calendar', { // Use 'api' and relative path
+    const response = await api.get('/reservations/view/calendar', {
+      // Use 'api' and relative path
       params: { startDate, endDate },
     });
     reservations.value = response.data.reservations;
@@ -627,7 +628,9 @@ const fetchReservationsForCurrentWeek = async () => {
 };
 
 const handleUpdatedReservation = (updatedReservation) => {
-  const index = reservations.value.findIndex(res => res.id === updatedReservation.id);
+  const index = reservations.value.findIndex(
+    (res) => res.id === updatedReservation.id,
+  );
   if (index !== -1) {
     reservations.value[index] = updatedReservation;
   }

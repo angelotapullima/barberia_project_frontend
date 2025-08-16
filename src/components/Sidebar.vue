@@ -1,8 +1,13 @@
 <template>
   <aside
     :class="[
-      isCollapsed ? 'w-20' : 'w-64',
-      'h-full overflow-y-auto bg-white opacity-100 text-gray-700 flex flex-col shadow-lg transition-all duration-300 ease-in-out',
+      // Mobile behavior
+      isOpen ? 'translate-x-0' : '-translate-x-full',
+      'fixed inset-y-0 left-0 z-40 h-full overflow-y-auto bg-white text-gray-700 flex flex-col shadow-lg', // Removed transform transition
+      // Desktop behavior - always visible
+      'lg:static lg:translate-x-0 lg:block', // Ensure it's always visible and static on desktop
+      isCollapsed ? 'lg:w-20' : 'lg:w-64',
+      // Removed 'transition-all duration-4000 ease-in-out'
     ]"
     aria-label="Sidebar"
   >
@@ -27,18 +32,40 @@
           </svg>
         </div>
         <h1
-          v-if="!isCollapsed"
-          class="text-lg font-bold tracking-wide text-gray-800"
+          class="text-lg font-bold tracking-wide text-gray-800 lg:block"
+          :class="{ 'lg:hidden': isCollapsed }"
         >
           BARBERSHOP
         </h1>
       </div>
 
-      <!-- Botón colapsar -->
+      <!-- Botón cerrar (solo en móvil) -->
       <button
-        @click="emitToggle"
+        @click="emitClose"
+        aria-label="Cerrar sidebar"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors lg:hidden"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+
+      <!-- Botón colapsar (solo en desktop) -->
+      <button
+        @click="emitToggleCollapse"
         :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        class="p-1 rounded-md hover:bg-gray-100 transition-colors"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors hidden lg:block"
       >
         <svg
           :class="[
@@ -61,8 +88,8 @@
 
     <!-- Menú label -->
     <div
-      v-if="!isCollapsed"
-      class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+      class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider lg:block"
+      :class="{ 'lg:hidden': isCollapsed }"
     >
       Menú
     </div>
@@ -79,9 +106,8 @@
                 openSubmenu === item.label
                   ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700 hover:shadow-sm',
-                isCollapsed ? 'justify-center' : '',
               ]"
-              :title="isCollapsed ? item.label : null"
+              :title="item.label"
             >
               <span
                 class="flex items-center justify-center w-8 h-8 flex-shrink-0"
@@ -235,14 +261,18 @@
                 </svg>
               </span>
 
-              <span v-if="!isCollapsed" class="ml-3">{{ item.label }}</span>
+              <span
+                class="ml-3 lg:block"
+                :class="{ 'lg:hidden': isCollapsed }"
+                >{{ item.label }}</span
+              >
 
               <!-- Flecha de despliegue -->
               <svg
-                v-if="!isCollapsed"
                 :class="[
-                  'w-4 h-4 ml-auto transform transition-transform duration-200',
+                  'w-4 h-4 ml-auto transform transition-transform duration-200 lg:block',
                   openSubmenu === item.label ? 'rotate-90' : 'rotate-0',
+                  { 'lg:hidden': isCollapsed },
                 ]"
                 fill="none"
                 stroke="currentColor"
@@ -258,8 +288,9 @@
               </svg>
             </div>
             <ul
-              v-if="openSubmenu === item.label && !isCollapsed"
-              class="ml-8 mt-1 space-y-1"
+              v-if="openSubmenu === item.label"
+              class="ml-8 mt-1 space-y-1 lg:block"
+              :class="{ 'lg:hidden': isCollapsed }"
             >
               <li v-for="subItem in item.children" :key="subItem.label">
                 <router-link :to="subItem.to" v-slot="{ isActive }">
@@ -345,9 +376,8 @@
                   isActive
                     ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700 hover:shadow-sm',
-                  isCollapsed ? 'justify-center' : '',
                 ]"
-                :title="isCollapsed ? item.label : null"
+                :title="item.label"
               >
                 <span
                   class="flex items-center justify-center w-8 h-8 flex-shrink-0"
@@ -522,11 +552,12 @@
 import { ref, defineProps, defineEmits } from 'vue';
 
 defineProps({
-  isCollapsed: { type: Boolean, default: false },
+  isOpen: { type: Boolean, default: false },
+  isCollapsed: { type: Boolean, default: false }, // Re-added prop
 });
 
-const emit = defineEmits(['toggle']);
-const emitToggle = () => emit('toggle');
+const emit = defineEmits(['close', 'toggleCollapse']);
+const emitClose = () => emit('close');
 
 const openSubmenu = ref(null); // State for open submenu
 
@@ -577,6 +608,8 @@ const items = [
     ],
   },
   { to: '/barbers', label: 'Barberos', icon: 'users' },
+  { to: '/barbers/advances', label: 'Adelantos', icon: 'credit-card' },
+  { to: '/payments', label: 'Pagos', icon: 'credit-card' },
   { to: '/sales', label: 'Ventas', icon: 'credit-card' },
   { to: '/services', label: 'Servicios', icon: 'scissors' },
   { to: '/stations', label: 'Estaciones', icon: 'map-pin' },
@@ -586,5 +619,10 @@ const items = [
 </script>
 
 <style scoped>
+aside {
+  transition:
+    width 0.5s ease-in-out,
+    transform 0.5s ease-in-out; /* Explicitly transition width and transform */
+}
 /* Nada extra porque todo se maneja con Tailwind */
 </style>

@@ -41,7 +41,7 @@ export const useProductStore = defineStore('product', {
       this.error = null;
       try {
         const response = await api.put(`/products/${id}`, productData); // Use 'api' instance and relative path
-        const index = this.products.findIndex(p => p.id === id);
+        const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
           this.products[index] = response.data;
         }
@@ -59,7 +59,7 @@ export const useProductStore = defineStore('product', {
       this.error = null;
       try {
         await api.delete(`/products/${id}`); // Use 'api' instance and relative path
-        this.products = this.products.filter(p => p.id !== id);
+        this.products = this.products.filter((p) => p.id !== id);
       } catch (error) {
         this.error = error.message;
         console.error('Error deleting product:', error);

@@ -19,7 +19,8 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       this.error = null;
       try {
-        const response = await api.post('/auth/login', { // Use 'api' instance and relative path
+        const response = await api.post('/auth/login', {
+          // Use 'api' instance and relative path
           email,
           password,
         });

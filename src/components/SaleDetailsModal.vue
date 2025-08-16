@@ -17,17 +17,19 @@
             <p><strong>Cliente:</strong> {{ sale.customer_name }}</p>
             <p><strong>Método de Pago:</strong> {{ sale.payment_method }}</p>
             <p>
-              <strong>Monto Total:</strong> S/ {{ sale.total_amount.toFixed(2) }}
+              <strong>Monto Total:</strong> S/
+              {{ sale.total_amount.toFixed(2) }}
             </p>
 
             <h4 class="font-semibold mt-4 mb-2">Items de la Venta:</h4>
             <ul class="list-disc pl-5">
               <li v-for="item in sale.items" :key="item.id">
-                {{ item.item_name }} ({{ Number(item.quantity) || 0 }} x
-                S/ {{ (Number(item.unit_price) || 0).toFixed(2) }}) -
-                S/ {{
+                {{ item.item_name }} ({{ Number(item.quantity) || 0 }} x S/
+                {{ (Number(item.unit_price) || 0).toFixed(2) }}) - S/
+                {{
                   (
-                    (Number(item.quantity) || 0) * (Number(item.unit_price) || 0)
+                    (Number(item.quantity) || 0) *
+                    (Number(item.unit_price) || 0)
                   ).toFixed(2)
                 }}
               </li>
@@ -76,13 +78,16 @@ const handleClickOutside = (event) => {
 };
 
 // Watch for changes in the 'show' prop to add/remove event listeners
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    document.addEventListener('keydown', handleKeydown);
-  } else {
-    document.removeEventListener('keydown', handleKeydown);
-  }
-});
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      document.addEventListener('keydown', handleKeydown);
+    } else {
+      document.removeEventListener('keydown', handleKeydown);
+    }
+  },
+);
 
 // Clean up event listener when component is unmounted
 onUnmounted(() => {

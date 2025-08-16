@@ -72,19 +72,27 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="product in productStore.products" :key="product.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
               {{ product.name }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {{ product.description || 'N/A' }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+            >
               S/ {{ product.price.toFixed(2) }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+            >
               {{ product.stock_quantity }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"
+            >
               {{ product.min_stock_level }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -101,11 +109,19 @@
                 {{ product.is_active ? 'Sí' : 'No' }}
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button @click="openProductModal(product)" class="text-indigo-600 hover:text-indigo-900 mr-4">
+            <td
+              class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+            >
+              <button
+                @click="openProductModal(product)"
+                class="text-indigo-600 hover:text-indigo-900 mr-4"
+              >
                 Editar
               </button>
-              <button @click="deleteProduct(product.id)" class="text-red-600 hover:text-red-900">
+              <button
+                @click="deleteProduct(product.id)"
+                class="text-red-600 hover:text-red-900"
+              >
                 Eliminar
               </button>
             </td>
@@ -117,41 +133,112 @@
     <!-- Product Modal -->
     <Modal :show="isProductModalOpen" @close="closeProductModal">
       <template #header>
-        <h3 class="text-xl font-bold">{{ currentProduct?.id ? 'Editar Producto' : 'Añadir Producto' }}</h3>
+        <h3 class="text-xl font-bold">
+          {{ currentProduct?.id ? 'Editar Producto' : 'Añadir Producto' }}
+        </h3>
       </template>
       <template #body>
         <form @submit.prevent="saveProduct">
           <div class="mb-4">
-            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
-            <input type="text" id="name" v-model="productForm.name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+            <label for="name" class="block text-gray-700 text-sm font-bold mb-2"
+              >Nombre:</label
+            >
+            <input
+              type="text"
+              id="name"
+              v-model="productForm.name"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
-            <textarea id="description" v-model="productForm.description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+            <label
+              for="description"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Descripción:</label
+            >
+            <textarea
+              id="description"
+              v-model="productForm.description"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            ></textarea>
           </div>
           <div class="mb-4">
-            <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
-            <input type="number" id="price" v-model.number="productForm.price" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" step="0.01" required />
+            <label
+              for="price"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Precio:</label
+            >
+            <input
+              type="number"
+              id="price"
+              v-model.number="productForm.price"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              step="0.01"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label for="stock_quantity" class="block text-gray-700 text-sm font-bold mb-2">Stock Actual:</label>
-            <input type="number" id="stock_quantity" v-model.number="productForm.stock_quantity" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+            <label
+              for="stock_quantity"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Stock Actual:</label
+            >
+            <input
+              type="number"
+              id="stock_quantity"
+              v-model.number="productForm.stock_quantity"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label for="min_stock_level" class="block text-gray-700 text-sm font-bold mb-2">Stock Mínimo:</label>
-            <input type="number" id="min_stock_level" v-model.number="productForm.min_stock_level" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+            <label
+              for="min_stock_level"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Stock Mínimo:</label
+            >
+            <input
+              type="number"
+              id="min_stock_level"
+              v-model.number="productForm.min_stock_level"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
-            <input type="text" id="category" v-model="productForm.category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            <label
+              for="category"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Categoría:</label
+            >
+            <input
+              type="text"
+              id="category"
+              v-model="productForm.category"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
           </div>
           <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_active" v-model="productForm.is_active" class="mr-2" />
-            <label for="is_active" class="text-gray-700 text-sm font-bold">Activo</label>
+            <input
+              type="checkbox"
+              id="is_active"
+              v-model="productForm.is_active"
+              class="mr-2"
+            />
+            <label for="is_active" class="text-gray-700 text-sm font-bold"
+              >Activo</label
+            >
           </div>
           <div class="flex items-center justify-between">
             <button type="submit" class="btn-primary">Guardar</button>
-            <button type="button" class="btn-secondary" @click="closeProductModal">Cancelar</button>
+            <button
+              type="button"
+              class="btn-secondary"
+              @click="closeProductModal"
+            >
+              Cancelar
+            </button>
           </div>
         </form>
       </template>
@@ -207,7 +294,10 @@ const saveProduct = async () => {
   try {
     if (currentProduct.value?.id) {
       // Update existing product
-      await productStore.updateProduct(currentProduct.value.id, productForm.value);
+      await productStore.updateProduct(
+        currentProduct.value.id,
+        productForm.value,
+      );
       alert('Producto actualizado exitosamente!');
     } else {
       // Add new product
@@ -222,7 +312,11 @@ const saveProduct = async () => {
 };
 
 const deleteProduct = async (id) => {
-  if (confirm('¿Estás seguro de que quieres eliminar este producto? (Se marcará como inactivo)')) {
+  if (
+    confirm(
+      '¿Estás seguro de que quieres eliminar este producto? (Se marcará como inactivo)',
+    )
+  ) {
     try {
       await productStore.deleteProduct(id);
       alert('Producto eliminado (inactivado) exitosamente!');

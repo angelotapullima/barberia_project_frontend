@@ -148,13 +148,10 @@ const handleChangePassword = async () => {
       return;
     }
 
-    await api.put(
-      `/auth/change-password`,
-      {
-        oldPassword: oldPassword.value,
-        newPassword: newPassword.value,
-      },
-    );
+    await api.put(`/auth/change-password`, {
+      oldPassword: oldPassword.value,
+      newPassword: newPassword.value,
+    });
     passwordChangeSuccess.value = 'Contraseña actualizada exitosamente.';
     oldPassword.value = '';
     newPassword.value = '';

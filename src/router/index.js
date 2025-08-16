@@ -13,6 +13,7 @@ import DashboardView from '@/views/DashboardView.vue';
 import LoginView from '@/views/LoginView.vue'; // Import LoginView
 import ProfileView from '@/views/ProfileView.vue'; // Import LoginView
 import SettingsView from '@/views/SettingsView.vue'; // Import LoginView
+import BarberAdvancesView from '@/views/BarberAdvancesView.vue';
 
 import ReportsView from '@/views/ReportsView.vue';
 import StationUsageReportView from '@/views/StationUsageReportView.vue';
@@ -26,6 +27,12 @@ const routes = [
   { path: '/', component: DashboardView, name: 'Dashboard' },
   { path: '/sales', component: SalesView, name: 'SalesRegistration' }, // Changed component to SalesView
   { path: '/barbers', component: BarbersView, name: 'Barbers' },
+  {
+    path: '/barbers/advances',
+    component: BarberAdvancesView,
+    name: 'BarberAdvances',
+  },
+  { path: '/payments', component: BarberPaymentsReportView, name: 'Payments' }, // Changed to BarberPaymentsReportView
   { path: '/stations', component: StationsView, name: 'Stations' },
   { path: '/services', component: ServicesView, name: 'Services' },
   { path: '/products', component: ProductsView, name: 'Products' },

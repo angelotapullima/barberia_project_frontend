@@ -76,7 +76,9 @@
             <option disabled value="">Seleccione un barbero</option>
             <!-- Barbers will be fetched from sales.barber_name -->
             <option
-              v-for="barber in salesStore.sales.map(s => ({ id: s.barber_id, name: s.barber_name })).filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)"
+              v-for="barber in salesStore.sales
+                .map((s) => ({ id: s.barber_id, name: s.barber_name }))
+                .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)"
               :key="barber.id"
               :value="barber.id"
             >
@@ -190,7 +192,10 @@
               {{ sale.payment_method }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <button @click="openSaleDetails(sale.id)" class="text-blue-600 hover:text-blue-900">
+              <button
+                @click="openSaleDetails(sale.id)"
+                class="text-blue-600 hover:text-blue-900"
+              >
                 Ver
               </button>
             </td>

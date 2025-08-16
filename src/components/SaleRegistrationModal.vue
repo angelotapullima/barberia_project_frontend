@@ -19,7 +19,8 @@
             </p>
             <p>
               <strong>Servicio Principal:</strong>
-              {{ getServiceName(reservation.service_id) }} (S/ {{ reservation.service_price.toFixed(2) }})
+              {{ getServiceName(reservation.service_id) }} (S/
+              {{ reservation.service_price.toFixed(2) }})
             </p>
             <p>
               <strong>Fecha:</strong> {{ formatDate(reservation.start_time) }}
@@ -35,9 +36,7 @@
             <h4 class="font-semibold mb-2">Añadir Productos Adicionales:</h4>
             <div class="flex space-x-2 mb-2">
               <select v-model="selectedItemToAdd" class="form-select flex-grow">
-                <option :value="null" disabled>
-                  Seleccionar producto
-                </option>
+                <option :value="null" disabled>Seleccionar producto</option>
                 <option
                   v-for="product in products"
                   :key="'p-' + product.id"
@@ -46,7 +45,9 @@
                   {{ product.name }} (S/ {{ product.price }})
                 </option>
               </select>
-              <button @click="addItemToReservation" class="btn-primary">Añadir</button>
+              <button @click="addItemToReservation" class="btn-primary">
+                Añadir
+              </button>
             </div>
           </div>
 
@@ -65,15 +66,24 @@
               <tbody>
                 <!-- Primary Service -->
                 <tr>
-                  <td class="py-2 px-4 border-b">{{ getServiceName(reservation.service_id) }} (Servicio Principal)</td>
-                  <td class="py-2 px-4 border-b">{{ reservation.service_price.toFixed(2) }}</td>
+                  <td class="py-2 px-4 border-b">
+                    {{ getServiceName(reservation.service_id) }} (Servicio
+                    Principal)
+                  </td>
+                  <td class="py-2 px-4 border-b">
+                    {{ reservation.service_price.toFixed(2) }}
+                  </td>
                   <td class="py-2 px-4 border-b">1</td>
-                  <td class="py-2 px-4 border-b">S/ {{ reservation.service_price.toFixed(2) }}</td>
+                  <td class="py-2 px-4 border-b">
+                    S/ {{ reservation.service_price.toFixed(2) }}
+                  </td>
                   <td class="py-2 px-4 border-b"></td>
                 </tr>
                 <!-- Additional Products -->
                 <tr v-for="(item, index) in saleItems" :key="item.id">
-                  <td class="py-2 px-4 border-b">{{ getProductName(item.product_id) }}</td>
+                  <td class="py-2 px-4 border-b">
+                    {{ getProductName(item.product_id) }}
+                  </td>
                   <td class="py-2 px-4 border-b">
                     {{ item.price_at_reservation.toFixed(2) }}
                   </td>
@@ -87,7 +97,8 @@
                     />
                   </td>
                   <td class="py-2 px-4 border-b">
-                    S/ {{ (item.price_at_reservation * item.quantity).toFixed(2) }}
+                    S/
+                    {{ (item.price_at_reservation * item.quantity).toFixed(2) }}
                   </td>
                   <td class="py-2 px-4 border-b">
                     <button
@@ -175,13 +186,16 @@ const handleClickOutside = (event) => {
 };
 
 // Watch for changes in the 'show' prop to add/remove event listeners
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    document.addEventListener('keydown', handleKeydown);
-  } else {
-    document.removeEventListener('keydown', handleKeydown);
-  }
-});
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      document.addEventListener('keydown', handleKeydown);
+    } else {
+      document.removeEventListener('keydown', handleKeydown);
+    }
+  },
+);
 
 // Clean up event listener when component is unmounted
 onUnmounted(() => {
@@ -269,11 +283,20 @@ const updateItemQuantity = async (reservationProductId, newQuantity) => {
     return;
   }
   // For simplicity, we'll remove and re-add. A dedicated update endpoint would be better.
-  const itemToUpdate = saleItems.value.find(item => item.id === reservationProductId);
+  const itemToUpdate = saleItems.value.find(
+    (item) => item.id === reservationProductId,
+  );
   if (itemToUpdate) {
     try {
-      await reservationStore.removeProductFromReservation(props.reservation.id, reservationProductId);
-      await reservationStore.addProductToReservation(props.reservation.id, itemToUpdate.product_id, newQuantity);
+      await reservationStore.removeProductFromReservation(
+        props.reservation.id,
+        reservationProductId,
+      );
+      await reservationStore.addProductToReservation(
+        props.reservation.id,
+        itemToUpdate.product_id,
+        newQuantity,
+      );
       await fetchReservationDetails(props.reservation.id);
     } catch (error) {
       alert(`Error al actualizar cantidad: ${error.message || error}`);
@@ -313,10 +336,12 @@ const processSale = async () => {
 // Helper to fetch full reservation details (including products) after changes
 const fetchReservationDetails = async (reservationId) => {
   try {
-    const response = await api.get(`/reservations/${reservationId}?includeProducts=true`); // Use 'api' and relative path
-    saleItems.value = response.data.products; 
+    const response = await api.get(
+      `/reservations/${reservationId}?includeProducts=true`,
+    ); // Use 'api' and relative path
+    saleItems.value = response.data.products;
     // Emit the updated reservation to the parent (still good practice for parent's state)
-    emit('updatedReservation', response.data); 
+    emit('updatedReservation', response.data);
   } catch (error) {
     console.error('Error fetching updated reservation details:', error);
   }
@@ -330,15 +355,11 @@ const getBarberName = (barberId) => {
 };
 
 const getServiceName = (serviceId) => {
-  return (
-    services.value.find((s) => s.id === serviceId)?.name || 'Desconocido'
-  );
+  return services.value.find((s) => s.id === serviceId)?.name || 'Desconocido';
 };
 
 const getProductName = (productId) => {
-  return (
-    products.value.find((p) => p.id === productId)?.name || 'Desconocido'
-  );
+  return products.value.find((p) => p.id === productId)?.name || 'Desconocido';
 };
 
 const formatDate = (isoString) => {
