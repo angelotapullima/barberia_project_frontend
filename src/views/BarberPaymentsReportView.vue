@@ -101,7 +101,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <template
-            v-for="(item, index) in reportData"
+            v-for="item in reportData"
             :key="item.barber_id + '-' + item.period_start"
           >
             <tr>
@@ -234,22 +234,56 @@
                   <div v-else-if="item.advancesError" class="text-red-500">
                     Error al cargar adelantos: {{ item.advancesError }}
                   </div>
-                  <ul
+                  <div
                     v-else-if="
                       item.detailedAdvances && item.detailedAdvances.length
                     "
+                    class="overflow-x-auto"
                   >
-                    <li
-                      v-for="advance in item.detailedAdvances"
-                      :key="advance.id"
-                      class="text-sm text-gray-700"
-                    >
-                      {{ formatDate(advance.date) }}: S/
-                      {{ advance.amount.toFixed(2) }} ({{
-                        advance.notes || 'Sin notas'
-                      }})
-                    </li>
-                  </ul>
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th
+                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Fecha
+                          </th>
+                          <th
+                            class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Monto (S/)
+                          </th>
+                          <th
+                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Notas
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr
+                          v-for="advance in item.detailedAdvances"
+                          :key="advance.id"
+                        >
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                          >
+                            {{ formatDate(advance.date) }}
+                          </td>
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right"
+                          >
+                            {{ advance.amount.toFixed(2) }}
+                          </td>
+                          <td
+                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-700"
+                          >
+                            {{ advance.notes || 'Sin notas' }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                   <div v-else class="text-gray-500">
                     No hay adelantos detallados para este período.
                   </div>
@@ -261,22 +295,27 @@
       </table>
     </div>
 
-    <BarberPaymentModal
-      :show="isPaymentModalOpen"
-      :barber="selectedBarberForPayment"
-      :commission="selectedCommissionForPayment"
-      :selectedYear="selectedYear"
-      :selectedMonth="selectedMonth"
-      @close="isPaymentModalOpen = false"
-      @paymentFinalized="fetchReport"
+    <BarberAdvanceModal
+      :show="isAdvanceModalOpen"
+      :barberId="selectedBarberForAdvance?.id"
+      :barberName="selectedBarberForAdvance?.name"
+      @close="isAdvanceModalOpen = false"
+      @advanceRegistered="fetchReport"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import dayjs from 'dayjs';
+import { useRouter } from 'vue-router';
+import { usePaymentStore } from '@/stores/paymentStore';
+
+const router = useRouter();
+const paymentStore = usePaymentStore();
 import api from '@/services/api';
-import BarberPaymentModal from '@/components/BarberPaymentModal.vue';
+
+import BarberAdvanceModal from '@/components/BarberAdvanceModal.vue';
 
 const reportData = ref([]);
 const selectedMonth = ref(new Date().getMonth());
@@ -284,9 +323,8 @@ const selectedYear = ref(new Date().getFullYear());
 const isLoading = ref(false);
 const error = ref(null);
 
-const isPaymentModalOpen = ref(false);
-const selectedBarberForPayment = ref(null);
-const selectedCommissionForPayment = ref(null);
+const isAdvanceModalOpen = ref(false);
+const selectedBarberForAdvance = ref(null);
 
 const months = [
   'Enero',
@@ -305,7 +343,7 @@ const months = [
 
 const yearOptions = computed(() => {
   const currentYear = new Date().getFullYear();
-  const startYear = 2024; // Fixed start year
+  const startYear = 2024;
   const years = [];
   for (let i = startYear; i <= currentYear; i++) {
     years.push(i);
@@ -327,10 +365,7 @@ const fetchReport = async () => {
   error.value = null;
   try {
     const response = await api.get('/barber-commissions/monthly-summary', {
-      params: {
-        year: selectedYear.value,
-        month: selectedMonth.value + 1, // Months are 0-indexed in JS, 1-indexed in backend
-      },
+      params: { year: selectedYear.value, month: selectedMonth.value + 1 },
     });
     reportData.value = response.data.map((item) => ({
       ...item,
@@ -342,121 +377,77 @@ const fetchReport = async () => {
       advancesError: null,
       detailedAdvances: [],
     }));
-    console.log('Report Data:', reportData.value);
   } catch (err) {
     error.value = err.message || 'Error al cargar el reporte.';
-    console.error('Error fetching monthly barber commissions:', err);
   } finally {
     isLoading.value = false;
   }
 };
 
 const isPaymentEnabled = (periodEnd) => {
-  const today = new Date();
-  const endDate = new Date(periodEnd);
-  return today >= endDate;
+  const today = dayjs();
+  const end = dayjs(periodEnd);
+  return today.isAfter(end) || today.isSame(end, 'day');
 };
 
 const isAdvanceEnabled = (periodEnd) => {
-  const today = new Date();
-  const endDate = new Date(periodEnd);
-  return today < endDate;
+  const end = dayjs(periodEnd);
+  return dayjs().isBefore(end, 'day');
 };
 
 const handlePay = (item) => {
-  selectedBarberForPayment.value = {
-    id: item.barber_id,
-    name: item.barber_name,
-  };
-  selectedCommissionForPayment.value = item;
-  isPaymentModalOpen.value = true;
+  paymentStore.setPaymentItem(item);
+  router.push({ name: 'PaymentConfirm' });
 };
 
 const handleAdvance = (item) => {
-  alert(`Registrar adelanto para ${item.barber_name}`);
-  // TODO: Implement advance registration modal/logic
+  selectedBarberForAdvance.value = {
+    id: item.barber_id,
+    name: item.barber_name,
+  };
+  isAdvanceModalOpen.value = true;
 };
 
 const toggleDetails = async (item) => {
   item.showDetails = !item.showDetails;
   if (item.showDetails) {
-    // Fetch detailed services
+    // Fetch services
     item.servicesLoading = true;
     item.servicesError = null;
     try {
-      const response = await api.get(
+      const res = await api.get(
         `/barber-commissions/${item.barber_id}/services`,
         {
-          params: {
-            year: selectedYear.value,
-            month: selectedMonth.value + 1,
-          },
+          params: { year: selectedYear.value, month: selectedMonth.value + 1 },
         },
       );
-      item.detailedServices = response.data;
+      item.detailedServices = res.data || [];
     } catch (err) {
       item.servicesError = err.message || 'Error al cargar los servicios.';
-      console.error('Error fetching detailed services:', err);
     } finally {
       item.servicesLoading = false;
     }
 
-    // Fetch detailed advances
+    // Fetch advances
     item.advancesLoading = true;
     item.advancesError = null;
     try {
-      const response = await api.get(
+      const res = await api.get(
         `/barber-commissions/${item.barber_id}/advances`,
         {
-          params: {
-            year: selectedYear.value,
-            month: selectedMonth.value + 1,
-          },
+          params: { year: selectedYear.value, month: selectedMonth.value + 1 },
         },
       );
-      item.detailedAdvances = response.data;
+      item.detailedAdvances = res.data || [];
     } catch (err) {
       item.advancesError = err.message || 'Error al cargar los adelantos.';
-      console.error('Error fetching detailed advances:', err);
     } finally {
       item.advancesLoading = false;
     }
   }
 };
 
-const isGeneratePaymentsEnabled = computed(() => {
-  const today = new Date();
-  const selectedMonthEndDate = new Date(
-    selectedYear.value,
-    selectedMonth.value + 1,
-    0,
-  ); // Last day of selected month
-  return today >= selectedMonthEndDate;
-});
-
-const generatePayments = async () => {
-  if (
-    !confirm(
-      `¿Estás seguro de que quieres generar los pagos para ${months[selectedMonth.value]} de ${selectedYear.value}? Esta acción no se puede deshacer.`,
-    )
-  ) {
-    return;
-  }
-
-  try {
-    await api.post('/barber-commissions/calculate-monthly', {
-      year: selectedYear.value,
-      month: selectedMonth.value + 1,
-    });
-    alert('Pagos generados exitosamente.');
-    fetchReport(); // Refresh report after generating payments
-  } catch (err) {
-    console.error('Error generating payments:', err);
-    alert('Error al generar los pagos.');
-  }
-};
-
-watch([selectedMonth, selectedYear], fetchReport); // Watch for changes in month/year
+watch([selectedMonth, selectedYear], fetchReport);
 
 onMounted(() => {
   fetchReport();

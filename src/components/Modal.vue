@@ -23,29 +23,25 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch } from 'vue';
+import { onUnmounted, watch } from 'vue';
 
 const props = defineProps({
   show: Boolean,
 });
-const emit = defineEmits(['close']); // Change defineEmits to a const
+const emit = defineEmits(['close']);
 
-// Function to handle Escape key press
 const handleKeydown = (event) => {
   if (event.key === 'Escape') {
     emit('close');
   }
 };
 
-// Function to handle click outside modal content
 const handleClickOutside = (event) => {
-  // Check if the click target is the modal mask itself, not a child of modal-container
   if (event.target.classList.contains('modal-mask')) {
     emit('close');
   }
 };
 
-// Watch for changes in the 'show' prop to add/remove event listeners
 watch(
   () => props.show,
   (newVal) => {
@@ -57,7 +53,6 @@ watch(
   },
 );
 
-// Clean up event listener when component is unmounted
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
 });
@@ -85,6 +80,8 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
+  max-height: 90vh; /* Simple and direct fix */
+  overflow-y: auto; /* Simple and direct fix */
 }
 
 .modal-header h3 {
@@ -105,15 +102,6 @@ onUnmounted(() => {
   border-radius: 4px;
   cursor: pointer;
 }
-
-/*
- * The following styles are auto-applied to elements with
- * transition="modal" when their visibility is toggled
- * by Vue.js.
- *
- * You can easily play with the modal transition by editing
- * these styles.
- */
 
 .modal-enter-from {
   opacity: 0;

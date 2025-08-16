@@ -5,6 +5,10 @@ import App from './App.vue';
 import './style.css';
 import VueApexCharts from 'vue3-apexcharts';
 import { useAuthStore } from './stores/authStore';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+
+dayjs.locale('es');
 
 const app = createApp(App);
 const pinia = createPinia();
